@@ -45,7 +45,7 @@ body {
 
 /* Text size utility (example for text-base) */
 button, p {
-  @apply text-base;
+  @apply text-base cursor-pointer;
 }
 
 /* List items */

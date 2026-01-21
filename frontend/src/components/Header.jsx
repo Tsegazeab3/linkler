@@ -10,7 +10,7 @@ function Header() {
   return (
     <header className="flex justify-between px-5vw items-center h-20vh">
       <h1 id="title" className="text-3rem text-linkler-pink drop-shadow-blue font-display italic">Linkler</h1>
-      
+
       {/* Desktop Nav */}
       <nav id="desktop-nav" className="hidden lg:flex">
         <ul className="flex items-center gap-25px">
@@ -28,11 +28,11 @@ function Header() {
           </li>
           <li id="signup-login" className="flex flex-col gap-5px justify-center items-center relative">
             <div className="btn-container">
-              <button className="bg-white w-150px text-15px">Sign up</button>
+              <button className="bg-white w-150px px-30px rounded-full">Sign up</button>
               <img id="sign-up-in-1" src="/assets/sign-up-in.png" alt="sign in and sign up arrow" className="absolute h-20px w-20px right-5px bg-white top-11px" />
             </div>
             <div className="btn-container">
-              <button className="bg-white w-150px text-15px">Log in</button>
+              <button className="bg-white w-150px px-30px rounded-full">Log in</button>
               <img id="sign-up-in-2" src="/assets/sign-up-in.png" alt="sign in and sign up arrow" className="absolute h-20px w-20px right-5px bg-white top-58px" />
             </div>
           </li>
@@ -43,11 +43,10 @@ function Header() {
       <nav id="hamburger-nav" className="lg:hidden flex">
         <div className="hamburger-menu">
           <div className="hamburger-icon flex flex-col justify-between h-24px w-30px cursor-pointer" onClick={toggleMenu}>
-            <span className={`w-full h-2px bg-black transition-all duration-300 ${isOpen ? 'rotate-45 translate-x-2.5 translate-y-1.25' : ''}`}></span>
+            <span className={`w-full h-2px bg-black transition-all duration-300 ${isOpen ? 'rotate-45 translate-x-10px translate-y-5px' : ''}`}></span>
             <span className={`w-full h-2px bg-black transition-all duration-300 ${isOpen ? 'opacity-0' : ''}`}></span>
-            <span className={`w-full h-2px bg-black transition-all duration-300 ${isOpen ? '-rotate-45 translate-x-2.5 -translate-y-1.25' : ''}`}></span>
-          </div>
-          <div className={`menu-links flex-col gap-10px items-center w-200px absolute top-100px right-45px overflow-hidden transition-all duration-300 ${isOpen ? 'max-h-400px p-20px rounded-20px' : 'max-h-0'}`}>
+            <span className={`w-full h-2px bg-black transition-all duration-300 ${isOpen ? '-rotate-45 translate-x-10px -translate-y-5px' : ''}`}></span>          </div>
+          <div className={`menu-links flex-col gap-10px items-center w-200px absolute top-100px right-45px overflow-hidden transition-all duration-300 ${isOpen ? 'max-h-400px p-8px rounded-25px-0-25px-25px' : 'max-h-0'}`}>
             <li className="btn-container">
               <button className="text-15px">Support</button>
             </li>
@@ -62,11 +61,11 @@ function Header() {
             </li>
             <li id="signup-login" className="flex flex-col gap-5px justify-center items-center relative">
               <div className="btn-container">
-                <button className="text-15px">Sign up</button>
+                <button className="px-30px">Sign up</button>
                 <img id="sign-up-in-1" src="/static/assets/sign-up-in.png" alt="sign in and sign up arrow" className="absolute h-20px w-20px right-5px bg-white top-11px" />
               </div>
               <div className="btn-container">
-                <button className="text-15px">Log in</button>
+                <button className="px-30px">Log in</button>
                 <img id="sign-up-in-2" src="/static/assets/sign-up-in.png" alt="sign in and sign up arrow" className="absolute h-20px w-20px right-5px bg-white top-58px" />
               </div>
             </li>
