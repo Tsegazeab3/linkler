@@ -9,7 +9,7 @@ function App() {
   const [error, setError] = useState(null);
 
   return (
-    <div>
+    <div className="relative">
       <Header />
       <HeroSection />
     </div>

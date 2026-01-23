@@ -18,13 +18,15 @@ from django.contrib import admin
 from django.urls import path, include, re_path
 from django.conf import settings
 from django.views.static import serve
-from django.contrib.staticfiles.views import serve as serve_static
+from django.conf.urls.static import static # Import 'static'
+# from django.contrib.staticfiles.urls import staticfiles_urlpatterns # No longer needed
 
 from rest_framework import routers
-from landing_page.views import MessageViewSet # Import your ViewSet
+from landing_page.views import MessageViewSet, CardViewSet # Import your ViewSet
 
 router = routers.DefaultRouter()
 router.register(r'messages', MessageViewSet) # Register your ViewSet
+router.register(r'cards', CardViewSet) # Register your ViewSet
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -33,6 +35,17 @@ urlpatterns = [
 ]
 
 if settings.DEBUG:
+    # Explicitly serve static files from BASE_DIR / 'static'
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.BASE_DIR / 'static')
+    # The catch-all for the frontend should be last
     urlpatterns += [
-        re_path(r'^(?:.*)/?$', serve_static, kwargs={'path': 'index.html', 'document_root': settings.VITE_APP_BUILD_DIR}),
+        re_path(
+            r'^(?:.*)/?$',
+            serve,
+            kwargs={
+                'path': 'index.html',
+                'document_root': settings.VITE_APP_BUILD_DIR,
+            },
+        ),
     ]
+
