@@ -71,6 +71,8 @@
 }
 
 
+
+
 /* Body styling */
 body {
   @apply m-0 p-0 flex flex-col bg-linkler-bg font-display;
@@ -99,4 +101,38 @@ li {
 /* Custom clip-path utility */
 .clip-text-shape {
   clip-path: url(#textShapeClip);
+}
+
+.reveal-initial {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.reveal-final {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+}
+
+@media (max-width: 419px) {
+  #title {
+    font-size: 2rem; /* Reduced from text-4xl (3rem) */
+  }
+
+  h2 {
+    font-size: 1.125rem; /* Reduced from text-xl (1.25rem) */
+  }
+
+  p {
+    font-size: 0.8rem; /* Reduced from text-sm (0.875rem) */
+  }
+
+  button {
+    font-size: 0.8rem; /* Reduced from text-sm (0.875rem) */
+  }
+
+  /* Hamburger menu buttons */
+  #hamburger-nav button {
+      font-size: 1rem; /* Reduced from text-xl (1.25rem) */
+  }
 }

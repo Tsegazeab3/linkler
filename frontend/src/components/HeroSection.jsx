@@ -29,7 +29,6 @@ function HeroSection() {
             title={section.title}
             description={section.description}
             imageSrc={section.image}
-            textPosition={index % 2 === 0 ? 'left' : 'right'}
           />
         ))
       )}

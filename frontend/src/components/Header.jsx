@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import RightArrowIcon from './RightArrowIcon.jsx';
 import HomeIcon from './HomeIcon.jsx';
 import useTypewriter from '../hooks/useTypewriter.js';
+import { smoothScrollTo } from '../utils/smoothScroll.js';
 
 function Header() {
   const [isOpen, setIsOpen] = useState(false);
@@ -22,18 +23,22 @@ function Header() {
   }, []);
 
   return (
-    <header className="relative z-50 grid grid-cols-[auto_1fr] md:grid-cols-[auto_1fr_auto] gap-2 sm:gap-4 px-5vw items-center py-4 sm:py-8">
+    <header className="relative z-50 grid grid-cols-[auto_1fr] lg:grid-cols-[1fr_5fr_2fr] gap-2 sm:gap-8 px-5vw items-center py-4 sm:py-8">
+
       {/* Column 1: Title */}
       <div className="col-span-1">
-        <div id="title" className="fixed top-4 left-4 sm:top-8 sm:left-8 lg:text-4xl sm:text-2xl text-xl text-black drop-shadow-blue font-display italic">
+        <div id="title" className="top-4 left-4 sm:top-8 sm:left-8 text-4xl  text-black drop-shadow-blue font-display italic">
           <div className={`transition-opacity duration-300 ${isScrolled ? 'opacity-0' : 'opacity-100'}`}>
-            <span className="bg-gradient-to-r from-blue-500 to-purple-500 font-bold bg-clip-text text-transparent">
+            <span className="bg-linear-to-r from-blue-500 to-purple-500 font-bold bg-clip-text text-transparent">
               Linkler
             </span>
           </div>
-          <div className={`overflow-clip absolute top-0 left-0 flex items-center gap-2 transition-opacity duration-300 ${isScrolled ? 'opacity-100' : 'opacity-0'}`}>
-            <span>{homeText}</span>
-            <HomeIcon className={`w-10 h-10 transition-transform duration-300 ${isScrolled ? 'translate-x-0' : 'translate-x-8'}`} />
+          <div
+            className={`fixed overflow-clip backdrop-blur-xs rounded-full top-10 left-10 flex items-center gap-2 transition-opacity duration-300 ${isScrolled ? 'opacity-100' : 'opacity-0'} cursor-pointer`}
+            onClick={() => smoothScrollTo(0, 500)}
+          >
+            <span className=''>{homeText}</span>
+            <HomeIcon className={`  w-10 h-10 transition-transform duration-500 ${isScrolled ? 'translate-x-0' : 'translate-x-8'}`} />
           </div>
         </div>
       </div>
@@ -43,7 +48,7 @@ function Header() {
         <ul className="flex items-center gap-2 lg:gap-4">
           {['Web', 'Support', 'Download', 'About', 'Contribute'].map((item) => (
             <li key={item} className="btn-container">
-              <button className="flex items-center justify-center gap-1 sm:gap-2 bg-white px-3 py-1.5 sm:px-6 sm:py-2 rounded-full border-solid border-2">
+              <button className="flex justify-center gap-1 bg-[#ffda00] sm:gap-2 bg-px-3 py-1.5 sm:px-6 sm:py-2 rounded-full border-solid border-2 transition-all duration-300 ease-in-out hover:shadow-xl hover:bg-[#e6c300] hover:-translate-x-1 hover:-translate-y-1">
                 {item}
               </button>
             </li>
@@ -52,14 +57,14 @@ function Header() {
       </nav>
 
       {/* Column 2 (sm) / Column 3 (lg): Right side */}
-      <div className="col-start-2 md:col-start-3 flex justify-end items-center gap-4">
+      <div className="col-start-2 md:col-start-3 flex  justify-end items-center gap-4">
         <div id="signup-login" className="hidden min-[420px]:flex gap-2 items-center">
-          <button className="flex items-center justify-center gap-2 bg-white px-6 py-2 rounded-full border-2">
-            <span className="font-bold text-sm">Sign up</span>
+          <button className="flex items-center justify-center gap-2 bg-white px-3 md:px-6 py-2 rounded-full border-2 transition-all duration-300 ease-in-out hover:shadow-xl hover:bg-gray-100 hover:-translate-x-1 hover:-translate-y-1">
+            <span className="font-bold text-sm whitespace-nowrap">Sign up</span>
             <RightArrowIcon className="h-5 w-5" />
           </button>
-          <button className="flex items-center justify-center gap-2 bg-white px-6 py-2 rounded-full border-2">
-            <span className="font-bold text-sm">Log in</span>
+          <button className="flex items-center justify-center gap-2 bg-white px-6 py-2 rounded-full border-2 transition-all duration-300 ease-in-out hover:shadow-xl hover:bg-gray-100 hover:-translate-x-1 hover:-translate-y-1">
+            <span className="font-bold text-sm whitespace-nowrap">Log in</span>
             <RightArrowIcon className="h-5 w-5" />
           </button>
         </div>
