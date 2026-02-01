@@ -9,10 +9,14 @@ import CompleteProfilePage from './components/CompleteProfilePage';
 
 function Home() {
   return (
-    <>
-      <Header />
-      <HeroSection />
-    </>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+      <div className="my-8">
+        <SignUpPage />
+      </div>
+      <div className="my-8">
+        <CompleteProfilePage />
+      </div>
+    </div>
   );
 }
 

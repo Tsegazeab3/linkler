@@ -19,21 +19,22 @@ const SignUpPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const csrftoken = getCookie('csrftoken');
-    try {
-      const response = await axios.post('/users/', {
-        ...formData,
-        username: formData.email,
-      }, {
-        headers: {
-          'X-CSRFToken': csrftoken,
-        },
-      });
-      console.log('User registered successfully:', response.data);
-      navigate('/complete-profile', { state: { userId: response.data.id } });
-    } catch (error) {
-      console.error('Error during registration:', error);
-    }
+    // const csrftoken = getCookie('csrftoken');
+    // try {
+    //   const response = await axios.post('/users/', {
+    //     ...formData,
+    //     username: formData.email,
+    //   }, {
+    //     headers: {
+    //       'X-CSRFToken': csrftoken,
+    //     },
+    //   });
+    //   console.log('User registered successfully:', response.data);
+    //   navigate('/complete-profile', { state: { userId: response.data.id } });
+    // } catch (error) {
+    //   console.error('Error during registration:', error);
+    // }
+    console.log('Sign up form submitted');
   };
 
   return (
