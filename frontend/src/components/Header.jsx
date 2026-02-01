@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import RightArrowIcon from './RightArrowIcon.jsx';
 import HomeIcon from './HomeIcon.jsx';
@@ -30,7 +31,7 @@ function Header() {
         <div id="title" className="top-4 left-4 sm:top-8 sm:left-8 text-4xl  text-black drop-shadow-blue font-display italic">
           <div className={`transition-opacity duration-300 ${isScrolled ? 'opacity-0' : 'opacity-100'}`}>
             <span className="bg-linear-to-r from-blue-500 to-purple-500 font-bold bg-clip-text text-transparent">
-              Linkler
+              <Link to="/">Linkler</Link>
             </span>
           </div>
           <div
@@ -59,14 +60,18 @@ function Header() {
       {/* Column 2 (sm) / Column 3 (lg): Right side */}
       <div className="col-start-2 md:col-start-3 flex  justify-end items-center gap-4">
         <div id="signup-login" className="hidden min-[420px]:flex gap-2 items-center">
-          <button className="flex items-center justify-center gap-2 bg-white px-3 md:px-6 py-2 rounded-full border-2 transition-all duration-300 ease-in-out hover:shadow-xl hover:bg-gray-100 hover:-translate-x-1 hover:-translate-y-1">
-            <span className="font-bold text-sm whitespace-nowrap">Sign up</span>
-            <RightArrowIcon className="h-5 w-5" />
-          </button>
-          <button className="flex items-center justify-center gap-2 bg-white px-6 py-2 rounded-full border-2 transition-all duration-300 ease-in-out hover:shadow-xl hover:bg-gray-100 hover:-translate-x-1 hover:-translate-y-1">
-            <span className="font-bold text-sm whitespace-nowrap">Log in</span>
-            <RightArrowIcon className="h-5 w-5" />
-          </button>
+          <Link to="/signup">
+            <button className="flex items-center justify-center gap-2 bg-white px-3 md:px-6 py-2 rounded-full border-2 transition-all duration-300 ease-in-out hover:shadow-xl hover:bg-gray-100 hover:-translate-x-1 hover:-translate-y-1">
+              <span className="font-bold text-sm whitespace-nowrap">Sign up</span>
+              <RightArrowIcon className="h-5 w-5" />
+            </button>
+          </Link>
+          <Link to="/login">
+            <button className="flex items-center justify-center gap-2 bg-white px-6 py-2 rounded-full border-2 transition-all duration-300 ease-in-out hover:shadow-xl hover:bg-gray-100 hover:-translate-x-1 hover:-translate-y-1">
+              <span className="font-bold text-sm whitespace-nowrap">Log in</span>
+              <RightArrowIcon className="h-5 w-5" />
+            </button>
+          </Link>
         </div>
 
         <nav id="hamburger-nav" className="md:hidden">
@@ -84,8 +89,8 @@ function Header() {
 
               {/* Mobile Only: Sign up / Log in (Hidden above 420px) */}
               <div className="flex flex-col gap-4 min-[420px]:hidden w-64 text-center pb-4 border-b border-gray-200">
-                <button className="text-xl font-bold" onClick={toggleMenu}>Sign up</button>
-                <button className="text-xl font-bold" onClick={toggleMenu}>Log in</button>
+                <Link to="/signup" className="text-xl font-bold" onClick={toggleMenu}>Sign up</Link>
+                <Link to="/login" className="text-xl font-bold" onClick={toggleMenu}>Log in</Link>
               </div>
 
               {['Web', 'Support', 'Download', 'About', 'Contribute'].map((item) => (

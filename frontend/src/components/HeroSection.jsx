@@ -6,7 +6,7 @@ function HeroSection() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/cards/')
+    fetch('/cards/')
       .then(response => response.json())
       .then(data => {
         setSections(data);

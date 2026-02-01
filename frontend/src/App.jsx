@@ -1,18 +1,33 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import Header from './components/Header';
 import HeroSection from './components/HeroSection';
+import LoginPage from './components/LoginPage';
+import SignUpPage from './components/SignUpPage';
+import CompleteProfilePage from './components/CompleteProfilePage';
 
-function App() {
-  const [messages, setMessages] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
+function Home() {
   return (
-    <div className="relative">
+    <>
       <Header />
       <HeroSection />
-    </div>
+    </>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <div className="relative">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignUpPage />} />
+          <Route path="/complete-profile" element={<CompleteProfilePage />} />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 
