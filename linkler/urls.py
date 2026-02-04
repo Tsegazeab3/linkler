@@ -15,31 +15,35 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include, re_path
+from django.urls import path, include
 from django.conf import settings
+from django.http import HttpResponse
 from django.views.static import serve
 from django.conf.urls.static import static # Import 'static'
-# from django.contrib.staticfiles.urls import staticfiles_urlpatterns # No longer needed
+
+def serve_react_app(request):
+    try:
+        with open(settings.LANDING_PAGE_BUILD_DIR / 'index.html') as f:
+            return HttpResponse(f.read())
+    except FileNotFoundError:
+        return HttpResponse(
+            """
+            React app not found.
+            Build the React app in frontend/LandingPage/dist/ and ensure it contains index.html.
+            """,
+            status=500,
+        )
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('allauth.urls')),
-    path('', include('landing_page.urls')),
+    path('', serve_react_app, name='react_app'), # Serve React app at root
 ]
 
 if settings.DEBUG:
-    # Explicitly serve static files from BASE_DIR / 'static'
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.BASE_DIR / 'static')
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    # The catch-all for the frontend should be last
-    urlpatterns += [
-        re_path(
-            r'^(?:.*)/?$',
-            serve,
-            kwargs={
-                'path': 'index.html',
-                'document_root': settings.VITE_APP_BUILD_DIR,
-            },
-        ),
-    ]
+    # Serve React app's assets from /assets/
+    urlpatterns += static('/assets/', document_root=settings.LANDING_PAGE_BUILD_DIR / 'assets')
+    # Serve other static files that might be directly in the build root (e.g., /static/vite.svg)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.LANDING_PAGE_BUILD_DIR)
 

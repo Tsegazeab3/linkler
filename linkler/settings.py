@@ -16,9 +16,9 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # React integration
-VITE_APP_DIR = BASE_DIR / 'frontend'
-VITE_APP_BUILD_DIR = VITE_APP_DIR / 'dist'
-
+FRONT_END_DIR = BASE_DIR/'frontend/'
+LANDING_PAGE_DIR = FRONT_END_DIR/'LandingPage'
+LANDING_PAGE_BUILD_DIR = LANDING_PAGE_DIR / 'dist'
 
 
 # Quick-start development settings - unsuitable for production
@@ -53,7 +53,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',
 
     #custom created apps
-    'landing_page',
+    'accounts',
 ]
 
 MIDDLEWARE = [
@@ -145,7 +145,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-AUTH_USER_MODEL = 'landing_page.customuser'
+AUTH_USER_MODEL = 'accounts.CustomUser'
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
@@ -164,8 +164,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [
-    BASE_DIR / 'static',
-    VITE_APP_BUILD_DIR, # Add this
+    LANDING_PAGE_BUILD_DIR,
 ]
 
 # Default primary key field type
