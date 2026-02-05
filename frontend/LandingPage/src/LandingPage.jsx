@@ -1,22 +1,20 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'; // Link is now imported by SimpleHeader
 import './App.css';
-import Header from './components/Header';
+import SimpleHeader from './components/SimpleHeader'; // New import for SimpleHeader
 import HeroSection from './components/HeroSection';
 import LoginPage from './components/LoginPage';
-import SignUpPage from './components/SignUpPage';
+// SignUpPage import removed
 import CompleteProfilePage from './components/CompleteProfilePage';
+import RegistrationForm from './components/RegistrationForm'; // Renamed import
 
-function Home() {
+function HomeContent() { // Renamed from Home to avoid confusion, to be rendered by Route "/"
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-      <div className="my-8">
-        <SignUpPage />
-      </div>
-      <div className="my-8">
-        <CompleteProfilePage />
-      </div>
-    </div>
+    <>
+      <SimpleHeader />
+      <HeroSection />
+      {/* Other components that belong to the main landing page content */}
+    </>
   );
 }
 
@@ -25,10 +23,11 @@ function LandingPage() {
     <Router>
       <div className="relative">
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<HomeContent />} /> {/* Use HomeContent */}
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignUpPage />} />
+          <Route path="/register" element={<RegistrationForm />} /> {/* Combined Registration */}
           <Route path="/complete-profile" element={<CompleteProfilePage />} />
+          {/* Note: /signup route is removed, /register-guide route is removed */}
         </Routes>
       </div>
     </Router>

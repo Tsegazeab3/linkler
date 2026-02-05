@@ -54,6 +54,7 @@ INSTALLED_APPS = [
 
     #custom created apps
     'accounts',
+    'guide_registration',
 ]
 
 MIDDLEWARE = [
