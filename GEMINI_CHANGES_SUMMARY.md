@@ -1,103 +1,71 @@
-# Gemini CLI Changes Summary
+# Project Overview: Linkler Application
 
-**Date:** February 4, 2026
+This document provides a comprehensive overview of the "Linkler" application, detailing its architecture, key components, and their functionalities. It serves as a persistent context for future interactions.
 
-**Overall Objective:** The primary goal was to decouple the React frontend from the Django backend for static content and specific API interactions, simplify the project structure by refactoring the user model, and implement a new guide registration feature.
+## Application Architecture
 
----
+The Linkler application is a full-stack project utilizing a Django backend for data management and API services, and a React frontend for the user interface. The frontend is structured as a monorepo, containing several independent React applications (Vite projects) for different sections of the user experience.
 
-## I. Frontend Decoupling & Content Restructuring
+### Backend (Django)
 
-### 1. Static Image Independence
--   **Action:** Moved static images (e.g., `page_1.png` etc.) from Django's `static/assets/` directory to the React frontend's `frontend/LandingPage/public/assets/` directory.
--   **Backend Change:** Updated `image` paths in all `Card` model instances in the database from `static/assets/image.png` to `/assets/image.png` to reflect the new frontend-served location.
--   **Django Settings:** Removed `BASE_DIR / 'static'` from `STATICFILES_DIRS` in `linkler/settings.py`, as these images are no longer served by Django.
+The Django backend is responsible for:
+*   **User Authentication and Authorization:** Handled by the `accounts` app.
+*   **Guide Management:** Likely managed by the `guide_registration` app, handling creation, storage, and retrieval of travel guides.
+*   **Data Persistence:** Interacting with a database (e.g., PostgreSQL, SQLite) to store application data.
+*   **API Endpoints:** Providing RESTful APIs for the frontend to consume.
 
-### 2. Card Data Decoupling
--   **Action:** Modified `frontend/LandingPage/src/components/HeroSection.jsx` to use hardcoded static data for the "cards" instead of fetching from the `/cards/` Django API endpoint. This completely removes the API dependency for this section.
+**Key Django Directories/Files:**
+*   `manage.py`: Django's command-line utility for administrative tasks.
+*   `requirements.txt`: Lists Python dependencies for the Django project.
+*   `accounts/`: Django app for user accounts, authentication, and profiles.
+    *   `models.py`: Defines database models for users and related data.
+    *   `views.py`: Contains logic for handling user-related requests (e.g., login, registration).
+    *   `migrations/`: Database schema changes for the `accounts` app.
+*   `guide_registration/`: Django app for managing travel guides.
+    *   `models.py`: Defines database models for guides, interests, nationalities, etc.
+    *   `serializers.py`: (If using Django REST Framework) Defines how model instances are serialized/deserialized for API responses.
+    *   `views.py`: Contains logic for handling guide-related requests.
+*   `linkler/` (project root Django directory):
+    *   `settings.py`: Main configuration for the Django project.
+    *   `urls.py`: Defines URL routing for the entire Django project, dispatching requests to specific app-level URL configurations.
+    *   `wsgi.py`, `asgi.py`: Entry points for web servers.
 
-### 3. Frontend Development Environment Decoupling
--   **Action:** Removed all proxy settings (`/api`, `/cards`, `/users`, `/static`) from `frontend/LandingPage/vite.config.js`. This ensures that when running `npm run dev`, the frontend does not attempt to connect to a Django backend for these paths, achieving full decoupling for development.
+### Frontend (React - Monorepo)
 
----
+The `frontend/` directory houses multiple independent React (Vite) applications, each serving a distinct part of the user interface.
 
-## II. Backend Refactoring (App Removal & User Model Migration)
+**Key Frontend Directories/Applications:**
+*   `frontend/LandingPage/`: Likely the public-facing landing page of the application, designed to attract new users.
+    *   `src/LandingPage.jsx`: Main component for the landing page.
+    *   `src/components/`: Contains reusable UI components specific to the landing page (e.g., `HeroSection`, `ContentSection`).
+*   `frontend/main_page/`: The core application interface for logged-in users, featuring the main feed and navigation. This is where the `SideNav` and `PostCard` components reside.
+    *   `src/App.jsx`: The main entry point and orchestrator for the `main_page` application.
+    *   `src/components/SideNav.jsx`: Provides primary navigation within the `main_page`, featuring links to Home, Saved Guides, Messages, Settings, Fellow Travelers, and New Guides. It includes state for showing/hiding a side panel.
+    *   `src/components/PostCard.jsx`: A reusable Instagram-style component for displaying individual posts in a media-first feed. (Details below)
+*   `frontend/sign_in_page/`: Application for user login.
+*   `frontend/sign_up_page/`: Application for user registration.
 
-### 1. New `accounts` App Creation
--   **Action:** Created a new Django app named `accounts` (`python manage.py startapp accounts`).
+## Recent Changes: PostCard Component Development
 
-### 2. `CustomUser` Model Migration
--   **Action:** Moved the `CustomUser` model definition from `landing_page/models.py` to `accounts/models.py`.
--   **Settings Update:** `linkler/settings.py` was updated to:
-    -   Add `accounts` to `INSTALLED_APPS`.
-    -   Change `AUTH_USER_MODEL` from `'landing_page.customuser'` to `'accounts.CustomUser'`.
+During the last session, a new React component `PostCard.jsx` was developed within `frontend/main_page/src/components/` to serve as a reusable, Instagram-style post unit for social media feeds.
 
-### 3. `landing_page` App Removal
--   **Action:** All model definitions (`Message`, `Card`, `CustomUser`) were removed from `landing_page/models.py`.
--   **Action:** The entire `landing_page` directory was removed.
--   **Settings Update:** `landing_page` was removed from `INSTALLED_APPS` in `linkler/settings.py`.
--   **URL Cleanup:** `path('', include('landing_page.urls'))` was removed from `linkler/urls.py`.
+### Key Features Implemented in `PostCard.jsx`:
 
-### 4. Database Reset & Migration Reapplication
--   **Action:** The `db.sqlite3` database file was deleted to start with a clean slate.
--   **Action:** All migration files from `accounts/migrations/` and `landing_page/migrations/` (if any existed before deletion) were removed.
--   **Action:** `python manage.py makemigrations accounts` was run to create a fresh initial migration for the `accounts` app.
--   **Action:** `python manage.py makemigrations` was run to create migrations for other apps (e.g., `allauth`).
--   **Action:** `python manage.py migrate` was run to apply all migrations, establishing a new, consistent database schema. (This process accepted data loss for previous `CustomUser`, `Message`, and `Card` data).
+1.  **Media Display:** Supports image and video posts exclusively, with configurable aspect ratios (1:1 and 4:5). Media is the root element, rendering before any text or actions and defining the initial card height.
+2.  **User Information Section:**
+    *   Displays the user's profile picture, username, and a "Follow" button above the post media.
+    *   Includes a user bio below the username, which is limited to 80 characters and wraps to a maximum of two lines. If the bio exceeds these limits, an ellipsis (`...`) is appended. Padding (`px-3`) is applied for better readability.
+3.  **Action Bar:** Located below the media, it contains interactive buttons for:
+    *   **Like:** Toggles a liked state.
+    *   **Comment:** Placeholder for commenting functionality.
+    *   **Share:** Placeholder for sharing functionality.
+    *   **Save:** Toggles a saved state.
+4.  **Post Metadata:** Displays the total number of likes and the post's timestamp.
+5.  **Caption Block:** An optional text block rendered below the action bar. It includes a placeholder username and supports truncation with a "more/less" toggle for longer captions, ensuring this interaction does not affect media layout.
 
----
+### Integration and Data Flow:
 
-## III. Built Frontend Serving by Django
+*   The `PostCard` component is designed to be stateless and purely driven by `props`, receiving all necessary data (media type, URL, aspect ratio, caption, user details, interaction states, etc.) explicitly.
+*   **`frontend/main_page/src/App.jsx`**: Was modified to import and render multiple instances of `PostCard`. It provides `fakePosts` dummy data, which includes all the necessary props to showcase various types of posts and user interactions, enabling visual verification of the component's features.
 
--   **Action:** The generic `re_path(r'^(?:.*)/?$')` for serving the React build as a catch-all from `linkler/urls.py` was removed.
--   **Action:** A custom `serve_react_app` function was defined within `linkler/urls.py`.
--   **Action:** `linkler/urls.py` was updated to map the root URL (`/`) to this `serve_react_app` function, which reads and serves the `index.html` from `frontend/LandingPage/dist/`.
--   **Static/Media Serving:** The `if settings.DEBUG:` block in `linkler/urls.py` was adjusted to explicitly serve:
-    -   Media files (`MEDIA_URL`).
-    -   React app's main static files (`STATIC_URL`, pointing to `LANDING_PAGE_BUILD_DIR`).
-    -   React app's built assets (`/assets/`, pointing to `LANDING_PAGE_BUILD_DIR / 'assets'`).
-
----
-
-## IV. Guide Registration Feature Implementation
-
-### 1. Backend API for Registration
--   **Action:** A new Django app `guide_registration` was created.
--   **Model:** `GuideInterest` model defined in `guide_registration/models.py` with `name`, `email`, `nationality`, `message`, and `registered_at` fields.
--   **Serializer:** `GuideInterestSerializer` created in `guide_registration/serializers.py`.
--   **API View:** `GuideInterestCreateView` (a `generics.CreateAPIView`) created in `guide_registration/views.py`.
--   **Settings:** `guide_registration` added to `INSTALLED_APPS` in `linkler/settings.py`.
--   **URL:** API endpoint `/api/register/` added to `linkler/urls.py`, routing to `GuideInterestCreateView`.
--   **Migrations:** Generated and applied migrations for `guide_registration`.
-
-### 2. Frontend Registration Form
--   **Action:** `RegistrationForm.jsx` component created in `frontend/LandingPage/src/components/`, replacing `GuideRegistrationForm.jsx`.
--   **Form Fields:** Includes fields for `name`, `email`, `nationality`, and `message`.
--   **Submission:** Handles POST requests to `/api/register/` using `axios`.
--   **Layout:** Form is centered on the page.
-
----
-
-## V. Frontend UI/Layout Adjustments
-
-### 1. Header Component Restructuring
--   **Action:** `Header.jsx` (original) was moved to `frontend/LandingPage/src/temp_components/` for temporary removal from the main view.
--   **Action:** A new `SimpleHeader.jsx` component was created in `frontend/LandingPage/src/components/`.
--   **`SimpleHeader.jsx` Content:** Incorporates the dynamic "Linkler" title with scroll transition (using `useTypewriter`, `HomeIcon`, `smoothScrollTo`) and navigation buttons.
--   **`SimpleHeader.jsx` Layout:** Refined to use one-line flexbox with `nowrap` for desktop, and includes a functional hamburger menu for mobile (`md:hidden`).
--   **Linker Title Positioning:** Adjusted to remove `fixed` positioning from the non-scrolled state, integrating it into the flex flow, and conditionally rendering the fixed "Home" icon.
--   **Responsiveness:** `min-w-0` added to title and button containers in `SimpleHeader` for better shrinking on small screens.
-
-### 2. Landing Page Routing Update
--   **Action:** `frontend/LandingPage/src/LandingPage.jsx` was modified to:
-    -   Render `SimpleHeader` and `HeroSection` on the root (`/`) path.
-    -   Include a new route `path="/register"` for the `RegistrationForm` component.
-    -   Removed previous `/signup` and `/register-guide` routes.
-    -   The `SimpleHeader`'s "Register as Traveller" and "Register as Guide" buttons now both link to `/register`.
-
----
-
-**Crucial Next Steps for User:**
-1.  **Build React Frontend:** `cd frontend/LandingPage/ && npm run build`
-2.  **Run Django Server:** `python manage.py runserver`
-3.  **Test Application:** Access `http://127.0.0.1:8000/` and test the new `SimpleHeader`, `HeroSection`, and the registration form at `/register`.
+This robust `PostCard` component forms a core building block for the social media feed functionality within the `main_page` frontend application.
