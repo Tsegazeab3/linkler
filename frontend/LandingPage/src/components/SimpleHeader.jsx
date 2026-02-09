@@ -24,7 +24,7 @@ function SimpleHeader() {
   }, []);
 
   return (
-    <header className="relative z-50 flex items-center justify-between px-4 sm:px-8 py-4 bg-gray-100 flex-wrap">
+    <header className="relative z-50 flex items-center justify-between px-4 sm:px-8 py-4  flex-wrap">
       {/* Linkler Title */}
       <div className="text-4xl text-black drop-shadow-blue font-display italic relative min-w-0">
         {/* Non-scrolled Linkler */}
@@ -72,13 +72,13 @@ function SimpleHeader() {
       {/* Desktop Navigation Buttons */}
       <div className="hidden md:flex flex-nowrap gap-4 mt-8 sm:mt-0 min-w-0">
         <Link to="/register">
-          <button className="flex items-center justify-center gap-2 bg-white px-3 md:px-6 py-2 rounded-full border-2 transition-all duration-300 ease-in-out hover:shadow-xl hover:bg-gray-100 hover:-translate-x-1 hover:-translate-y-1">
+          <button className="flex items-center justify-center gap-2 bg-white px-3 md:px-6 py-2 rounded-full border-2 transition-all duration-300 ease-in-out hover:shadow-xl hover:bg-gray-200 hover:-translate-x-1 hover:-translate-y-1">
             <span className="font-bold text-sm whitespace-nowrap">Register as Traveller</span>
             <RightArrowIcon className="h-5 w-5" />
           </button>
         </Link>
         <Link to="/register">
-          <button className="flex items-center justify-center gap-2 bg-blue-500 text-white px-3 md:px-6 py-2 rounded-full border-2 transition-all duration-300 ease-in-out hover:shadow-xl hover:bg-blue-600 hover:-translate-x-1 hover:-translate-y-1">
+          <button className="flex items-center justify-center gap-2 bg-white px-3 md:px-6 py-2 rounded-full border-2 transition-all duration-300 ease-in-out hover:shadow-xl hover:bg-gray-200 hover:-translate-x-1 hover:-translate-y-1">
             <span className="font-bold text-sm whitespace-nowrap">Register as Guide</span>
             <RightArrowIcon className="h-5 w-5" />
           </button>
