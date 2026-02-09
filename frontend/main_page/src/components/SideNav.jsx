@@ -6,6 +6,7 @@ import SvgSavedGuides from './icons/SavedGuides.jsx';
 import SvgFellowTravelers from './icons/FellowTravelers.jsx';
 import SvgGroups from './icons/Groups.jsx';
 import SvgNewGuides from './icons/NewGuides.jsx';
+import SvgSettings from './icons/Settings.jsx';
 
 const SideNav = () => {
   const [showSidePanel, setShowSidePanel] = useState(false);
@@ -31,14 +32,15 @@ const SideNav = () => {
     { id: 1, icon: SvgHome, name: 'Home' },
     { id: 2, icon: SvgSavedGuides, name: 'Saved Guides' },
     { id: 3, icon: SvgChats, name: 'Messages' },
-    { id: 4, icon: SvgGroups, name: 'Settings' },
+    { id: 4, icon: SvgGroups, name: 'Groups' },
     { id: 5, icon: SvgFellowTravelers, name: 'Fellow Travelers' },
     { id: 6, icon: SvgNewGuides, name: 'New Guides' },
+    { id: 7, icon: SvgSettings, name: 'Settings' },
   ];
 
   return (
     <>
-      <div className="fixed top-0 left-0 h-full bg-gray-800 text-white flex flex-col z-10 w-20">
+      <div className="fixed top-0 left-0 h-full bg-[#D9B382] text-black flex flex-col z-10 w-20">
         <nav className="flex-grow mt-10">
           <ul>
             {navItems.map((item) => {

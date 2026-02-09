@@ -27,7 +27,7 @@ const SvgHome = (props) => (
       rx={15.33}
       ry={14.973}
       style={{
-        stroke: "currentColor",
+        stroke: "black",
         strokeWidth: 3.898,
         strokeDasharray: "none",
       }}
