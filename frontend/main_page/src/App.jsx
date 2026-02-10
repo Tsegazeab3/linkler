@@ -1,82 +1,62 @@
-import { useState } from 'react'
-import SideNav from './components/SideNav' // Import SideNav
-import PostCard from './components/PostCard' // Import SideNav
-
-import './App.css'
-export const fakePosts = [
-  {
-    id: '1',
-    author: { username: 'alice', avatarUrl: 'https://i.pravatar.cc/40?img=1' },
-    userProfilePic: 'https://i.pravatar.cc/40?img=1',
-    username: 'alice',
-    isFollowing: false,
-    userBio: 'Software Engineer | Traveller | Photographer. Always seeking new adventures and coding challenges.',
-    content: { type: 'image', src: 'https://picsum.photos/400/400?random=1' },
-    caption: 'Enjoying the sunshine today! 🌞',
-    timestamp: '2 hours ago',
-    likes: 120,
-    isLiked: false,
-    isSaved: false,
-  },
-  {
-    id: '2',
-    author: { username: 'bob', avatarUrl: 'https://i.pravatar.cc/40?img=2' },
-    userProfilePic: 'https://i.pravatar.cc/40?img=2',
-    username: 'bob',
-    isFollowing: true,
-    userBio: 'Digital artist creating captivating visuals. Love exploring the intersection of art and tech.',
-    content: { type: 'video', src: 'https://www.w3schools.com/html/mov_bbb.mp4' },
-    caption: 'Check out this cool clip!',
-    timestamp: '5 hours ago',
-    likes: 85,
-    isLiked: true,
-    isSaved: true,
-  },
-  {
-    id: '3',
-    author: { username: 'carol', avatarUrl: 'https://i.pravatar.cc/40?img=3' },
-    userProfilePic: 'https://i.pravatar.cc/40?img=3',
-    username: 'carol',
-    isFollowing: false,
-    userBio: 'Foodie & travel enthusiast. Documenting my culinary journeys around the world.',
-    content: { type: 'image', src: 'https://picsum.photos/400/500?random=2' },
-    caption: 'My latest artwork 🎨',
-    timestamp: '1 day ago',
-    likes: 230,
-    isLiked: false,
-    isSaved: false,
-  },
-]
+import React, { useState } from 'react';
+import { Outlet, Link, useLocation } from 'react-router-dom';
+import SideNav from './components/SideNav';
+import ChatWindow from './components/ChatWindow'; // Import the new component
+import './App.css';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const location = useLocation();
+  const [openChats, setOpenChats] = useState([]);
+
+  const handleOpenChat = (chat, type) => {
+    // Prevent opening the same chat twice
+    const existingChat = openChats.find(c => c.id === chat.id && c.type === type);
+    if (!existingChat) {
+      // Limit to 3 open chats for sanity, remove the oldest if full
+      const newOpenChats = openChats.length >= 3 
+        ? [...openChats.slice(1), { ...chat, type }] 
+        : [...openChats, { ...chat, type }];
+      setOpenChats(newOpenChats);
+    }
+  };
+
+  const handleCloseChat = (id, type) => {
+    setOpenChats(prev => prev.filter(c => !(c.id === id && c.type === type)));
+  };
 
   return (
-    <div className="flex bg-linkler-bg">
-      <SideNav />
-      {/* Main content area */}
-      <div className="flex-grow p-4 ml-20"> {/* Adjust ml-xx based on retracted nav width */}
-        {fakePosts.map(post => (
-          <PostCard
-            key={post.id}
-            mediaType={post.content.type}
-            mediaUrl={post.content.src}
-            aspectRatio={post.content.type === 'video' ? '4:5' : '1:1'}
-            caption={post.caption}
-            timestamp={post.timestamp}
-            likeCount={post.likes}
-            isLiked={post.isLiked}
-            isSaved={post.isSaved}
-            username={post.username}
-            userProfilePic={post.userProfilePic}
-            isFollowing={post.isFollowing}
-            userBio={post.userBio}
+    <div className="flex bg-[var(--color-linkler-bg)]">
+      <SideNav onOpenChat={handleOpenChat} />
+      
+      <main className="flex-grow">
+        <Outlet />
+      </main>
+
+      {/* Floating Action Button for posting */}
+      <Link
+        to="/create"
+        state={{ background: location }}
+        className="fixed bottom-8 right-8 bg-[var(--color-primary)] hover:bg-[var(--color-primary)]/90 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg transition z-30"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+        </svg>
+      </Link>
+
+      {/* Render Open Chat Windows */}
+      <div className="fixed bottom-0 right-0 z-[9998]">
+        {openChats.map((chat, index) => (
+          <ChatWindow
+            key={`${chat.type}-${chat.id}`}
+            chat={chat}
+            type={chat.type}
+            onClose={handleCloseChat}
+            index={index}
           />
         ))}
       </div>
     </div>
-  )
+  );
 }
 
-export default App
-
+export default App;

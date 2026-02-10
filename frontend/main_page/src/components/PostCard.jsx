@@ -29,13 +29,14 @@ const PostCard = ({
           className="w-10 h-10 rounded-full mr-2 object-cover"
         />
         <div className="flex-grow">
-          <div className="font-semibold text-gray-800">{username}</div>
+          <div className="font-semibold text-gray-800 text-lg underline">{username}</div>
           {userBio && (
-            <p className="text-gray-500 text-xs px-3 line-clamp-2">
+            <p className="text-gray-500 pr-3 line-clamp-2 text-[50px] ">
               {userBio.length > 80 ? userBio.substring(0, 77) + '...' : userBio}
             </p>
           )}
-        </div>        <button className="text-blue-500 text-sm font-semibold">
+        </div>
+        <button className="text-blue-500 text-sm font-semibold">
           {isFollowing ? 'Following' : 'Follow'}
         </button>
       </div>

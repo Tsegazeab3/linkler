@@ -20,6 +20,7 @@ class CustomUser(AbstractUser):
     linkedin = models.URLField(blank=True)
     account_type = models.CharField(max_length=10, choices=ACCOUNT_TYPE_CHOICES, default='traveller')
     profile_picture = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
+    bio = models.TextField(max_length=80, blank=True)
 
     def __str__(self):
         return self.username

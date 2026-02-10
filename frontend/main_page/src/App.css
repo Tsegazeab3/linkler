@@ -122,11 +122,6 @@ li {
   h2 {
     font-size: 1.125rem; /* Reduced from text-xl (1.25rem) */
   }
-
-  p {
-    font-size: 0.8rem; /* Reduced from text-sm (0.875rem) */
-  }
-
   button {
     font-size: 0.8rem; /* Reduced from text-sm (0.875rem) */
   }

@@ -39,6 +39,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('allauth.urls')),
     path('api/register/', GuideInterestCreateView.as_view(), name='register_interest'), # More generic API endpoint
+    path('api/posts/', include('posts.urls')),
+    path('api/auth/', include('accounts.urls')),
     path('', serve_react_app, name='react_app'), # Serve React app at root
 ]
 

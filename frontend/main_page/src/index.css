@@ -1,1 +1,7 @@
-@import "tailwindcss"
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #3b82f6; /* A default blue */
+  --color-secondary: #6b7280; /* A default gray */
+  --color-linkler-bg: #F0F2F5;
+}
