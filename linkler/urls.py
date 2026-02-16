@@ -37,7 +37,7 @@ def serve_react_app(request):
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('allauth.urls')),
-    path('api/interest/', include('temp_registration_form.urls')), # New path for interest form
+    path('api/', include('temp_registration_form.urls')), # New path for interest form
     path('api/posts/', include('posts.urls')),
     # dj-rest-auth URLs
     path('api/auth/', include('dj_rest_auth.urls')),
