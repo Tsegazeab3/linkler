@@ -2,3 +2,7 @@ fly.toml
 .git/
 *.sqlite3
 venv
+# Ignore frontend artifacts
+**/node_modules
+**/dist
+**/build
