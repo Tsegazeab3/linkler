@@ -32,11 +32,16 @@ SECRET_KEY = os.environ.get('SECRET_KEY', default='your-secret-key')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
+# Add Render and Fly.io hosts
 RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+
+FLY_APP_NAME = os.environ.get('FLY_APP_NAME')
+if FLY_APP_NAME:
+    ALLOWED_HOSTS.append(f'{FLY_APP_NAME}.fly.dev')
 
 
 # Application definition
@@ -243,6 +248,11 @@ CSRF_TRUSTED_ORIGINS = [
     'http://localhost:5175',
     'http://127.0.0.1:8000',
 ]
+
+FLY_APP_NAME = os.environ.get('FLY_APP_NAME')
+if FLY_APP_NAME:
+    CSRF_TRUSTED_ORIGINS.append(f'https://{FLY_APP_NAME}.fly.dev')
+
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
