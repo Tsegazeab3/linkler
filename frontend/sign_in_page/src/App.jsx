@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { login } from './services/api';
 
 function App() {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -12,9 +12,10 @@ function App() {
     setLoading(true);
     setError(null);
 
-    login(username, password)
+    login(email, password)
       .then(response => {
         console.log('Login successful:', response.data);
+        localStorage.setItem('token', response.data.key);
         // On success, redirect to the main application page
         window.location.href = 'http://localhost:5173/'; // Assuming main_page runs on 5173
       })
@@ -33,14 +34,14 @@ function App() {
         </h1>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-              Username
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              Email
             </label>
             <input
-              id="username"
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] sm:text-sm"
               disabled={loading}
@@ -73,6 +74,24 @@ function App() {
             </button>
           </div>
         </form>
+
+        <div className="relative mt-6">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-300" />
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-2 text-gray-500 bg-white">Or continue with</span>
+          </div>
+        </div>
+
+        <div className="mt-6">
+          <a
+            href="http://127.0.0.1:8000/accounts/google/login/?process=login"
+            className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)]"
+          >
+            Sign in with Google
+          </a>
+        </div>
       </div>
     </div>
   );

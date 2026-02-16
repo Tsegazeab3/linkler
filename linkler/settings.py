@@ -52,11 +52,15 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
 
+    'rest_framework.authtoken', # Required for dj-rest-auth token authentication
+    'dj_rest_auth',
+    'dj_rest_auth.registration',
+
         #custom created apps
 
         'accounts',
 
-        'guide_registration',
+        'temp_registration_form',
 
         'posts',
 ]
@@ -83,11 +87,36 @@ AUTHENTICATION_BACKENDS = [
 
 SITE_ID = 1
 
-LOGIN_REDIRECT_URL = '/'
+# Email verification settings
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' # During development
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+ACCOUNT_LOGIN_METHODS = ["email"] # Changed from set to list
+# ACCOUNT_USERNAME_REQUIRED and ACCOUNT_AUTHENTICATION_METHOD are deprecated, so removed.
+ACCOUNT_UNIQUE_EMAIL = True
+
+ACCOUNT_SIGNUP_FIELDS = {
+    "email*": True,
+    "password1*": True,
+    "password2*": True,
+}
+
+LOGIN_REDIRECT_URL = '/complete-profile'
 LOGOUT_REDIRECT_URL = '/'
+
+REST_AUTH = {
+    'REGISTER_SERIALIZER': 'accounts.serializers.CustomRegisterSerializer',
+}
+
+REST_AUTH_SERIALIZERS = {
+    'USER_DETAILS_SERIALIZER': 'accounts.serializers.UserSerializer',
+}
 
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
+        'APP': {
+            'client_id': '1025142312410-3eiuk5t226039v41vohk1cp0voomelnp.apps.googleusercontent.com',
+            'secret': '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',
+        },
         'SCOPE': [
             'profile',
             'email',
@@ -182,11 +211,12 @@ CORS_ALLOW_ALL_ORIGINS = True # For development, restrict in production
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication', # Use TokenAuthentication for dj-rest-auth
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',
+        'rest_framework.permissions.IsAuthenticated', # Default to authenticated users
     ],
 }
 

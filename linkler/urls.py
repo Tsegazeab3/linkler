@@ -20,7 +20,6 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.views.static import serve
 from django.conf.urls.static import static # Import 'static'
-from guide_registration.views import GuideInterestCreateView # New import
 
 def serve_react_app(request):
     try:
@@ -38,9 +37,11 @@ def serve_react_app(request):
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('allauth.urls')),
-    path('api/register/', GuideInterestCreateView.as_view(), name='register_interest'), # More generic API endpoint
+    path('api/interest/', include('temp_registration_form.urls')), # New path for interest form
     path('api/posts/', include('posts.urls')),
-    path('api/auth/', include('accounts.urls')),
+    # dj-rest-auth URLs
+    path('api/auth/', include('dj_rest_auth.urls')),
+    path('api/auth/registration/', include('dj_rest_auth.registration.urls')),
     path('', serve_react_app, name='react_app'), # Serve React app at root
 ]
 

@@ -98,7 +98,7 @@ const SignUpPage = () => {
 
         <div>
           <a
-            href="/accounts/google/login/?process=login"
+            href="http://127.0.0.1:8000/accounts/google/login/?process=login"
             className="relative flex justify-center w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm group hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
             Sign in with Google

@@ -32,8 +32,8 @@ const api = axios.create({
  * @param {string} password
  * @returns {Promise}
  */
-export const login = (username, password) => {
-  return api.post('/auth/login/', { username, password });
+export const login = (email, password) => {
+  return api.post('/auth/login/', { email, password });
 };
 
 export default api;
