@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
+import apiClient from '../services/api';
 import { useNavigate } from 'react-router-dom';
 
 const CompleteProfilePage = () => {
@@ -32,7 +32,7 @@ const CompleteProfilePage = () => {
         const token = localStorage.getItem('token'); // Retrieve token
         const headers = token ? { Authorization: `Token ${token}` } : {};
 
-        const response = await axios.get('/api/auth/user/', { headers });
+        const response = await apiClient.get('/api/auth/user/', { headers });
         const userData = response.data;
         setFormData({
           username: userData.username || '',
@@ -98,7 +98,7 @@ const CompleteProfilePage = () => {
       const token = localStorage.getItem('token'); // Retrieve token
       const headers = token ? { Authorization: `Token ${token}`, 'Content-Type': 'multipart/form-data' } : { 'Content-Type': 'multipart/form-data' };
 
-      await axios.patch('/api/auth/user/', data, { headers });
+      await apiClient.patch('/api/auth/user/', data, { headers });
       navigate('/'); // Redirect to the main app on success
     } catch (err) {
       console.error('Error updating profile:', err.response ? err.response.data : err.message);

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import apiClient from '../services/api';
 
 function RegistrationForm() { // Renamed from GuideRegistrationForm
   const [name, setName] = useState('');
@@ -12,7 +12,7 @@ function RegistrationForm() { // Renamed from GuideRegistrationForm
     e.preventDefault();
     setSubmissionStatus('submitting');
     try {
-      await axios.post('/api/register/', { // New API endpoint, more generic
+      await apiClient.post('/api/register/', { // New API endpoint, more generic
         name,
         email,
         nationality, // Include nationality
