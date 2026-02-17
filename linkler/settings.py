@@ -9,10 +9,12 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
-
 import os
 import dj_database_url
 from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,6 +23,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 FRONT_END_DIR = BASE_DIR/'frontend/'
 LANDING_PAGE_DIR = FRONT_END_DIR/'LandingPage'
 LANDING_PAGE_BUILD_DIR = LANDING_PAGE_DIR / 'dist'
+PROFILE_COMPLETION_PAGE_DIR = FRONT_END_DIR/'profile_completion_page'
+PROFILE_COMPLETION_PAGE_BUILD_DIR = PROFILE_COMPLETION_PAGE_DIR / 'dist'
 
 
 # Quick-start development settings - unsuitable for production
@@ -106,20 +110,18 @@ ACCOUNT_LOGIN_METHODS = ["email"] # Changed from set to list
 # ACCOUNT_USERNAME_REQUIRED and ACCOUNT_AUTHENTICATION_METHOD are deprecated, so removed.
 ACCOUNT_UNIQUE_EMAIL = True
 
-ACCOUNT_SIGNUP_FIELDS = {
-    "email*": True,
-    "password1*": True,
-    "password2*": True,
-}
+ACCOUNT_SIGNUP_FIELDS = [
+    "username*",
+    "email*",
+    "password1*",
+    "password2*",
+]
 
 LOGIN_REDIRECT_URL = '/complete-profile'
 LOGOUT_REDIRECT_URL = '/'
 
 REST_AUTH = {
     'REGISTER_SERIALIZER': 'accounts.serializers.CustomRegisterSerializer',
-}
-
-REST_AUTH_SERIALIZERS = {
     'USER_DETAILS_SERIALIZER': 'accounts.serializers.UserSerializer',
 }
 
@@ -212,6 +214,7 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [
     LANDING_PAGE_BUILD_DIR,
+    PROFILE_COMPLETION_PAGE_BUILD_DIR,
 ]
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
@@ -223,7 +226,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOW_CREDENTIALS = True
 # Do not use CORS_ALLOW_ALL_ORIGINS in production
-CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:5173,http://localhost:3000').split(',')
+CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000').split(',')
 
 
 REST_FRAMEWORK = {
@@ -237,13 +240,23 @@ REST_FRAMEWORK = {
     ],
 }
 
-SESSION_COOKIE_SAMESITE = 'None'
-CSRF_COOKIE_SAMESITE = 'None'
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+
+DEVELOPMENT_MODE = os.environ.get('DEVELOPMENT_MODE', 'False') == 'True'
+
+if DEVELOPMENT_MODE:
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    CSRF_COOKIE_SAMESITE = 'Lax'
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
+else:
+    SESSION_COOKIE_SAMESITE = 'None'
+    CSRF_COOKIE_SAMESITE = 'None'
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
 
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:5173',
+    'http://127.0.0.1:5173',
     'http://localhost:5174',
     'http://localhost:5175',
     'http://127.0.0.1:8000',
