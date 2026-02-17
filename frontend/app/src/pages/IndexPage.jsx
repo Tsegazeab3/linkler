@@ -1,5 +1,5 @@
 import React from 'react';
-import PostCard from './PostCard';
+import PostCard from '../components/PostCard';
 
 // This is the same fake data from App.jsx
 export const fakePosts = [

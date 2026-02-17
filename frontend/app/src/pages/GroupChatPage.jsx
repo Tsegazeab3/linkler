@@ -35,7 +35,7 @@ const GroupChatPage = () => {
     return (
       <div className="p-8 ml-20 text-center">
         <h1 className="text-2xl font-bold">Group not found</h1>
-        <Link to="/" className="text-blue-500 hover:underline mt-4 inline-block">
+        <Link to="/app" className="text-blue-500 hover:underline mt-4 inline-block">
           Back to Home
         </Link>
       </div>

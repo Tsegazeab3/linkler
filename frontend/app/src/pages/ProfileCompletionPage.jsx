@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import { getProfile, updateProfile } from '../services/api';
 
-const App = () => {
+const ProfileCompletionPage = () => {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     age: '',
@@ -24,7 +24,7 @@ const App = () => {
 
   useEffect(() => {
     // Fetch the current user's profile data
-    axios.get('/api/accounts/profile/')
+    getProfile()
       .then(response => {
         setFormData(prevData => ({ ...prevData, ...response.data }));
       })
@@ -47,7 +47,7 @@ const App = () => {
     setSuccess(null);
 
     try {
-      const response = await axios.patch('/api/accounts/profile/', formData);
+      const response = await updateProfile(formData);
       console.log('Profile updated successfully:', response.data);
       setSuccess('Your profile has been updated successfully!');
     } catch (err) {
@@ -69,7 +69,7 @@ const App = () => {
                   setFormData({ ...formData, account_type: 'traveller' });
                   setStep(2);
                 }}
-                className={`px-6 py-3 font-medium text-white border border-transparent rounded-md ${formData.account_type === 'traveller' ? 'bg-blue-700' : 'bg-blue-500 hover:bg-blue-700'}`}
+                className={`px-6 py-3 font-medium text-white border border-transparent rounded-md ${formData.account_type === 'traveller' ? 'bg-[#3b82f6]' : 'bg-[#3b82f6]/90 hover:bg-[#3b82f6]'}`}
               >
                 Traveller
               </button>
@@ -79,7 +79,7 @@ const App = () => {
                   setFormData({ ...formData, account_type: 'guide' });
                   setStep(2);
                 }}
-                className={`px-6 py-3 font-medium text-white border border-transparent rounded-md ${formData.account_type === 'guide' ? 'bg-blue-700' : 'bg-blue-500 hover:bg-blue-700'}`}
+                className={`px-6 py-3 font-medium text-white border border-transparent rounded-md ${formData.account_type === 'guide' ? 'bg-[#3b82f6]' : 'bg-[#3b82f6]/90 hover:bg-[#3b82f6]'}`}
               >
                 Guide
               </button>
@@ -162,7 +162,7 @@ const App = () => {
               </button>
             )}
             {step < 5 ? (
-              <button type="button" onClick={() => setStep(step + 1)} className="w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700">
+              <button type="button" onClick={() => setStep(step + 1)} className="w-full px-4 py-2 text-sm font-medium text-white bg-[#3b82f6] border border-transparent rounded-md hover:bg-[#3b82f6]/90">
                 Next
               </button>
             ) : (
@@ -177,4 +177,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default ProfileCompletionPage;

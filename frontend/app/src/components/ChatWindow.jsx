@@ -50,7 +50,7 @@ const ChatWindow = ({ chat, type, onClose, index }) => {
       <div className="flex-grow overflow-y-auto space-y-4 p-4">
         {chatHistory.map((msg, idx) => (
           <div key={idx} className={`flex ${msg.from === 'me' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`p-3 rounded-lg max-w-xs ${msg.from === 'me' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800'}`}>
+            <div className={`p-3 rounded-lg max-w-xs ${msg.from === 'me' ? 'bg-[#3b82f6] text-white' : 'bg-gray-200 text-gray-800'}`}>
               {(type === 'group' || type === 'guide') && msg.from !== 'me' && <p className="text-xs font-bold text-blue-500">{chat.name}</p>}
               {type === 'group' && msg.from !== 'me' && <p className="text-xs font-bold text-blue-500">{msg.from}</p>}
               <p>{msg.text}</p>

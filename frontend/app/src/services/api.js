@@ -20,7 +20,7 @@ function getCookie(name) {
 const csrftoken = getCookie('csrftoken');
 
 // Create an axios instance with default settings
-const api = axios.create({
+export const api = axios.create({
   baseURL: '/api/', // Use the proxied URL
   headers: {
     'Content-Type': 'multipart/form-data',
@@ -38,4 +38,34 @@ export const createPost = (postData) => {
   return api.post('/posts/create/', postData);
 };
 
-export default api;
+export const login = (email, password) => {
+  return axios.post('/api/auth/login/', { email, password }, {
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': csrftoken,
+    },
+    withCredentials: true,
+  });
+};
+
+export const register = (userData) => {
+  return axios.post('/api/auth/registration/', userData, {
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': csrftoken,
+    },
+    withCredentials: true,
+  });
+};
+
+export const getProfile = () => {
+  return api.get('/accounts/profile/');
+};
+
+export const updateProfile = (profileData) => {
+  return api.patch('/accounts/profile/', profileData, {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+};

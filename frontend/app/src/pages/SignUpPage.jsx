@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import { register } from '../services/api';
 // import { useNavigate } from 'react-router-dom';
 
-const App = () => {
+const SignUpPage = () => {
   const [formData, setFormData] = useState({
     email: '',
     password1: '',
@@ -34,7 +34,7 @@ const App = () => {
     const finalFormData = { email, username, password1, password2 };
 
     try {
-      const response = await axios.post('http://localhost:8000/api/auth/registration/', finalFormData);
+      const response = await register(finalFormData);
       console.log('User registered successfully:', response.data);
       alert('Registration successful! Please check your email to verify your account.');
       // navigate('/login'); 
@@ -45,17 +45,17 @@ const App = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-bg-main">
+    <div className="flex items-center justify-center min-h-screen bg-[var(--color-linkler-bg)]">
       <div className="flex w-full max-w-4xl mx-auto bg-white rounded-lg shadow-lg">
         {/* Left Column */}
-        <div className="hidden md:flex flex-col justify-center items-center w-1/2 bg-bg-accent text-text-accent p-12 rounded-l-lg">
+        <div className="hidden md:flex flex-col justify-center items-center w-1/2 bg-[#3b82f6] text-white p-12 rounded-l-lg">
           <h1 className="text-4xl font-bold mb-4">Welcome to Linkler</h1>
           <p className="text-center">Connect with travelers and guides from around the world. Share your journey and discover new places.</p>
         </div>
 
         {/* Right Column */}
         <div className="w-full md:w-1/2 p-8">
-          <div className="text-3xl font-bold text-center text-primary mb-8">
+          <div className="text-3xl font-bold text-center text-[#3b82f6] mb-8">
             linkler
           </div>
           {error && (
@@ -71,7 +71,7 @@ const App = () => {
               <input name="password1" type="password" required className="w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="Password" value={formData.password1} onChange={handleChange} />
               <input name="password2" type="password" required className="w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="Confirm Password" value={formData.password2} onChange={handleChange} />
             </div>
-            <button type="submit" className="w-full px-4 py-2 text-sm font-medium text-white bg-primary border border-transparent rounded-md hover:bg-blue-700">
+            <button type="submit" className="w-full px-4 py-2 text-sm font-medium text-white bg-[#3b82f6] border border-transparent rounded-md hover:bg-blue-700">
               Sign Up
             </button>
           </form>
@@ -96,4 +96,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default SignUpPage;

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { login } from './services/api';
+import { login } from '../services/api';
 
-function App() {
+function SignInPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
@@ -29,7 +29,7 @@ function App() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[var(--color-linkler-bg)]">
       <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm">
-        <h1 className="text-2xl font-bold text-center text-[var(--color-primary)] mb-6">
+        <h1 className="text-2xl font-bold text-center text-[#3b82f6] mb-6">
           Sign In to Linkler
         </h1>
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -43,7 +43,7 @@ function App() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] sm:text-sm"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#3b82f6] focus:border-[#3b82f6] sm:text-sm"
               disabled={loading}
             />
           </div>
@@ -57,7 +57,7 @@ function App() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] sm:text-sm"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#3b82f6] focus:border-[#3b82f6] sm:text-sm"
               disabled={loading}
             />
           </div>
@@ -68,7 +68,7 @@ function App() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[var(--color-primary)] hover:bg-[var(--color-primary)]/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)] disabled:opacity-50"
+              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#3b82f6] hover:bg-[#3b82f6]/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3b82f6] disabled:opacity-50"
             >
               {loading ? 'Signing In...' : 'Sign In'}
             </button>
@@ -87,7 +87,7 @@ function App() {
         <div className="mt-6">
           <a
             href="http://127.0.0.1:8000/accounts/google/login/?process=login"
-            className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)]"
+            className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3b82f6]"
           >
             Sign in with Google
           </a>
@@ -97,4 +97,4 @@ function App() {
   );
 }
 
-export default App;
+export default SignInPage;

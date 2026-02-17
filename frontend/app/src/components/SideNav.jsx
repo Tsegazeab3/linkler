@@ -34,7 +34,7 @@ const ChatPreview = ({ onSelect, ...chat }) => (
       </div>
       <p className={`text-xs truncate ${chat.unread ? 'text-white font-medium' : 'text-gray-300'}`}>{chat.message}</p>
     </div>
-    {chat.unread && <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 self-center ml-2"></div>}
+    {chat.unread && <div className="w-2 h-2 bg-[#3b82f6] rounded-full flex-shrink-0 self-center ml-2"></div>}
   </button>
 );
 
@@ -61,7 +61,7 @@ const GroupChatPreview = ({ ...group }) => (
                 {group.lastMessage.text}
             </p>
         </div>
-        {group.unread && <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 self-center ml-2"></div>}
+        {group.unread && <div className="w-2 h-2 bg-[#3b82f6] rounded-full flex-shrink-0 self-center ml-2"></div>}
     </div>
 );
 
@@ -94,12 +94,12 @@ const SideNav = ({ onOpenChat }) => {
   };
   
   const navItems = [
-    { id: 1, icon: SvgHome, name: 'Home', type: 'link', href: '/' },
+    { id: 1, icon: SvgHome, name: 'Home', type: 'link', href: '/app' },
     { id: 2, icon: SvgSavedGuides, name: 'Saved Guides', type: 'panel' },
     { id: 3, icon: SvgChats, name: 'Messages', type: 'panel' },
     { id: 4, icon: SvgGroups, name: 'Groups', type: 'panel' },
-    { id: 5, icon: SvgFellowTravelers, name: 'Fellow Travelers', type: 'link', href: '/travelers' },
-    { id: 6, icon: SvgNewGuides, name: 'New Guides', type: 'link', href: '/guides' },
+    { id: 5, icon: SvgFellowTravelers, name: 'Fellow Travelers', type: 'link', href: '/app/travelers' },
+    { id: 6, icon: SvgNewGuides, name: 'New Guides', type: 'link', href: '/app/guides' },
     { id: 7, icon: SvgSettings, name: 'Settings', type: 'panel' },
   ];
   
@@ -115,7 +115,7 @@ const SideNav = ({ onOpenChat }) => {
         return <PreviewList items={fakeSavedGuides} renderItem={guide => <GuidePreview key={guide.id} {...guide} onSelect={() => onOpenChat(guide, 'guide')} />} />;
       case 'Groups':
         return <PreviewList items={fakeGroups} renderItem={group => (
-          <Link to={`/groups/${group.id}`} key={group.id} onClick={closeSidePanel}>
+          <Link to={`/app/groups/${group.id}`} key={group.id} onClick={closeSidePanel}>
             <GroupChatPreview {...group} />
           </Link>
         )} />;
@@ -131,7 +131,7 @@ const SideNav = ({ onOpenChat }) => {
         <span className="relative mb-1">
           <Icon className="w-10 h-10" />
           {(item.name === 'Messages' || item.name === 'Groups') && unreadCount > 0 && (
-            <span className="absolute top-0 right-0 flex items-center justify-center h-5 w-5 rounded-full bg-red-500 text-white text-xs font-bold border-2 border-[#D9B382]">
+            <span className="absolute top-0 right-0 flex items-center justify-center h-5 w-5 rounded-full bg-red-500 text-white text-xs font-bold border-2 border-[var(--color-primary)]">
               {unreadCount}
             </span>
           )}
@@ -163,7 +163,7 @@ const SideNav = ({ onOpenChat }) => {
 
   return (
     <>
-      <div className="fixed top-0 left-0 h-full bg-[#D9B382] text-black flex flex-col z-40 w-20">
+      <div className="fixed top-0 left-0 h-full bg-[var(--color-linkler-bg)] text-black flex flex-col z-40 w-20">
         <nav className="flex-grow mt-10">
           <ul>
             {navItems.map((item) => (
