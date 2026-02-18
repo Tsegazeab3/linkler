@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import SvgChats from './icons/Chats.jsx';
 import SvgHome from './icons/Home.jsx';
@@ -7,6 +7,13 @@ import SvgFellowTravelers from './icons/FellowTravelers.jsx';
 import SvgGroups from './icons/Groups.jsx';
 import SvgNewGuides from './icons/NewGuides.jsx';
 import SvgSettings from './icons/Settings.jsx';
+
+const SvgPromotions = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5a2 2 0 012 2v5a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 13h5a2 2 0 012 2v5a2 2 0 01-2 2H7a2 2 0 01-2-2v-5a2 2 0 012-2z" />
+  </svg>
+);
 
 // --- Mock Data ---
 const fakeChats = [
@@ -25,7 +32,7 @@ const fakeGroups = [
 
 // --- Sub-components for Previews ---
 const ChatPreview = ({ onSelect, ...chat }) => (
-  <button onClick={onSelect} className="w-full text-left p-2 rounded-lg hover:bg-gray-600 transition-colors duration-200 flex items-center space-x-3">
+  <button onClick={onSelect} className="w-full text-left p-2 rounded-lg hover:bg-[#6D4C41] transition-colors duration-200 flex items-center space-x-3">
     <img src={chat.avatarUrl} alt={chat.name} className="w-10 h-10 rounded-full flex-shrink-0" />
     <div className="flex-grow overflow-hidden">
       <div className="flex justify-between items-center">
@@ -39,7 +46,7 @@ const ChatPreview = ({ onSelect, ...chat }) => (
 );
 
 const GuidePreview = ({ onSelect, ...guide }) => (
-  <button onClick={onSelect} className="w-full text-left p-2 rounded-lg hover:bg-gray-600 transition-colors duration-200 flex items-center space-x-3">
+  <button onClick={onSelect} className="w-full text-left p-2 rounded-lg hover:bg-[#6D4C41] transition-colors duration-200 flex items-center space-x-3">
     <img src={guide.avatarUrl} alt={guide.name} className="w-12 h-12 rounded-md object-cover flex-shrink-0" />
     <div className="flex-grow overflow-hidden">
       <h4 className="font-semibold text-sm text-white truncate">{guide.name}</h4>
@@ -49,7 +56,7 @@ const GuidePreview = ({ onSelect, ...guide }) => (
 );
 
 const GroupChatPreview = ({ ...group }) => (
-    <div className="w-full text-left p-2 rounded-lg hover:bg-gray-600 transition-colors duration-200 flex items-center space-x-3">
+    <div className="w-full text-left p-2 rounded-lg hover:bg-[#6D4C41] transition-colors duration-200 flex items-center space-x-3">
         <img src={group.avatarUrl} alt={group.name} className="w-10 h-10 rounded-full flex-shrink-0" />
         <div className="flex-grow overflow-hidden">
             <div className="flex justify-between items-center">
@@ -72,26 +79,8 @@ const PreviewList = ({ items, renderItem }) => (
 );
 
 
-const SideNav = ({ onOpenChat }) => {
-  const [showSidePanel, setShowSidePanel] = useState(false);
-  const [selectedNavItemId, setSelectedNavItemId] = useState(null);
-  
+const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClick, onClosePanel }) => {
   const unreadCount = fakeChats.filter(chat => chat.unread).length + fakeGroups.filter(group => group.unread).length;
-
-  const handlePanelItemClick = (itemId) => {
-    if (showSidePanel && selectedNavItemId === itemId) {
-      setShowSidePanel(false);
-      setSelectedNavItemId(null);
-    } else {
-      setSelectedNavItemId(itemId);
-      setShowSidePanel(true);
-    }
-  };
-
-  const closeSidePanel = () => {
-    setShowSidePanel(false);
-    setSelectedNavItemId(null);
-  };
   
   const navItems = [
     { id: 1, icon: SvgHome, name: 'Home', type: 'link', href: '/app' },
@@ -100,6 +89,7 @@ const SideNav = ({ onOpenChat }) => {
     { id: 4, icon: SvgGroups, name: 'Groups', type: 'panel' },
     { id: 5, icon: SvgFellowTravelers, name: 'Fellow Travelers', type: 'link', href: '/app/travelers' },
     { id: 6, icon: SvgNewGuides, name: 'New Guides', type: 'link', href: '/app/guides' },
+    { id: 8, icon: SvgPromotions, name: 'Promotions', type: 'link', href: '/app/promotions' },
     { id: 7, icon: SvgSettings, name: 'Settings', type: 'panel' },
   ];
   
@@ -115,7 +105,7 @@ const SideNav = ({ onOpenChat }) => {
         return <PreviewList items={fakeSavedGuides} renderItem={guide => <GuidePreview key={guide.id} {...guide} onSelect={() => onOpenChat(guide, 'guide')} />} />;
       case 'Groups':
         return <PreviewList items={fakeGroups} renderItem={group => (
-          <Link to={`/app/groups/${group.id}`} key={group.id} onClick={closeSidePanel}>
+          <Link to={`/app/groups/${group.id}`} key={group.id} onClick={onClosePanel}>
             <GroupChatPreview {...group} />
           </Link>
         )} />;
@@ -141,9 +131,9 @@ const SideNav = ({ onOpenChat }) => {
     );
 
     if (item.type === 'link') {
-      const handleClick = item.name === 'Home' ? closeSidePanel : null;
+      const handleClick = item.name === 'Home' ? onClosePanel : null;
       return (
-        <Link to={item.href} onClick={handleClick} className="flex flex-col items-center justify-center w-full p-4 hover:bg-gray-700 transition-colors duration-200 focus:outline-none">
+        <Link to={item.href} onClick={handleClick} className="flex flex-col items-center justify-center w-full p-4 hover:bg-[#6D4C41] transition-colors duration-200 focus:outline-none">
           {content}
         </Link>
       );
@@ -151,8 +141,8 @@ const SideNav = ({ onOpenChat }) => {
 
     return (
       <button
-        onClick={() => handlePanelItemClick(item.id)}
-        className={`flex flex-col items-center justify-center w-full p-4 hover:bg-gray-700 transition-colors duration-200 focus:outline-none ${selectedNavItemId === item.id ? 'bg-gray-600' : ''}`}
+        onClick={() => onPanelItemClick(item.id)}
+        className={`flex flex-col items-center justify-center w-full p-4 hover:bg-[#6D4C41] transition-colors duration-200 focus:outline-none ${selectedNavItemId === item.id ? 'bg-[#8D6E63]' : ''}`}
         aria-label={item.name}
         aria-expanded={selectedNavItemId === item.id && showSidePanel}
       >
@@ -177,11 +167,11 @@ const SideNav = ({ onOpenChat }) => {
 
       {showSidePanel && (
         <div
-          className="fixed top-0 left-20 h-full bg-gray-700 w-80 p-4 border-l border-gray-600 z-50"
+          className="fixed top-0 left-20 h-full bg-[#3E2723] w-80 p-4 border-l border-gray-600 z-50"
         >
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-bold text-white">{selectedNavItem?.name}</h3>
-            <button onClick={closeSidePanel} className="text-white focus:outline-none text-xl" aria-label="Close side panel">
+            <button onClick={onClosePanel} className="text-white focus:outline-none text-xl" aria-label="Close side panel">
               ✕
             </button>
           </div>

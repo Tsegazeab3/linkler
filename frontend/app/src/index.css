@@ -136,3 +136,12 @@ li {
       font-size: 1rem; /* Reduced from text-xl (1.25rem) */
   }
 }
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}

@@ -16,6 +16,11 @@ import ProfileCompletionPage from './pages/ProfileCompletionPage.jsx';
 import IndexPage from './pages/IndexPage.jsx';
 import FellowTravelersPage from './pages/FellowTravelersPage.jsx';
 import NewGuidesPage from './pages/NewGuidesPage.jsx';
+import GuideDetailPage from './pages/GuideDetailPage.jsx';
+import UserProfilePage from './pages/UserProfilePage.jsx';
+import CreateTripPage from './pages/CreateTripPage.jsx';
+import PromotionsPage from './pages/PromotionsPage.jsx';
+import PromotionDetailPage from './pages/PromotionDetailPage.jsx';
 import GroupChatPage from './pages/GroupChatPage.jsx';
 import CreatePostModal from './components/CreatePostModal.jsx';
 
@@ -40,6 +45,10 @@ function AppRouter() {
           <Route index element={<IndexPage />} />
           <Route path="travelers" element={<FellowTravelersPage />} />
           <Route path="guides" element={<NewGuidesPage />} />
+          <Route path="guides/:id" element={<GuideDetailPage />} />
+          <Route path="profile/:userId" element={<UserProfilePage />} />
+          <Route path="promotions" element={<PromotionsPage />} />
+          <Route path="promotions/:id" element={<PromotionDetailPage />} />
           <Route path="groups/:groupId" element={<GroupChatPage />} />
         </Route>
         <Route path="*" element={<NotFound />} />
@@ -48,6 +57,7 @@ function AppRouter() {
       {background && (
         <Routes>
           <Route path="/create" element={<CreatePostModal />} />
+          <Route path="/create-trip" element={<CreateTripPage />} />
         </Routes>
       )}
     </>

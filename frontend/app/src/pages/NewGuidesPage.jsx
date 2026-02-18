@@ -1,39 +1,42 @@
 import React from 'react';
-import GuideCard from '../components/GuideCard';
-import ActionButtons from '../components/ActionButtons';
+import { Link } from 'react-router-dom';
+import FilterComponent from '../components/FilterComponent';
+import GuidePreviewCard from '../components/GuidePreviewCard';
+import LeftSidebarFilter from '../components/LeftSidebarFilter';
+import { fakeGuidesData } from '../data/guides';
 
-const fakeGuides = [
-  {
-    id: 1,
-    picture: 'https://i.pravatar.cc/400?img=7',
-    name: 'John Doe',
-    bio: 'Experienced tour guide with a passion for history and architecture.',
-    gender: 'Male',
-    serviceDescription: 'Walking tours of the historic city center. Learn about the rich history and see the stunning architecture of our city.',
-    price: 50.00,
-    rating: 4.5,
-  },
-];
+
+const guideFilterOptions = ['Certified Guides', 'Local Experts', 'Family Friendly', 'Accessible', 'Budget Friendly', 'Walking Tours', 'Museums', 'Nightlife', 'Food Tasting', 'History'];
 
 const NewGuidesPage = () => {
-  const guide = fakeGuides[0];
   return (
-    <div className="min-h-screen flex items-center justify-center p-8">
-      <div className="relative">
-        <GuideCard
-          key={guide.id}
-          picture={guide.picture}
-          name={guide.name}
-          bio={guide.bio}
-          gender={guide.gender}
-          serviceDescription={guide.serviceDescription}
-          price={guide.price}
-          rating={guide.rating}
-        />
-        <ActionButtons />
+    <div className="min-h-screen p-8">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        
+        {/* Left Sidebar */}
+        <div className="md:col-span-1">
+          <LeftSidebarFilter />
+        </div>
+
+        {/* Main Content */}
+        <div className="md:col-span-3">
+          <FilterComponent 
+            filterOptions={guideFilterOptions}
+            placeholder="Search for guides or services..."
+          />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+            {fakeGuidesData.map(guide => (
+              <Link to={`/app/guides/${guide.id}`} key={guide.id}>
+                <GuidePreviewCard guide={guide} />
+              </Link>
+            ))}
+          </div>
+        </div>
+
       </div>
     </div>
   );
 };
 
 export default NewGuidesPage;
+

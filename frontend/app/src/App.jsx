@@ -1,11 +1,28 @@
 import React, { useState } from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import SideNav from './components/SideNav';
 import ChatWindow from './components/ChatWindow'; // Import the new component
+import FloatingActionButton from './components/FloatingActionButton';
 
 function App() {
-  const location = useLocation();
   const [openChats, setOpenChats] = useState([]);
+  const [showSidePanel, setShowSidePanel] = useState(false);
+  const [selectedNavItemId, setSelectedNavItemId] = useState(null);
+
+  const handlePanelItemClick = (itemId) => {
+    if (showSidePanel && selectedNavItemId === itemId) {
+      setShowSidePanel(false);
+      setSelectedNavItemId(null);
+    } else {
+      setSelectedNavItemId(itemId);
+      setShowSidePanel(true);
+    }
+  };
+
+  const handleClosePanel = () => {
+    setShowSidePanel(false);
+    setSelectedNavItemId(null);
+  };
 
   const handleOpenChat = (chat, type) => {
     // Prevent opening the same chat twice
@@ -23,24 +40,23 @@ function App() {
     setOpenChats(prev => prev.filter(c => !(c.id === id && c.type === type)));
   };
 
+  const mainContentMargin = showSidePanel ? 'ml-[400px]' : 'ml-20';
+
   return (
     <div className="flex bg-[var(--color-linkler-bg)]">
-      <SideNav onOpenChat={handleOpenChat} />
+      <SideNav 
+        onOpenChat={handleOpenChat}
+        showSidePanel={showSidePanel}
+        selectedNavItemId={selectedNavItemId}
+        onPanelItemClick={handlePanelItemClick}
+        onClosePanel={handleClosePanel}
+      />
 
-      <main className="grow">
+      <main className={`grow transition-all duration-300 ${mainContentMargin}`}>
         <Outlet />
       </main>
 
-      {/* Floating Action Button for posting */}
-      <Link
-        to="/create"
-        state={{ background: location }}
-        className="fixed bottom-8 right-8 bg-[#3b82f6] hover:bg-[#3b82f6]/90 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg transition z-30"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-        </svg>
-      </Link>
+      <FloatingActionButton />
 
       {/* Render Open Chat Windows */}
       <div className="fixed bottom-0 right-0 z-9998">
