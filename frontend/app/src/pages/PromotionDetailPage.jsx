@@ -1,28 +1,54 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import StarRating from '../components/StarRating';
-
-// In a real app, this data would be fetched based on the ID
-const fakePromotionsData = [
-    { id: 1, title: '50% Off Luxury Suite', company: 'Grand Hyatt Hotel', image: 'https://picsum.photos/seed/hotel1/1200/800', rating: 4.9, offer: '50% Off', description: 'Enjoy a luxurious stay in our premium suites with breathtaking city views. This offer includes complimentary breakfast and access to our spa.', gallery: ['https://picsum.photos/seed/hotel_gallery1/800/600', 'https://picsum.photos/seed/hotel_gallery2/800/600', 'https://picsum.photos/seed/hotel_gallery3/800/600'], reviews: [{ id: 1, reviewer: 'Samantha', rating: 5, comment: 'Absolutely stunning hotel and an unbeatable deal!', avatar: 'https://i.pravatar.cc/40?img=20' }, { id: 2, reviewer: 'Mark', rating: 4, comment: 'Great location and service. The room was fantastic.', avatar: 'https://i.pravatar.cc/40?img=21' }] },
-    { id: 2, title: 'Happy Hour Cocktails', company: 'The Alchemist Bar', image: 'https://picsum.photos/seed/bar1/1200/800', rating: 4.7, offer: '2-for-1 Drinks', description: 'Join us for happy hour from 5-7pm every weekday. All cocktails are 2-for-1!', gallery: ['https://picsum.photos/seed/bar_gallery1/800/600'], reviews: [{ id: 1, reviewer: 'Chloe', rating: 5, comment: 'Best cocktails in town!', avatar: 'https://i.pravatar.cc/40?img=22' }] },
-    // Add more promotion details to match the list on PromotionsPage
-];
-
+import { getPromotionDetail } from '../services/api';
 
 const PromotionDetailPage = () => {
     const { id } = useParams();
-    // Find the promotion from the fake data. In a real app, you would fetch this.
-    const promotion = fakePromotionsData.find(p => p.id === parseInt(id)) || fakePromotionsData[0];
+    const [promotion, setPromotion] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        setLoading(true);
+        getPromotionDetail(id)
+            .then(res => {
+                setPromotion(res.data);
+            })
+            .catch(err => {
+                console.error('Error fetching promotion:', err);
+                setError('Promotion not found');
+            })
+            .finally(() => {
+                setLoading(false);
+            });
+    }, [id]);
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div>
+            </div>
+        );
+    }
+
+    if (error || !promotion) {
+        return <div className="p-8 text-center text-red-500 font-bold">{error || 'Promotion not found!'}</div>;
+    }
 
     return (
-        <div className="p-8">
+        <div className="p-4 lg:p-8">
             <div className="max-w-5xl mx-auto">
-                <h1 className="text-4xl font-bold">{promotion.title}</h1>
-                <p className="text-xl text-gray-500 mb-4">{promotion.company}</p>
-                <img src={promotion.image} alt={promotion.title} className="w-full h-96 object-cover rounded-lg shadow-lg mb-8" />
+                <h1 className="text-4xl font-bold text-gray-900">{promotion.title}</h1>
+                <p className="text-xl text-gray-500 mb-6 font-medium tracking-tight uppercase tracking-widest">{promotion.company}</p>
+                <img src={promotion.image || 'https://images.unsplash.com/photo-1506012787146-f92b2d7d6d96?ixlib=rb-1.2.1&auto=format&fit=crop&w=1200&q=80'} alt={promotion.title} className="w-full h-[400px] object-cover rounded-3xl shadow-2xl mb-12 border-4 border-white" />
                 
-                <div className="text-2xl font-bold text-green-600 mb-6">{promotion.offer}</div>
+                <div className="bg-green-50 rounded-2xl p-6 border border-green-100 flex items-center justify-between mb-8">
+                    <div>
+                        <div className="text-3xl font-black text-green-600">{promotion.off_percent}% OFF</div>
+                        <p className="text-green-700 font-semibold">Limited time offer</p>
+                    </div>
+                </div>
                 <p className="text-lg text-gray-700 mb-8">{promotion.description}</p>
                 
                 {/* Gallery */}

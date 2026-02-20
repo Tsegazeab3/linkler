@@ -34,7 +34,7 @@ PROFILE_COMPLETION_PAGE_BUILD_DIR = PROFILE_COMPLETION_PAGE_DIR / 'dist'
 SECRET_KEY = os.environ.get('SECRET_KEY', default='your-secret-key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
@@ -78,6 +78,8 @@ INSTALLED_APPS = [
         'temp_registration_form',
 
         'posts',
+        'discovery',
+        'chat',
 ]
 
 MIDDLEWARE = [
@@ -105,8 +107,10 @@ SITE_ID = 1
 
 # Email verification settings
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' # During development
-ACCOUNT_EMAIL_VERIFICATION = "mandatory"
-ACCOUNT_LOGIN_METHODS = ["email"] # Changed from set to list
+ACCOUNT_EMAIL_VERIFICATION = "none"
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_LOGIN_METHODS = ["email"]
 # ACCOUNT_USERNAME_REQUIRED and ACCOUNT_AUTHENTICATION_METHOD are deprecated, so removed.
 ACCOUNT_UNIQUE_EMAIL = True
 
@@ -122,6 +126,7 @@ LOGOUT_REDIRECT_URL = '/'
 
 REST_AUTH = {
     'REGISTER_SERIALIZER': 'accounts.serializers.CustomRegisterSerializer',
+    'LOGIN_SERIALIZER': 'accounts.serializers.CustomLoginSerializer',
     'USER_DETAILS_SERIALIZER': 'accounts.serializers.UserSerializer',
 }
 

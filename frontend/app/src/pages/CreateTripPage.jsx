@@ -1,21 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { useNavigate } from 'react-router-dom';
+import { createTrip } from '../services/api';
 
 const CreateTripPage = () => {
   const navigate = useNavigate();
-  const [show, setShow] = useState(false); // For animation
+  const [show, setShow] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [tripData, setTripData] = useState({
-    from: '',
-    to: '',
-    dates: '',
+    origin: '',
+    destination: '',
+    start_date: '',
+    end_date: '',
     message: '',
   });
 
-  // Effect for enter animation and body cleanup
   useEffect(() => {
     document.body.style.overflow = 'hidden';
-    setShow(true); // Trigger the "enter" animation
+    setShow(true);
 
     const handleKeyDown = (event) => {
       if (event.key === 'Escape') {
@@ -35,18 +38,27 @@ const CreateTripPage = () => {
     setTripData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Trip Data Submitted:', tripData);
-    // In a real app, you'd send this data to a backend
-    handleClose();
+    setLoading(true);
+    setError('');
+
+    try {
+      await createTrip(tripData);
+      handleClose();
+    } catch (err) {
+      console.error('Error creating trip:', err);
+      setError(err.response?.data?.detail || 'Failed to create trip. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleClose = () => {
-    setShow(false); // Trigger the "leave" animation
+    setShow(false);
     setTimeout(() => {
-      navigate(-1); // Navigate back after the animation
-    }, 200); // Should match the duration of the transition
+      navigate('/app/travelers');
+    }, 200);
   };
 
   return ReactDOM.createPortal(
@@ -65,7 +77,7 @@ const CreateTripPage = () => {
         </button>
 
         <div className="text-center mb-6">
-          <h1 className="text-3xl font-bold text-[var(--color-primary)]">
+          <h1 className="text-3xl font-bold text-[#3b82f6]">
             Plan Your Journey
           </h1>
           <p className="text-gray-500 mt-2 text-sm">
@@ -73,44 +85,69 @@ const CreateTripPage = () => {
           </p>
         </div>
 
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 text-red-500 text-sm rounded-md border border-red-100">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="from" className="block text-sm font-medium text-gray-700">From</label>
-            <input
-              type="text"
-              name="from"
-              id="from"
-              value={tripData.from}
-              onChange={handleChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              required
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="origin" className="block text-sm font-medium text-gray-700">Origin</label>
+              <input
+                type="text"
+                name="origin"
+                id="origin"
+                value={tripData.origin}
+                onChange={handleChange}
+                placeholder="e.g. Dubai"
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#3b82f6] focus:border-[#3b82f6]"
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="destination" className="block text-sm font-medium text-gray-700">Destination</label>
+              <input
+                type="text"
+                name="destination"
+                id="destination"
+                value={tripData.destination}
+                onChange={handleChange}
+                placeholder="e.g. Muscat"
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#3b82f6] focus:border-[#3b82f6]"
+                required
+              />
+            </div>
           </div>
-          <div>
-            <label htmlFor="to" className="block text-sm font-medium text-gray-700">To</label>
-            <input
-              type="text"
-              name="to"
-              id="to"
-              value={tripData.to}
-              onChange={handleChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              required
-            />
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="start_date" className="block text-sm font-medium text-gray-700">Start Date</label>
+              <input
+                type="date"
+                name="start_date"
+                id="start_date"
+                value={tripData.start_date}
+                onChange={handleChange}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#3b82f6] focus:border-[#3b82f6]"
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="end_date" className="block text-sm font-medium text-gray-700">End Date</label>
+              <input
+                type="date"
+                name="end_date"
+                id="end_date"
+                value={tripData.end_date}
+                onChange={handleChange}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#3b82f6] focus:border-[#3b82f6]"
+                required
+              />
+            </div>
           </div>
-          <div>
-            <label htmlFor="dates" className="block text-sm font-medium text-gray-700">Dates</label>
-            <input
-              type="text"
-              name="dates"
-              id="dates"
-              value={tripData.dates}
-              onChange={handleChange}
-              placeholder="e.g., March 15 - March 22"
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              required
-            />
-          </div>
+
           <div>
             <label htmlFor="message" className="block text-sm font-medium text-gray-700">Message</label>
             <textarea
@@ -119,16 +156,18 @@ const CreateTripPage = () => {
               rows="3"
               value={tripData.message}
               onChange={handleChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Tell others about your trip plans and what you're looking for..."
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#3b82f6] focus:border-[#3b82f6]"
+              placeholder="Tell others what you're looking for..."
               required
             ></textarea>
           </div>
+
           <button
             type="submit"
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            disabled={loading}
+            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#3b82f6] hover:bg-[#3b82f6]/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3b82f6] disabled:opacity-50"
           >
-            Create Trip
+            {loading ? 'Creating...' : 'Create Trip'}
           </button>
         </form>
       </div>

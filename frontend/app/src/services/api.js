@@ -23,10 +23,18 @@ const csrftoken = getCookie('csrftoken');
 export const api = axios.create({
   baseURL: '/api/', // Use the proxied URL
   headers: {
-    'Content-Type': 'multipart/form-data',
     'X-CSRFToken': csrftoken,
   },
   withCredentials: true, // This is crucial for sending cookies (and session info)
+});
+
+// Add a request interceptor to include the auth token
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token && token !== 'null' && token !== 'undefined') {
+    config.headers.Authorization = `Token ${token}`;
+  }
+  return config;
 });
 
 /**
@@ -35,7 +43,11 @@ export const api = axios.create({
  * @returns {Promise} The axios promise.
  */
 export const createPost = (postData) => {
-  return api.post('/posts/create/', postData);
+  return api.post('/posts/create/', postData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
 };
 
 export const login = (email, password) => {
@@ -59,13 +71,35 @@ export const register = (userData) => {
 };
 
 export const getProfile = () => {
-  return api.get('/accounts/profile/');
+  return api.get('accounts/profile/');
 };
 
 export const updateProfile = (profileData) => {
-  return api.patch('/accounts/profile/', profileData, {
+  return api.patch('accounts/profile/', profileData, {
     headers: {
       'Content-Type': 'application/json',
     },
   });
 };
+
+// Posts & Trips
+export const getPosts = () => api.get('posts/');
+export const getTrips = () => api.get('posts/trips/');
+export const createTrip = (tripData) => api.post('posts/trips/', tripData);
+
+// Guides & Promotions
+export const getGuides = () => api.get('accounts/guides/');
+export const getPromotions = () => api.get('promotions/');
+export const getUserDetail = (userId) => api.get(`accounts/${userId}/`);
+export const getPromotionDetail = (id) => api.get(`promotions/${id}/`);
+
+// Chat
+export const getConversations = () => api.get('chat/conversations/');
+export const getMessages = (conversationId) => api.get(`chat/conversations/${conversationId}/messages/`);
+export const sendMessage = (conversationId, text) => api.post(`chat/conversations/${conversationId}/messages/`, { text });
+export const markChatAsRead = (conversationId) => api.patch(`chat/conversations/${conversationId}/read/`);
+export const createDM = (recipientId) => api.post('chat/conversations/', { type: 'dm', recipient_id: recipientId });
+
+// Social
+export const followUser = (userId) => api.post(`accounts/${userId}/follow/`);
+export const unfollowUser = (userId) => api.delete(`accounts/${userId}/unfollow/`);

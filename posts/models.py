@@ -84,3 +84,28 @@ class Post(models.Model):
 
     def __str__(self):
         return f"Post by {self.user.username} ({self.status}) - {self.created_at.strftime('%Y-%m-%d')}"
+
+class Trip(models.Model):
+    """
+    Represents a trip plan created by a user looking for fellow travelers.
+    """
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='trips',
+        help_text="The user who created this trip plan."
+    )
+    origin = models.CharField(max_length=100)
+    destination = models.CharField(max_length=100)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Trip"
+        verbose_name_plural = "Trips"
+
+    def __str__(self):
+        return f"Trip from {self.origin} to {self.destination} by {self.user.username}"

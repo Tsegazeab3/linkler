@@ -29,8 +29,8 @@ const Up = (props) => (
 				rx={5.613}
 				ry={5.375}
 				style={{
-					fill: "#000",
-					stroke: "#000",
+					fill: "currentColor",
+					stroke: "currentColor",
 					strokeWidth: 2.86897,
 				}}
 				transform="matrix(.76798 -.64047 .7277 .6859 0 0)"
@@ -43,8 +43,8 @@ const Up = (props) => (
 				rx={5.613}
 				ry={5.375}
 				style={{
-					fill: "#000",
-					stroke: "#000",
+					fill: "currentColor",
+					stroke: "currentColor",
 					strokeWidth: 2.86897,
 				}}
 				transform="matrix(-.76798 -.64047 -.7277 .6859 0 0)"
@@ -57,8 +57,8 @@ const Up = (props) => (
 				rx={5.799}
 				ry={5.538}
 				style={{
-					fill: "#000",
-					stroke: "#000",
+					fill: "currentColor",
+					stroke: "currentColor",
 					strokeWidth: 2.95972,
 				}}
 				transform="matrix(-.01977 -.9998 .9833 -.18199 0 0)"

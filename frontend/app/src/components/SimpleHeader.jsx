@@ -62,8 +62,8 @@ function SimpleHeader() {
             <h1 className="text-5xl font-bold text-blue-600 mb-8">Linkler</h1>
             {/* Mobile Navigation Buttons */}
             <div className="flex flex-col gap-4 text-center pb-4 border-b border-gray-200">
-              <Link to="/register" className="text-xl font-bold" onClick={toggleMenu}>Register as Traveller</Link>
-              <Link to="/register" className="text-xl font-bold" onClick={toggleMenu}>Register as Guide</Link>
+              <Link to="/signin" className="text-xl font-bold" onClick={toggleMenu}>Sign In</Link>
+              <Link to="/signup" className="text-xl font-bold" onClick={toggleMenu}>Sign Up</Link>
             </div>
           </div>
         </div>
@@ -71,16 +71,15 @@ function SimpleHeader() {
 
       {/* Desktop Navigation Buttons */}
       <div className="hidden md:flex flex-nowrap gap-4 mt-8 sm:mt-0 min-w-0">
-        <Link to="/register">
+        <Link to="/signin">
           <button className="flex items-center justify-center gap-2 bg-white px-3 md:px-6 py-2 rounded-full border-2 transition-all duration-300 ease-in-out hover:shadow-xl hover:bg-gray-200 hover:-translate-x-1 hover:-translate-y-1">
-            <span className="font-bold text-sm whitespace-nowrap">Register as Traveller</span>
-            <RightArrowIcon className="h-5 w-5" />
+            <span className="font-bold text-sm whitespace-nowrap">Sign In</span>
           </button>
         </Link>
-        <Link to="/register">
-          <button className="flex items-center justify-center gap-2 bg-white px-3 md:px-6 py-2 rounded-full border-2 transition-all duration-300 ease-in-out hover:shadow-xl hover:bg-gray-200 hover:-translate-x-1 hover:-translate-y-1">
-            <span className="font-bold text-sm whitespace-nowrap">Register as Guide</span>
-            <RightArrowIcon className="h-5 w-5" />
+        <Link to="/signup">
+          <button className="flex items-center justify-center gap-2 bg-[#3b82f6] text-white px-3 md:px-6 py-2 rounded-full border-2 border-[#3b82f6] transition-all duration-300 ease-in-out hover:shadow-xl hover:bg-blue-600 hover:-translate-x-1 hover:-translate-y-1">
+            <span className="font-bold text-sm whitespace-nowrap">Sign Up</span>
+            <RightArrowIcon className="h-5 w-5 fill-white" />
           </button>
         </Link>
       </div>

@@ -1,27 +1,37 @@
 import React, { useState } from 'react';
-import { login } from '../services/api';
+import { login as apiLogin } from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 
 function SignInPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const from = location.state?.from?.pathname || "/app";
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    setLoading(true);
     setError(null);
+    console.log('Login attempt with:', { email, password });
 
-    login(email, password)
+    apiLogin(email, password)
       .then(response => {
         console.log('Login successful:', response.data);
-        localStorage.setItem('token', response.data.key);
-        // On success, redirect to the main application page
-        window.location.href = 'http://localhost:5173/'; // Assuming main_page runs on 5173
+        login(response.data.key, response.data.user || { email });
+        // On success, redirect to the intended page or app
+        navigate(from, { replace: true });
       })
       .catch(err => {
         console.error('Login error:', err.response ? err.response.data : err);
-        setError('Login failed. Please check your credentials and try again.');
+        const backendError = err.response?.data?.non_field_errors?.[0] || 
+                             err.response?.data?.detail || 
+                             'Login failed. Please check your credentials and try again.';
+        setError(backendError);
         setLoading(false);
       });
   };
@@ -91,6 +101,15 @@ function SignInPage() {
           >
             Sign in with Google
           </a>
+        </div>
+
+        <div className="mt-6 text-center">
+          <p className="text-sm text-gray-600">
+            Don't have an account?{' '}
+            <Link to="/signup" className="font-medium text-[#3b82f6] hover:text-blue-500">
+              Sign Up
+            </Link>
+          </p>
         </div>
       </div>
     </div>

@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom';
 import SideNav from './components/SideNav';
 import ChatWindow from './components/ChatWindow'; // Import the new component
 import FloatingActionButton from './components/FloatingActionButton';
+import BottomNav from './components/BottomNav';
 
 function App() {
   const [openChats, setOpenChats] = useState([]);
@@ -40,26 +41,37 @@ function App() {
     setOpenChats(prev => prev.filter(c => !(c.id === id && c.type === type)));
   };
 
-  const mainContentMargin = showSidePanel ? 'ml-[400px]' : 'ml-20';
+  // No left margin on mobile, 80px (w-20) on desktop, 400px when side panel is open on desktop
+  const mainContentMargin = showSidePanel 
+    ? 'lg:ml-[400px]' 
+    : 'ml-0 lg:ml-20';
 
   return (
-    <div className="flex bg-[var(--color-linkler-bg)]">
-      <SideNav 
-        onOpenChat={handleOpenChat}
-        showSidePanel={showSidePanel}
-        selectedNavItemId={selectedNavItemId}
-        onPanelItemClick={handlePanelItemClick}
-        onClosePanel={handleClosePanel}
-      />
+    <div className="flex flex-col min-h-screen bg-[var(--color-linkler-bg)]">
+      <div className="flex flex-1">
+        <SideNav 
+          onOpenChat={handleOpenChat}
+          showSidePanel={showSidePanel}
+          selectedNavItemId={selectedNavItemId}
+          onPanelItemClick={handlePanelItemClick}
+          onClosePanel={handleClosePanel}
+        />
 
-      <main className={`grow transition-all duration-300 ${mainContentMargin}`}>
-        <Outlet />
-      </main>
+        <main className={`flex-1 transition-all duration-300 ${mainContentMargin} pb-16 lg:pb-0`}>
+          <Outlet context={{ handleOpenChat }} />
+        </main>
+      </div>
 
       <FloatingActionButton />
 
+      {/* Mobile Navigation */}
+      <BottomNav 
+        onOpenChat={handleOpenChat} 
+        onPanelItemClick={handlePanelItemClick}
+      />
+
       {/* Render Open Chat Windows */}
-      <div className="fixed bottom-0 right-0 z-9998">
+      <div className="fixed bottom-16 lg:bottom-0 right-0 z-[9998] flex flex-col lg:flex-row-reverse items-end space-y-2 lg:space-y-0 lg:space-x-2 lg:space-x-reverse">
         {openChats.map((chat, index) => (
           <ChatWindow
             key={`${chat.type}-${chat.id}`}
