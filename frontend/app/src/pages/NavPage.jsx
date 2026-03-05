@@ -32,7 +32,7 @@ function NavPage() {
           </Link>
         </li>
         <li>
-          <Link to="/app/travelers" className="text-blue-500 hover:underline">
+          <Link to="/app/fellow_travelers" className="text-blue-500 hover:underline">
             Fellow Travelers
           </Link>
         </li>

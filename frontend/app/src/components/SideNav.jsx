@@ -7,13 +7,7 @@ import SvgFellowTravelers from './icons/FellowTravelers.jsx';
 import SvgGroups from './icons/Groups.jsx';
 import SvgNewGuides from './icons/NewGuides.jsx';
 import SvgSettings from './icons/Settings.jsx';
-
-const SvgPromotions = (props) => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" {...props}>
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5a2 2 0 012 2v5a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z" />
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 13h5a2 2 0 012 2v5a2 2 0 01-2 2H7a2 2 0 01-2-2v-5a2 2 0 012-2z" />
-  </svg>
-);
+import SvgPromotions from './icons/Promotions.jsx';
 
 // --- Mock Data ---
 const fakeChats = [
@@ -56,20 +50,20 @@ const GuidePreview = ({ onSelect, ...guide }) => (
 );
 
 const GroupChatPreview = ({ ...group }) => (
-    <div className="w-full text-left p-2 rounded-lg hover:bg-[#6D4C41] transition-colors duration-200 flex items-center space-x-3">
-        <img src={group.avatarUrl} alt={group.name} className="w-10 h-10 rounded-full flex-shrink-0" />
-        <div className="flex-grow overflow-hidden">
-            <div className="flex justify-between items-center">
-                <h4 className={`font-semibold text-sm truncate ${group.unread ? 'text-white' : 'text-gray-300'}`}>{group.name}</h4>
-                <span className="text-xs text-gray-400 flex-shrink-0">{group.lastMessage.time}</span>
-            </div>
-            <p className={`text-xs truncate ${group.unread ? 'text-white font-medium' : 'text-gray-300'}`}>
-                <span className="font-medium">{group.lastMessage.user}: </span>
-                {group.lastMessage.text}
-            </p>
-        </div>
-        {group.unread && <div className="w-2 h-2 bg-[#3b82f6] rounded-full flex-shrink-0 self-center ml-2"></div>}
+  <div className="w-full text-left p-2 rounded-lg hover:bg-[#6D4C41] transition-colors duration-200 flex items-center space-x-3">
+    <img src={group.avatarUrl} alt={group.name} className="w-10 h-10 rounded-full flex-shrink-0" />
+    <div className="flex-grow overflow-hidden">
+      <div className="flex justify-between items-center">
+        <h4 className={`font-semibold text-sm truncate ${group.unread ? 'text-white' : 'text-gray-300'}`}>{group.name}</h4>
+        <span className="text-xs text-gray-400 flex-shrink-0">{group.lastMessage.time}</span>
+      </div>
+      <p className={`text-xs truncate ${group.unread ? 'text-white font-medium' : 'text-gray-300'}`}>
+        <span className="font-medium">{group.lastMessage.user}: </span>
+        {group.lastMessage.text}
+      </p>
     </div>
+    {group.unread && <div className="w-2 h-2 bg-[#3b82f6] rounded-full flex-shrink-0 self-center ml-2"></div>}
+  </div>
 );
 
 const PreviewList = ({ items, renderItem }) => (
@@ -81,18 +75,18 @@ const PreviewList = ({ items, renderItem }) => (
 
 const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClick, onClosePanel }) => {
   const unreadCount = fakeChats.filter(chat => chat.unread).length + fakeGroups.filter(group => group.unread).length;
-  
+
   const navItems = [
     { id: 1, icon: SvgHome, name: 'Home', type: 'link', href: '/app' },
     { id: 2, icon: SvgSavedGuides, name: 'Saved Guides', type: 'panel' },
     { id: 3, icon: SvgChats, name: 'Messages', type: 'panel' },
     { id: 4, icon: SvgGroups, name: 'Groups', type: 'panel' },
-    { id: 5, icon: SvgFellowTravelers, name: 'Fellow Travelers', type: 'link', href: '/app/travelers' },
+    { id: 5, icon: SvgFellowTravelers, name: 'Fellow Travelers', type: 'link', href: '/app/fellow_travelers' },
     { id: 6, icon: SvgNewGuides, name: 'New Guides', type: 'link', href: '/app/guides' },
     { id: 8, icon: SvgPromotions, name: 'Promotions', type: 'link', href: '/app/promotions' },
     { id: 7, icon: SvgSettings, name: 'Settings', type: 'panel' },
   ];
-  
+
   const selectedNavItem = navItems.find(item => item.id === selectedNavItemId);
 
   const renderPanelContent = () => {
@@ -113,7 +107,7 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
         return <p className="text-gray-300">Content for {selectedNavItem.name} goes here.</p>;
     }
   };
-  
+
   const renderNavItem = (item) => {
     const Icon = item.icon;
     const content = (

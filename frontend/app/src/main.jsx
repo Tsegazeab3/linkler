@@ -43,7 +43,7 @@ function AppRouter() {
         <Route path="/complete-profile" element={<ProfileCompletionPage />} />
         <Route path="/app" element={<App />}>
           <Route index element={<IndexPage />} />
-          <Route path="travelers" element={<FellowTravelersPage />} />
+          <Route path="fellow_travelers" element={<FellowTravelersPage />} />
           <Route path="guides" element={<NewGuidesPage />} />
           <Route path="guides/:id" element={<GuideDetailPage />} />
           <Route path="profile/:userId" element={<UserProfilePage />} />
