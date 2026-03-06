@@ -50,11 +50,12 @@
   --border-radius-25px-0-25px-25px: 25px 0 25px 25px;
 
   /* Colors */
-  --color-linkler-bg: #ffefd5;
+  --color-linkler-bg: #ffefd5 ;
   --color-linkler-yellow: #ffda00;
   --color-linkler-pink: #ffb6c1;
   --color-linkler-blue-shadow: #0ff;
   --color-linkler-orange-light: #fcd8c9;
+  --color-linkler-hover: #f5deb3;
 
   /* Transitions */
   --transition-duration-300: 300ms;

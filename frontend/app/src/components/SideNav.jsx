@@ -24,46 +24,40 @@ const fakeGroups = [
 ];
 
 
-// --- Sub-components for Previews ---
-const ChatPreview = ({ onSelect, ...chat }) => (
-  <button onClick={onSelect} className="w-full text-left p-2 rounded-lg hover:bg-[#6D4C41] transition-colors duration-200 flex items-center space-x-3">
-    <img src={chat.avatarUrl} alt={chat.name} className="w-10 h-10 rounded-full flex-shrink-0" />
+// --- Sub-component for Side Panel Items ---
+const SidePanelItem = ({
+  onClick,
+  image,
+  imageAlt,
+  title,
+  subtitle,
+  time,
+  unread,
+  isSquareImage = false,
+  as: Component = 'button'
+}) => (
+  <Component
+    onClick={onClick}
+    className="w-full text-left p-2 rounded-lg hover:bg-[var(--color-linkler-hover)] transition-colors duration-200 flex items-center space-x-3 focus:outline-none"
+  >
+    <img
+      src={image}
+      alt={imageAlt}
+      className={`${isSquareImage ? 'w-12 h-12 rounded-md object-cover' : 'w-10 h-10 rounded-full'} flex-shrink-0`}
+    />
     <div className="flex-grow overflow-hidden">
       <div className="flex justify-between items-center">
-        <h4 className={`font-semibold text-sm truncate ${chat.unread ? 'text-white' : 'text-gray-300'}`}>{chat.name}</h4>
-        <span className="text-xs text-gray-400 flex-shrink-0">{chat.time}</span>
+        <h4 className={`font-semibold text-sm truncate ${unread ? 'text-gray-800' : 'text-black'}`}>
+          {title}
+        </h4>
+        {time && <span className="text-xs text-black flex-shrink-0">{time}</span>}
       </div>
-      <p className={`text-xs truncate ${chat.unread ? 'text-white font-medium' : 'text-gray-300'}`}>{chat.message}</p>
-    </div>
-    {chat.unread && <div className="w-2 h-2 bg-[#3b82f6] rounded-full flex-shrink-0 self-center ml-2"></div>}
-  </button>
-);
-
-const GuidePreview = ({ onSelect, ...guide }) => (
-  <button onClick={onSelect} className="w-full text-left p-2 rounded-lg hover:bg-[#6D4C41] transition-colors duration-200 flex items-center space-x-3">
-    <img src={guide.avatarUrl} alt={guide.name} className="w-12 h-12 rounded-md object-cover flex-shrink-0" />
-    <div className="flex-grow overflow-hidden">
-      <h4 className="font-semibold text-sm text-white truncate">{guide.name}</h4>
-      <p className="text-xs text-gray-300 truncate">{guide.location}</p>
-    </div>
-  </button>
-);
-
-const GroupChatPreview = ({ ...group }) => (
-  <div className="w-full text-left p-2 rounded-lg hover:bg-[#6D4C41] transition-colors duration-200 flex items-center space-x-3">
-    <img src={group.avatarUrl} alt={group.name} className="w-10 h-10 rounded-full flex-shrink-0" />
-    <div className="flex-grow overflow-hidden">
-      <div className="flex justify-between items-center">
-        <h4 className={`font-semibold text-sm truncate ${group.unread ? 'text-white' : 'text-gray-300'}`}>{group.name}</h4>
-        <span className="text-xs text-gray-400 flex-shrink-0">{group.lastMessage.time}</span>
+      <div className={`text-xs truncate ${unread ? 'text-gray-800 font-medium' : 'text-black'}`}>
+        {subtitle}
       </div>
-      <p className={`text-xs truncate ${group.unread ? 'text-white font-medium' : 'text-gray-300'}`}>
-        <span className="font-medium">{group.lastMessage.user}: </span>
-        {group.lastMessage.text}
-      </p>
     </div>
-    {group.unread && <div className="w-2 h-2 bg-[#3b82f6] rounded-full flex-shrink-0 self-center ml-2"></div>}
-  </div>
+    {unread && <div className="w-2 h-2 bg-[#3b82f6] rounded-full flex-shrink-0 self-center ml-2"></div>}
+  </Component>
 );
 
 const PreviewList = ({ items, renderItem }) => (
@@ -94,15 +88,64 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
 
     switch (selectedNavItem.name) {
       case 'Messages':
-        return <PreviewList items={fakeChats} renderItem={chat => <ChatPreview key={chat.id} {...chat} onSelect={() => onOpenChat(chat, 'chat')} />} />;
+        return (
+          <PreviewList
+            items={fakeChats}
+            renderItem={chat => (
+              <SidePanelItem
+                key={chat.id}
+                title={chat.name}
+                subtitle={chat.message}
+                image={chat.avatarUrl}
+                imageAlt={chat.name}
+                time={chat.time}
+                unread={chat.unread}
+                onClick={() => onOpenChat(chat, 'chat')}
+              />
+            )}
+          />
+        );
       case 'Saved Guides':
-        return <PreviewList items={fakeSavedGuides} renderItem={guide => <GuidePreview key={guide.id} {...guide} onSelect={() => onOpenChat(guide, 'guide')} />} />;
+        return (
+          <PreviewList
+            items={fakeSavedGuides}
+            renderItem={guide => (
+              <SidePanelItem
+                key={guide.id}
+                title={guide.name}
+                subtitle={guide.location}
+                image={guide.avatarUrl}
+                imageAlt={guide.name}
+                isSquareImage
+                onClick={() => onOpenChat(guide, 'guide')}
+              />
+            )}
+          />
+        );
       case 'Groups':
-        return <PreviewList items={fakeGroups} renderItem={group => (
-          <Link to={`/app/groups/${group.id}`} key={group.id} onClick={onClosePanel}>
-            <GroupChatPreview {...group} />
-          </Link>
-        )} />;
+        return (
+          <PreviewList
+            items={fakeGroups}
+            renderItem={group => (
+              <Link to={`/app/groups/${group.id}`} key={group.id} onClick={onClosePanel}>
+                <SidePanelItem
+                  as="div"
+                  title={group.name}
+                  subtitle={
+                    <>
+                      <span className="font-medium">{group.lastMessage.user}: </span>
+                      {group.lastMessage.text}
+                    </>
+                  }
+                  image={group.avatarUrl}
+                  imageAlt={group.name}
+                  time={group.lastMessage.time}
+                  unread={group.unread}
+                />
+              </Link>
+            )}
+          />
+        );
       default:
         return <p className="text-gray-300">Content for {selectedNavItem.name} goes here.</p>;
     }
@@ -127,7 +170,7 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
     if (item.type === 'link') {
       const handleClick = item.name === 'Home' ? onClosePanel : null;
       return (
-        <Link to={item.href} onClick={handleClick} className="flex flex-col items-center justify-center w-full p-4 hover:bg-[#6D4C41] transition-colors duration-200 focus:outline-none">
+        <Link to={item.href} onClick={handleClick} className="flex flex-col items-center justify-center w-full p-4 hover:bg-[var(--color-linkler-hover)]  transition-colors duration-200 focus:outline-none">
           {content}
         </Link>
       );
@@ -136,7 +179,7 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
     return (
       <button
         onClick={() => onPanelItemClick(item.id)}
-        className={`flex flex-col items-center justify-center w-full p-4 hover:bg-[#6D4C41] transition-colors duration-200 focus:outline-none ${selectedNavItemId === item.id ? 'bg-[#8D6E63]' : ''}`}
+        className={`flex flex-col items-center justify-center w-full p-4 hover:bg-[var(--color-linkler-hover)]  transition-colors duration-200 focus:outline-none ${selectedNavItemId === item.id ? 'bg-[#8D6E63]' : ''}`}
         aria-label={item.name}
         aria-expanded={selectedNavItemId === item.id && showSidePanel}
       >
@@ -151,7 +194,7 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
         <nav className="flex-grow mt-10">
           <ul>
             {navItems.map((item) => (
-              <li key={item.id} className="mb-2">
+              <li key={item.id} className="mb-2 text-center">
                 {renderNavItem(item)}
               </li>
             ))}
@@ -161,7 +204,7 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
 
       {showSidePanel && (
         <div
-          className="fixed top-0 left-20 h-full bg-[#3E2723] w-80 p-4 border-l border-gray-600 z-50"
+          className="fixed top-0 left-20 h-full bg-[#f5deb3] w-80 p-4 border-l border-gray-600 z-50"
         >
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-bold text-white">{selectedNavItem?.name}</h3>

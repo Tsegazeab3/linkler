@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import SideNav from './components/SideNav';
 import ChatWindow from './components/ChatWindow'; // Import the new component
-import FloatingActionButton from './components/FloatingActionButton';
+import FloatingPlusButton from './components/FloatingPlusButton';
 
 function App() {
   const [openChats, setOpenChats] = useState([]);
@@ -44,7 +44,7 @@ function App() {
 
   return (
     <div className="flex bg-[var(--color-linkler-bg)]">
-      <SideNav 
+      <SideNav
         onOpenChat={handleOpenChat}
         showSidePanel={showSidePanel}
         selectedNavItemId={selectedNavItemId}
@@ -56,7 +56,7 @@ function App() {
         <Outlet />
       </main>
 
-      <FloatingActionButton />
+      <FloatingPlusButton />
 
       {/* Render Open Chat Windows */}
       <div className="fixed bottom-0 right-0 z-9998">
