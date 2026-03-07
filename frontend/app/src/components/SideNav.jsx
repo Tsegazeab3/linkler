@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { getConversations } from '../services/api';
 import SvgChats from './icons/Chats.jsx';
 import SvgHome from './icons/Home.jsx';
 import SvgSavedGuides from './icons/SavedGuides.jsx';
@@ -113,12 +114,10 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
   React.useEffect(() => {
     if (isAuthenticated && (selectedNavItemId === 3 || selectedNavItemId === 4)) {
       setLoading(true);
-      import('../services/api').then(({ getConversations }) => {
-        getConversations()
-          .then(res => setConversations(res.data))
-          .catch(err => console.error('Chat error:', err))
-          .finally(() => setLoading(false));
-      });
+      getConversations()
+        .then(res => setConversations(res.data))
+        .catch(err => console.error('Chat error:', err))
+        .finally(() => setLoading(false));
     }
   }, [isAuthenticated, selectedNavItemId]);
 

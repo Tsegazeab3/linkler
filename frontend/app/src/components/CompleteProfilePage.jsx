@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import apiClient from '../services/api';
 import { useNavigate } from 'react-router-dom';
+import storage from '../utils/storage';
 
 const CompleteProfilePage = () => {
   const [formData, setFormData] = useState({
@@ -29,7 +30,7 @@ const CompleteProfilePage = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const token = localStorage.getItem('token'); // Retrieve token
+        const token = storage.getItem('token'); // Retrieve token
         const headers = token ? { Authorization: `Token ${token}` } : {};
 
         const response = await apiClient.get('/api/auth/user/', { headers });
@@ -95,7 +96,7 @@ const CompleteProfilePage = () => {
     }
 
     try {
-      const token = localStorage.getItem('token'); // Retrieve token
+      const token = storage.getItem('token'); // Retrieve token
       const headers = token ? { Authorization: `Token ${token}`, 'Content-Type': 'multipart/form-data' } : { 'Content-Type': 'multipart/form-data' };
 
       await apiClient.patch('/api/auth/user/', data, { headers });

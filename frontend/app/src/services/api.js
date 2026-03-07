@@ -1,4 +1,5 @@
 import axios from 'axios';
+import storage from '../utils/storage';
 
 // Get the CSRF token from the cookie
 // Django requires this for POST requests to protect against CSRF attacks
@@ -30,7 +31,7 @@ export const api = axios.create({
 
 // Add a request interceptor to include the auth token
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
+  const token = storage.getItem('token');
   if (token && token !== 'null' && token !== 'undefined') {
     config.headers.Authorization = `Token ${token}`;
   }
