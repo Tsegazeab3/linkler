@@ -1,23 +1,39 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import PromotionCard from '../components/PromotionCard';
 import PromotionFilter from '../components/PromotionFilter';
 import FilterComponent from '../components/FilterComponent';
-
-const fakePromotions = [
-    { id: 1, title: '50% Off Luxury Suite', company: 'Grand Hyatt Hotel', image: 'https://picsum.photos/seed/hotel1/800/600', rating: 4.9, offer: '50% Off' },
-    { id: 2, title: 'Happy Hour Cocktails', company: 'The Alchemist Bar', image: 'https://picsum.photos/seed/bar1/800/600', rating: 4.7, offer: '2-for-1 Drinks' },
-    { id: 3, title: 'Gourmet Dining Experience', company: 'Le Ciel Restaurant', image: 'https://picsum.photos/seed/food1/800/600', rating: 4.8, offer: 'Free Dessert' },
-    { id: 4, title: 'City Tour Bus', company: 'Dubai Hop-On Hop-Off', image: 'https://picsum.photos/seed/bus1/800/600', rating: 4.6, offer: '20% Discount' },
-    { id: 5, title: 'Skydiving Over The Palm', company: 'Skydive Dubai', image: 'https://picsum.photos/seed/sky1/800/600', rating: 5.0, offer: 'Free Video Package' },
-    { id: 6, title: 'Spa & Relaxation', company: 'Serenity Spa', image: 'https://picsum.photos/seed/spa1/800/600', rating: 4.8, offer: '30% Off Massages' },
-];
+import { getPromotions } from '../services/api';
 
 const promotionFilterOptions = ['Hotels', 'Restaurants', 'Bars', 'Travel', 'Activities'];
 
 const PromotionsPage = () => {
+    const [promotions, setPromotions] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        getPromotions()
+            .then(response => {
+                setPromotions(response.data);
+            })
+            .catch(err => {
+                console.error('Error fetching promotions:', err);
+            })
+            .finally(() => {
+                setLoading(false);
+            });
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#3b82f6]"></div>
+            </div>
+        );
+    }
+
     return (
-        <div className="p-8">
+        <div className="p-4 lg:p-8">
             <h1 className="text-4xl font-bold mb-8">Deals & Promotions</h1>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                 {/* Left Sidebar for Filters */}
@@ -32,11 +48,24 @@ const PromotionsPage = () => {
                         placeholder="Search for promotions..."
                     />
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-8">
-                        {fakePromotions.map(promo => (
-                            <Link to={`/app/promotions/${promo.id}`} key={promo.id}>
-                                <PromotionCard promotion={promo} />
-                            </Link>
-                        ))}
+                        {promotions.length > 0 ? (
+                            promotions.map(promo => (
+                                <Link to={`/app/promotions/${promo.id}`} key={promo.id}>
+                                    <PromotionCard promotion={{
+                                        id: promo.id,
+                                        title: promo.title,
+                                        company: promo.company,
+                                        image: promo.image || 'https://images.unsplash.com/photo-1506012787146-f92b2d7d6d96?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60',
+                                        rating: promo.rating,
+                                        offer: `${promo.off_percent}% Off`
+                                    }} />
+                                </Link>
+                            ))
+                        ) : (
+                            <div className="col-span-full text-center py-10">
+                                <p className="text-gray-500">No active promotions at the moment. Check back soon!</p>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

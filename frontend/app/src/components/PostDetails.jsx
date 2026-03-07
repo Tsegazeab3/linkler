@@ -77,7 +77,7 @@ const PostDetails = ({ file, fileType, onBack, postMode, onSuccess }) => {
               rows={postMode === 'media' ? 4 : 8}
               value={caption}
               onChange={(e) => setCaption(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-md focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] resize-none"
+              className="w-full p-3 border border-gray-300 rounded-md focus:ring-[#3b82f6] focus:border-[#3b82f6] resize-none"
               placeholder={postMode === 'media' ? 'Write a caption...' : 'What&apos;s on your mind?'}
               disabled={loading}
             />
@@ -88,14 +88,14 @@ const PostDetails = ({ file, fileType, onBack, postMode, onSuccess }) => {
           <div className="space-y-4">
             <div>
               <label htmlFor="audience" className="block text-sm font-medium text-gray-700">Audience</label>
-              <select id="audience" value={audience} onChange={(e) => setAudience(e.target.value)} disabled={loading} className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] sm:text-sm rounded-md">
+              <select id="audience" value={audience} onChange={(e) => setAudience(e.target.value)} disabled={loading} className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-[#3b82f6] focus:border-[#3b82f6] sm:text-sm rounded-md">
                 <option value="public">Public</option>
                 <option value="followers">Followers</option>
                 <option value="private">Private</option>
               </select>
             </div>
             <div className="flex items-center">
-              <input id="disable-comments" type="checkbox" checked={disableComments} onChange={(e) => setDisableComments(e.target.checked)} disabled={loading} className="h-4 w-4 text-[var(--color-primary)] focus:ring-[var(--color-primary)] border-gray-300 rounded" />
+              <input id="disable-comments" type="checkbox" checked={disableComments} onChange={(e) => setDisableComments(e.target.checked)} disabled={loading} className="h-4 w-4 text-[#3b82f6] focus:ring-[#3b82f6] border-gray-300 rounded" />
               <label htmlFor="disable-comments" className="ml-2 block text-sm text-gray-900">Disable comments</label>
             </div>
           </div>
@@ -106,13 +106,13 @@ const PostDetails = ({ file, fileType, onBack, postMode, onSuccess }) => {
 
         {/* Action Buttons */}
         <div className="flex justify-end items-center space-x-4 pt-4 mt-4 border-t border-gray-200">
-          <button onClick={onBack} disabled={loading} className="py-2 px-4 text-sm font-semibold text-[var(--color-secondary)] hover:bg-gray-100 rounded-md transition duration-200 disabled:opacity-50">
+          <button onClick={onBack} disabled={loading} className="py-2 px-4 text-sm font-semibold text-gray-600 hover:bg-gray-100 rounded-md transition duration-200 disabled:opacity-50">
             Back
           </button>
-          <button onClick={handleSaveDraft} disabled={loading} className="py-2 px-4 text-sm font-semibold border border-[var(--color-secondary)] text-[var(--color-secondary)] rounded-md hover:bg-gray-50 transition duration-200 disabled:opacity-50">
+          <button onClick={handleSaveDraft} disabled={loading} className="py-2 px-4 text-sm font-semibold border border-gray-600 text-gray-600 rounded-md hover:bg-gray-50 transition duration-200 disabled:opacity-50">
             {loading ? 'Saving...' : 'Save as Draft'}
           </button>
-          <button onClick={handlePost} disabled={loading} className="py-2 px-6 bg-[var(--color-primary)] text-white rounded-md font-semibold hover:bg-[var(--color-primary)]/90 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+          <button onClick={handlePost} disabled={loading} className="py-2 px-6 bg-[#3b82f6] text-white rounded-md font-semibold hover:bg-[#3b82f6]/90 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
             {loading ? 'Posting...' : 'Post'}
           </button>
         </div>

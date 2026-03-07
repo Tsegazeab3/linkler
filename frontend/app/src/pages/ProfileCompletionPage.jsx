@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getProfile, updateProfile } from '../services/api';
+import { useNavigate } from 'react-router-dom';
 
 const ProfileCompletionPage = () => {
   const [step, setStep] = useState(1);
@@ -21,9 +22,9 @@ const ProfileCompletionPage = () => {
   });
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Fetch the current user's profile data
     getProfile()
       .then(response => {
         setFormData(prevData => ({ ...prevData, ...response.data }));
@@ -50,6 +51,10 @@ const ProfileCompletionPage = () => {
       const response = await updateProfile(formData);
       console.log('Profile updated successfully:', response.data);
       setSuccess('Your profile has been updated successfully!');
+      // Redirect to app after a short delay to show success message
+      setTimeout(() => {
+        navigate('/app');
+      }, 1500);
     } catch (err) {
       console.error('Error updating profile:', err.response ? err.response.data : err.message);
       setError(err.response ? JSON.stringify(err.response.data) : 'An error occurred while updating your profile.');

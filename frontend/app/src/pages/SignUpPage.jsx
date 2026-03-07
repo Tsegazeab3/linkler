@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { register } from '../services/api';
-// import { useNavigate } from 'react-router-dom';
-
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 const SignUpPage = () => {
   const [formData, setFormData] = useState({
     email: '',
@@ -10,7 +10,9 @@ const SignUpPage = () => {
     username: '',
   });
   const [error, setError] = useState(null);
-  // const navigate = useNavigate(); // useNavigate can only be used in the context of a <Router> component.
+  const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({
@@ -21,14 +23,15 @@ const SignUpPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     setError(null);
+    console.log('Registration attempt with:', formData);
 
     if (formData.password1 !== formData.password2) {
       setError("Passwords do not match.");
+      setLoading(false);
       return;
     }
-
-    console.log('Sign up form submitted');
 
     const { email, username, password1, password2 } = formData;
     const finalFormData = { email, username, password1, password2 };
@@ -36,11 +39,20 @@ const SignUpPage = () => {
     try {
       const response = await register(finalFormData);
       console.log('User registered successfully:', response.data);
-      alert('Registration successful! Please check your email to verify your account.');
-      // navigate('/login'); 
+      
+      // Auto-login if backend returns a token (key)
+      if (response.data.key) {
+        login(response.data.key, { email, username });
+        navigate('/complete-profile');
+      } else {
+        alert('Registration successful! You can now sign in.');
+        navigate('/signin'); 
+      }
     } catch (err) {
       console.error('Error during registration:', err.response ? err.response.data : err.message);
       setError(err.response ? JSON.stringify(err.response.data) : err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -89,6 +101,15 @@ const SignUpPage = () => {
               href="http://127.0.0.1:8000/accounts/google/login/?process=login" className="flex justify-center w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50">
               Sign in with Google
             </a>
+          </div>
+
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-600">
+              Already have an account?{' '}
+              <Link to="/signin" className="font-medium text-[#3b82f6] hover:text-blue-500">
+                Sign In
+              </Link>
+            </p>
           </div>
         </div>
       </div>

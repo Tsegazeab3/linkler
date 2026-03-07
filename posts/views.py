@@ -1,9 +1,10 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework import status, generics
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.parsers import MultiPartParser, FormParser
-from .serializers import PostSerializer
+from .serializers import PostSerializer, TripSerializer
+from .models import Post, Trip
 
 class PostCreateView(APIView):
     """
@@ -18,10 +19,6 @@ class PostCreateView(APIView):
         """
         Handle POST request to create a new post.
         """
-        # The frontend sends 'file' for the media, but the model field is 'media_file'.
-        # We can handle this mapping here if needed, but it's better to be consistent.
-        # Let's assume frontend will send 'media_file'.
-        
         serializer = PostSerializer(data=request.data)
         
         if serializer.is_valid():
@@ -32,3 +29,20 @@ class PostCreateView(APIView):
         else:
             # Return validation errors
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class PostListView(generics.ListAPIView):
+    queryset = Post.objects.filter(status='published')
+    serializer_class = PostSerializer
+    permission_classes = [AllowAny]
+
+class TripListCreateView(generics.ListCreateAPIView):
+    queryset = Trip.objects.all()
+    serializer_class = TripSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsAuthenticated()]

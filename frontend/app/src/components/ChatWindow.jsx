@@ -1,74 +1,77 @@
-import React, { useState } from 'react';
-
-// --- Mock Message Data ---
-const fakeMessageHistory = {
-  // Direct Chats
-  1: [ 
-    { from: 'them', text: 'Hey, are we still on for tomorrow?' },
-    { from: 'me', text: 'Yep! 2 PM at the usual spot.' },
-    { from: 'them', text: 'I wanted to confirm the time.' },
-  ],
-  3: [
-    { from: 'them', text: 'LOL that was hilarious 😂' },
-  ],
-  // Groups
-  'group-1': [
-      { from: 'Sarah', text: 'Who wants to grab pizza tonight?' },
-      { from: 'me', text: 'I am down!' },
-      { from: 'Dave', text: 'Sorry, can\'t make it tonight.' },
-  ],
-  'group-2': [
-      { from: 'Mike', text: 'Trail conditions look good for Saturday.' },
-  ],
-  // Guides
-  'guide-1': [
-      { from: 'them', text: 'Welcome to "A Culinary Journey Through Tokyo"! Ask me anything about the best ramen spots or hidden sushi gems.' },
-      { from: 'me', text: 'What is the best place for tempura?' },
-  ],
-  'guide-2': [
-      { from: 'them', text: 'Welcome to "Hiking the Swiss Alps"! Let me know if you need recommendations on trails or gear.' },
-  ],
-};
+import React, { useState, useEffect, useRef } from 'react';
+import { getMessages, sendMessage, markChatAsRead } from '../services/api';
 
 const ChatWindow = ({ chat, type, onClose, index }) => {
+  const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [isMinimized, setIsMinimized] = useState(false);
+  const scrollRef = useRef();
   
   const rightPosition = 20 + (index * 340);
-  const historyKey = `${type}-${chat.id}`;
-  const chatHistory = fakeMessageHistory[historyKey] || [];
   
-  const handleSend = (e) => {
+  const fetchMessages = () => {
+    getMessages(chat.id)
+      .then(res => {
+        setMessages(res.data);
+        if (res.data.some(m => !m.is_read && m.sender !== chat.current_user_id)) {
+           markChatAsRead(chat.id);
+        }
+      })
+      .catch(err => console.error('Error fetching messages:', err));
+  };
+
+  useEffect(() => {
+    fetchMessages();
+    const interval = setInterval(fetchMessages, 3000); // Polling every 3s
+    return () => clearInterval(interval);
+  }, [chat.id]);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages]);
+  
+  const handleSend = async (e) => {
     e.preventDefault();
     if (newMessage.trim() === '') return;
-    console.log(`Sending message to ${chat.name}: ${newMessage}`);
-    setNewMessage('');
+    try {
+      const res = await sendMessage(chat.id, newMessage);
+      setMessages([...messages, res.data]);
+      setNewMessage('');
+    } catch (err) {
+      console.error('Send error:', err);
+    }
   };
 
   const content = (
     <>
-      <div className="flex-grow overflow-y-auto space-y-4 p-4">
-        {chatHistory.map((msg, idx) => (
-          <div key={idx} className={`flex ${msg.from === 'me' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`p-3 rounded-lg max-w-xs ${msg.from === 'me' ? 'bg-[#3b82f6] text-white' : 'bg-gray-200 text-gray-800'}`}>
-              {(type === 'group' || type === 'guide') && msg.from !== 'me' && <p className="text-xs font-bold text-blue-500">{chat.name}</p>}
-              {type === 'group' && msg.from !== 'me' && <p className="text-xs font-bold text-blue-500">{msg.from}</p>}
-              <p>{msg.text}</p>
+      <div ref={scrollRef} className="flex-grow overflow-y-auto space-y-4 p-4 no-scrollbar">
+        {messages.map((msg, idx) => (
+          <div key={idx} className={`flex ${msg.sender_username === chat.name ? 'justify-start' : 'justify-end'}`}>
+            <div className={`p-3 rounded-lg max-w-[80%] ${msg.sender_username !== chat.name ? 'bg-[#3b82f6] text-white rounded-br-none' : 'bg-gray-100 text-gray-800 rounded-bl-none'}`}>
+              {type === 'group' && msg.sender_username !== chat.name && (
+                <p className="text-[10px] font-bold opacity-70 mb-1">{msg.sender_username}</p>
+              )}
+              <p className="text-sm">{msg.text}</p>
+              <p className={`text-[9px] mt-1 text-right ${msg.sender_username !== chat.username ? 'text-blue-100' : 'text-gray-400'}`}>
+                {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </p>
             </div>
           </div>
         ))}
       </div>
-      <form onSubmit={handleSend} className="p-2 flex-shrink-0 flex items-center border-t border-gray-200">
+      <form onSubmit={handleSend} className="p-3 flex-shrink-0 flex items-center border-t border-gray-100 bg-gray-50 rounded-b-lg">
         <input
           type="text"
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
           placeholder="Type a message..."
-          className="w-full p-2 bg-transparent text-gray-800 focus:outline-none"
+          className="flex-grow p-2 bg-white border border-gray-200 rounded-full text-sm px-4 focus:outline-none focus:ring-1 focus:ring-blue-500"
         />
-        <button type="submit" className="p-2 text-blue-600 hover:text-blue-700">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+        <button type="submit" className="ml-2 p-2 bg-[#3b82f6] text-white rounded-full hover:bg-blue-600 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
           </svg>
         </button>
       </form>
@@ -84,7 +87,7 @@ const ChatWindow = ({ chat, type, onClose, index }) => {
         className="flex items-center p-2 border-b border-gray-200 cursor-pointer flex-shrink-0"
         onClick={() => setIsMinimized(!isMinimized)}
       >
-        <img src={chat.avatarUrl} alt={chat.name} className="w-8 h-8 rounded-full mr-3" />
+        <img src={chat.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80'} alt={chat.name} className="w-8 h-8 rounded-full mr-3 object-cover" />
         <h3 className="text-md font-bold text-gray-800 truncate">{chat.name}</h3>
         <div className="flex-grow" />
         <button onClick={(e) => { e.stopPropagation(); setIsMinimized(!isMinimized); }} className="text-gray-500 hover:text-gray-800 p-1">

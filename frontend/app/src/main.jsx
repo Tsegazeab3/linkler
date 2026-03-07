@@ -5,11 +5,11 @@ import {
   Routes,
   Route,
   useLocation,
+  Navigate,
 } from 'react-router-dom';
 import './index.css';
 import App from './App.jsx';
 import LandingPage from './pages/LandingPage.jsx';
-import NavPage from './pages/NavPage.jsx';
 import SignInPage from './pages/SignInPage.jsx';
 import SignUpPage from './pages/SignUpPage.jsx';
 import ProfileCompletionPage from './pages/ProfileCompletionPage.jsx';
@@ -23,9 +23,24 @@ import PromotionsPage from './pages/PromotionsPage.jsx';
 import PromotionDetailPage from './pages/PromotionDetailPage.jsx';
 import GroupChatPage from './pages/GroupChatPage.jsx';
 import CreatePostModal from './components/CreatePostModal.jsx';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import AuthGuard from './components/AuthGuard';
 
 function NotFound() {
   return <h1>404 - Not Found</h1>;
+}
+
+// Logic to handle the root path based on auth status
+function HomeRedirect() {
+  const { isAuthenticated, loading } = useAuth();
+  
+  if (loading) return null; // Or a loading spinner
+  
+  if (isAuthenticated) {
+    return <Navigate to="/app" replace />;
+  }
+  
+  return <LandingPage />;
 }
 
 // This is the key component that will manage the routing logic
@@ -36,12 +51,13 @@ function AppRouter() {
   return (
     <>
       <Routes location={background || location}>
-        <Route path="/" element={<NavPage />} />
-        <Route path="/landing" element={<LandingPage />} />
+        <Route path="/" element={<HomeRedirect />} />
         <Route path="/signin" element={<SignInPage />} />
         <Route path="/signup" element={<SignUpPage />} />
-        <Route path="/complete-profile" element={<ProfileCompletionPage />} />
-        <Route path="/app" element={<App />}>
+        <Route path="/complete-profile" element={<AuthGuard><ProfileCompletionPage /></AuthGuard>} />
+        
+        {/* Protected App Routes */}
+        <Route path="/app" element={<AuthGuard><App /></AuthGuard>}>
           <Route index element={<IndexPage />} />
           <Route path="fellow_travelers" element={<FellowTravelersPage />} />
           <Route path="guides" element={<NewGuidesPage />} />
@@ -51,13 +67,14 @@ function AppRouter() {
           <Route path="promotions/:id" element={<PromotionDetailPage />} />
           <Route path="groups/:groupId" element={<GroupChatPage />} />
         </Route>
+        
         <Route path="*" element={<NotFound />} />
       </Routes>
 
       {background && (
         <Routes>
-          <Route path="/create" element={<CreatePostModal />} />
-          <Route path="/create-trip" element={<CreateTripPage />} />
+          <Route path="/create" element={<AuthGuard><CreatePostModal /></AuthGuard>} />
+          <Route path="/create-trip" element={<AuthGuard><CreateTripPage /></AuthGuard>} />
         </Routes>
       )}
     </>
@@ -66,8 +83,10 @@ function AppRouter() {
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <BrowserRouter>
-      <AppRouter />
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <AppRouter />
+      </BrowserRouter>
+    </AuthProvider>
   </StrictMode>,
 );

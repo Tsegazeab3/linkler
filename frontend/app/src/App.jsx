@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import SideNav from './components/SideNav';
 import ChatWindow from './components/ChatWindow'; // Import the new component
+import BottomNav from './components/BottomNav';
 import FloatingPlusButton from './components/FloatingPlusButton';
 
 function App() {
@@ -40,7 +41,10 @@ function App() {
     setOpenChats(prev => prev.filter(c => !(c.id === id && c.type === type)));
   };
 
-  const mainContentMargin = showSidePanel ? 'ml-[400px]' : 'ml-20';
+  // No left margin on mobile, 80px (w-20) on desktop, 400px when side panel is open on desktop
+  const mainContentMargin = showSidePanel
+    ? 'lg:ml-[400px]'
+    : 'ml-0 lg:ml-20';
 
   return (
     <div className="flex bg-[var(--color-linkler-bg)]">
@@ -52,14 +56,20 @@ function App() {
         onClosePanel={handleClosePanel}
       />
 
-      <main className={`grow transition-all duration-300 ${mainContentMargin}`}>
-        <Outlet />
+      <main className={`flex-1 transition-all duration-300 ${mainContentMargin} pb-16 lg:pb-0`}>
+        <Outlet context={{ handleOpenChat }} />
       </main>
 
       <FloatingPlusButton />
 
+      {/* Mobile Navigation */}
+      <BottomNav
+        onOpenChat={handleOpenChat}
+        onPanelItemClick={handlePanelItemClick}
+      />
+
       {/* Render Open Chat Windows */}
-      <div className="fixed bottom-0 right-0 z-9998">
+      <div className="fixed bottom-16 lg:bottom-0 right-0 z-[9998] flex flex-col lg:flex-row-reverse items-end space-y-2 lg:space-y-0 lg:space-x-2 lg:space-x-reverse">
         {openChats.map((chat, index) => (
           <ChatWindow
             key={`${chat.type}-${chat.id}`}
