@@ -21,11 +21,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # React integration
 FRONT_END_DIR = BASE_DIR/'frontend/'
-LANDING_PAGE_DIR = FRONT_END_DIR/'LandingPage'
-LANDING_PAGE_BUILD_DIR = LANDING_PAGE_DIR / 'dist'
-PROFILE_COMPLETION_PAGE_DIR = FRONT_END_DIR/'profile_completion_page'
-PROFILE_COMPLETION_PAGE_BUILD_DIR = PROFILE_COMPLETION_PAGE_DIR / 'dist'
-
+FRONTEND_APP_DIR = FRONT_END_DIR / 'app'
+FRONTEND_BUILD_DIR = FRONTEND_APP_DIR / 'dist'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -108,18 +105,13 @@ SITE_ID = 1
 # Email verification settings
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' # During development
 ACCOUNT_EMAIL_VERIFICATION = "none"
-ACCOUNT_AUTHENTICATION_METHOD = 'email'
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_LOGIN_METHODS = ["email"]
-# ACCOUNT_USERNAME_REQUIRED and ACCOUNT_AUTHENTICATION_METHOD are deprecated, so removed.
+ACCOUNT_LOGIN_METHODS = {'username', 'email'}
 ACCOUNT_UNIQUE_EMAIL = True
 
-ACCOUNT_SIGNUP_FIELDS = [
-    "username*",
-    "email*",
-    "password1*",
-    "password2*",
-]
+# django-allauth >= 0.64.0 uses ACCOUNT_SIGNUP_FIELDS
+# The asterisk (*) marks a field as required.
+# Every field in ACCOUNT_LOGIN_METHODS must be in this list and required.
+ACCOUNT_SIGNUP_FIELDS = ["username*", "email*", "password1*", "password2*"]
 
 LOGIN_REDIRECT_URL = '/complete-profile'
 LOGOUT_REDIRECT_URL = '/'
@@ -217,10 +209,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
-STATICFILES_DIRS = [
-    LANDING_PAGE_BUILD_DIR,
-    PROFILE_COMPLETION_PAGE_BUILD_DIR,
-]
+STATICFILES_DIRS = []
+if FRONTEND_BUILD_DIR.exists():
+    STATICFILES_DIRS.append(FRONTEND_BUILD_DIR)
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
