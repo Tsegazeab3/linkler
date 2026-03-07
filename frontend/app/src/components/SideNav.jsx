@@ -8,71 +8,93 @@ import SvgFellowTravelers from './icons/FellowTravelers.jsx';
 import SvgGroups from './icons/Groups.jsx';
 import SvgNewGuides from './icons/NewGuides.jsx';
 import SvgSettings from './icons/Settings.jsx';
+import SvgPromotions from './icons/Promotions.jsx';
 
-const SvgPromotions = (props) => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" {...props}>
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5a2 2 0 012 2v5a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z" />
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 13h5a2 2 0 012 2v5a2 2 0 01-2 2H7a2 2 0 01-2-2v-5a2 2 0 012-2z" />
-  </svg>
+const SidePanelItem = ({
+  onClick,
+  image,
+  imageAlt,
+  title,
+  subtitle,
+  time,
+  unread,
+  isSquareImage = false,
+  as: Component = 'button',
+  fallback,
+}) => (
+  <Component
+    onClick={onClick}
+    className="w-full text-left p-2 rounded-lg hover:bg-[var(--color-linkler-hover)] transition-colors duration-200 flex items-center space-x-3 focus:outline-none"
+  >
+    {image ? (
+      <img
+        src={image}
+        alt={imageAlt}
+        className={`${isSquareImage ? 'w-12 h-12 rounded-md object-cover' : 'w-10 h-10 rounded-full object-cover'} flex-shrink-0`}
+      />
+    ) : (
+      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold flex-shrink-0 overflow-hidden">
+        {fallback}
+      </div>
+    )}
+
+    <div className="flex-grow overflow-hidden">
+      <div className="flex justify-between items-center">
+        <h4 className={`font-semibold text-sm truncate ${unread ? 'text-gray-800' : 'text-black'}`}>
+          {title}
+        </h4>
+        {time && <span className="text-xs text-black flex-shrink-0">{time}</span>}
+      </div>
+
+      <div className={`text-xs truncate ${unread ? 'text-gray-800 font-medium' : 'text-black'}`}>
+        {subtitle}
+      </div>
+    </div>
+
+    {unread && (
+      <div className="w-2 h-2 bg-[#3b82f6] rounded-full flex-shrink-0 self-center ml-2"></div>
+    )}
+  </Component>
 );
 
-const ChatPreview = ({ onSelect, conversation }) => {
+const ConversationPreview = ({ conversation, onSelect, isGroup = false, as = 'button' }) => {
   const lastMsg = conversation.last_message;
+
+  const title = conversation.name || (isGroup ? 'Group Chat' : 'Personal Chat');
+  const fallback = (conversation.name || (isGroup ? 'G' : 'Chat')).charAt(0).toUpperCase();
+
+  const subtitle = lastMsg
+    ? isGroup
+      ? (
+        <>
+          <span className="font-medium">{lastMsg.sender_username}: </span>
+          {lastMsg.text}
+        </>
+      )
+      : lastMsg.text
+    : 'No messages yet';
+
+  const time = lastMsg
+    ? new Date(lastMsg.created_at).toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+    : '';
+
   return (
-    <button onClick={onSelect} className="w-full text-left p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200 flex items-center space-x-3">
-      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold flex-shrink-0 overflow-hidden">
-        {conversation.avatar ? (
-          <img src={conversation.avatar} alt={conversation.name} className="w-full h-full object-cover" />
-        ) : (
-          (conversation.name || 'Chat').charAt(0).toUpperCase()
-        )}
-      </div>
-      <div className="flex-grow overflow-hidden">
-        <div className="flex justify-between items-center">
-          <h4 className={`font-semibold text-sm truncate ${conversation.unread_count > 0 ? 'text-gray-900' : 'text-gray-500'}`}>
-            {conversation.name || 'Personal Chat'}
-          </h4>
-          <span className="text-xs text-gray-400 flex-shrink-0">
-            {lastMsg ? new Date(lastMsg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
-          </span>
-        </div>
-        <p className={`text-xs truncate ${conversation.unread_count > 0 ? 'text-gray-900 font-medium' : 'text-gray-500'}`}>
-          {lastMsg ? lastMsg.text : 'No messages yet'}
-        </p>
-      </div>
-      {conversation.unread_count > 0 && <div className="w-2 h-2 bg-[#3b82f6] rounded-full flex-shrink-0 self-center ml-2"></div>}
-    </button>
+    <SidePanelItem
+      onClick={onSelect}
+      image={conversation.avatar}
+      imageAlt={conversation.name}
+      title={title}
+      subtitle={subtitle}
+      time={time}
+      unread={conversation.unread_count > 0}
+      fallback={fallback}
+      as={as}
+    />
   );
 };
-
-const GroupChatPreview = ({ conversation, ...props }) => (
-    <div className="w-full text-left p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200 flex items-center space-x-3">
-        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold flex-shrink-0 overflow-hidden">
-          {conversation.avatar ? (
-            <img src={conversation.avatar} alt={conversation.name} className="w-full h-full object-cover" />
-          ) : (
-            (conversation.name || 'G').charAt(0).toUpperCase()
-          )}
-        </div>
-        <div className="flex-grow overflow-hidden">
-            <div className="flex justify-between items-center">
-                <h4 className={`font-semibold text-sm truncate ${conversation.unread_count > 0 ? 'text-gray-900' : 'text-gray-700'}`}>{conversation.name}</h4>
-                <span className="text-xs text-gray-400 flex-shrink-0">
-                  {conversation.last_message ? new Date(conversation.last_message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
-                </span>
-            </div>
-            <p className={`text-xs truncate ${conversation.unread_count > 0 ? 'text-gray-900 font-medium' : 'text-gray-500'}`}>
-                {conversation.last_message ? (
-                  <>
-                    <span className="font-medium">{conversation.last_message.sender_username}: </span>
-                    {conversation.last_message.text}
-                  </>
-                ) : 'No messages yet'}
-            </p>
-        </div>
-        {conversation.unread_count > 0 && <div className="w-2 h-2 bg-[#3b82f6] rounded-full flex-shrink-0 self-center ml-2"></div>}
-    </div>
-);
 
 const PreviewList = ({ items, renderItem, emptyMessage }) => (
   <div className="space-y-2">
@@ -99,20 +121,20 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
       });
     }
   }, [isAuthenticated, selectedNavItemId]);
-  
+
   const totalUnread = conversations.reduce((acc, conv) => acc + (conv.unread_count || 0), 0);
-  
+
   const navItems = [
     { id: 1, icon: SvgHome, name: 'Home', type: 'link', href: '/app' },
     { id: 2, icon: SvgSavedGuides, name: 'Saved Guides', type: 'panel' },
     { id: 3, icon: SvgChats, name: 'Messages', type: 'panel' },
     { id: 4, icon: SvgGroups, name: 'Groups', type: 'panel' },
-    { id: 5, icon: SvgFellowTravelers, name: 'Fellow Travelers', type: 'link', href: '/app/travelers' },
+    { id: 5, icon: SvgFellowTravelers, name: 'Fellow Travelers', type: 'link', href: '/app/fellow_travelers' },
     { id: 6, icon: SvgNewGuides, name: 'New Guides', type: 'link', href: '/app/guides' },
     { id: 7, icon: SvgPromotions, name: 'Promotions', type: 'link', href: '/app/promotions' },
     { id: 8, icon: SvgSettings, name: 'Settings', type: 'panel' },
   ];
-  
+
   const selectedNavItem = navItems.find(item => item.id === selectedNavItemId);
 
   const renderPanelContent = () => {
@@ -133,7 +155,7 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
                 </div>
               </div>
               <div className="pt-4 border-t border-white/10">
-                <button 
+                <button
                   onClick={logout}
                   className="w-full py-2 bg-red-500/10 text-red-500 rounded-lg font-semibold hover:bg-red-500/20 transition-colors"
                 >
@@ -156,9 +178,9 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
     switch (selectedNavItem.name) {
       case 'Messages':
         return (
-          <PreviewList 
-            items={conversations.filter(c => c.type === 'dm')} 
-            renderItem={conv => <ChatPreview key={conv.id} conversation={conv} onSelect={() => onOpenChat(conv, 'dm')} />} 
+          <PreviewList
+            items={conversations.filter(c => c.type === 'dm')}
+            renderItem={conv => <ConversationPreview key={conv.id} conversation={conv} onSelect={() => onOpenChat(conv, 'dm')} />}
             emptyMessage="No direct messages yet."
           />
         );
@@ -166,13 +188,13 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
         return <p className="text-gray-400 text-center py-10">You haven&apos;t saved any guides yet.</p>;
       case 'Groups':
         return (
-          <PreviewList 
-            items={conversations.filter(c => c.type === 'group')} 
+          <PreviewList
+            items={conversations.filter(c => c.type === 'group')}
             renderItem={conv => (
               <Link to={`/app/groups/${conv.id}`} key={conv.id} onClick={onClosePanel}>
-                <GroupChatPreview conversation={conv} />
+                <ConversationPreview conversation={conv} isGroup as="div" />
               </Link>
-            )} 
+            )}
             emptyMessage="You haven&apos;t joined any groups yet."
           />
         );
@@ -205,7 +227,7 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
         return <p className="text-gray-400 text-center py-10">Content for {selectedNavItem.name} goes here.</p>;
     }
   };
-  
+
   const renderNavItem = (item) => {
     const Icon = item.icon;
     const content = (
@@ -222,14 +244,10 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
       </>
     );
 
-    const baseClasses = "flex flex-col items-center justify-center w-full py-3 px-1 transition-colors duration-200 focus:outline-none";
-    const inactiveClasses = "hover:bg-blue-50 text-gray-600";
-    const activeClasses = "bg-blue-100 text-[#3b82f6]";
-
     if (item.type === 'link') {
       const handleClick = item.name === 'Home' ? onClosePanel : null;
       return (
-        <Link to={item.href} onClick={handleClick} className={`${baseClasses} ${inactiveClasses}`}>
+        <Link to={item.href} onClick={handleClick} className="flex flex-col items-center justify-center w-full p-4 hover:bg-[var(--color-linkler-hover)]  transition-colors duration-200 focus:outline-none">
           {content}
         </Link>
       );
@@ -238,7 +256,7 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
     return (
       <button
         onClick={() => onPanelItemClick(item.id)}
-        className={`${baseClasses} ${selectedNavItemId === item.id ? activeClasses : inactiveClasses}`}
+        className={`flex flex-col items-center justify-center w-full p-4 hover:bg-[var(--color-linkler-hover)]  transition-colors duration-200 focus:outline-none ${selectedNavItemId === item.id ? 'bg-[#8D6E63]' : ''}`}
         aria-label={item.name}
         aria-expanded={selectedNavItemId === item.id && showSidePanel}
       >
@@ -253,7 +271,7 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
         <nav className="flex-grow flex flex-col items-center pt-8 overflow-y-auto no-scrollbar">
           <ul className="w-full">
             {navItems.map((item) => (
-              <li key={item.id} className="mb-1 w-full text-center">
+              <li key={item.id} className="mb-2 text-center">
                 {renderNavItem(item)}
               </li>
             ))}
@@ -264,12 +282,12 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
         <div className="mt-auto pb-4 flex flex-col items-center border-t border-gray-100 pt-4">
           {isAuthenticated ? (
             user ? (
-              <div 
+              <div
                 onClick={() => onPanelItemClick('user_profile')}
                 className={`relative group flex flex-col items-center w-full px-2 cursor-pointer py-2 hover:bg-gray-50 transition-colors ${selectedNavItemId === 'user_profile' ? 'bg-gray-100' : ''}`}
               >
                 <div className="w-10 h-10 rounded-full bg-[#3b82f6]/10 flex items-center justify-center text-[#3b82f6] font-bold text-base border-2 border-white shadow-sm overflow-hidden">
-                    <img src={user.profile_picture || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80'} alt={user.username} className="w-full h-full object-cover" />
+                  <img src={user.profile_picture || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80'} alt={user.username} className="w-full h-full object-cover" />
                 </div>
                 <span className="text-[10px] text-gray-400 mt-1 truncate w-full text-center px-1 font-medium">
                   {user.username}
@@ -278,7 +296,7 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
                 {/* Tooltip/Popout for Username and Email */}
                 <div className="absolute left-full bottom-8 ml-2 hidden group-hover:block w-56 bg-white shadow-2xl rounded-xl p-4 border border-gray-100 z-50 animate-in fade-in slide-in-from-left-2 duration-200">
                   <div className="flex items-center gap-3 mb-3 pb-3 border-b border-gray-50">
-                     <div className="w-10 h-10 rounded-full bg-[#3b82f6] flex items-center justify-center text-white font-bold shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-[#3b82f6] flex items-center justify-center text-white font-bold shrink-0">
                       {user.username?.charAt(0).toUpperCase() || 'U'}
                     </div>
                     <div className="overflow-hidden">
@@ -286,7 +304,7 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
                       <p className="text-xs text-gray-400 truncate">{user.email}</p>
                     </div>
                   </div>
-                  <button 
+                  <button
                     onClick={logout}
                     className="w-full text-left p-2.5 rounded-lg text-red-600 hover:bg-red-50 text-xs font-bold flex items-center gap-2 transition-all active:scale-95"
                   >
@@ -309,7 +327,7 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
 
       {showSidePanel && (
         <div
-          className="fixed top-0 left-0 lg:left-20 h-full bg-white w-full lg:w-80 p-4 border-r border-gray-200 z-[42] shadow-xl"
+          className="fixed top-0 left-20 h-full bg-[#f5deb3] w-80 p-4 border-l border-gray-600 z-50"
         >
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-bold text-gray-900">{selectedNavItem?.name || 'Profile'}</h3>

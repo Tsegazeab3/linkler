@@ -59,7 +59,7 @@ function AppRouter() {
         {/* Protected App Routes */}
         <Route path="/app" element={<AuthGuard><App /></AuthGuard>}>
           <Route index element={<IndexPage />} />
-          <Route path="travelers" element={<FellowTravelersPage />} />
+          <Route path="fellow_travelers" element={<FellowTravelersPage />} />
           <Route path="guides" element={<NewGuidesPage />} />
           <Route path="guides/:id" element={<GuideDetailPage />} />
           <Route path="profile/:userId" element={<UserProfilePage />} />

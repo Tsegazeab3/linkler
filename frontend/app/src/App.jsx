@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import SideNav from './components/SideNav';
 import ChatWindow from './components/ChatWindow'; // Import the new component
-import FloatingActionButton from './components/FloatingActionButton';
 import BottomNav from './components/BottomNav';
+import FloatingPlusButton from './components/FloatingPlusButton';
 
 function App() {
   const [openChats, setOpenChats] = useState([]);
@@ -42,31 +42,29 @@ function App() {
   };
 
   // No left margin on mobile, 80px (w-20) on desktop, 400px when side panel is open on desktop
-  const mainContentMargin = showSidePanel 
-    ? 'lg:ml-[400px]' 
+  const mainContentMargin = showSidePanel
+    ? 'lg:ml-[400px]'
     : 'ml-0 lg:ml-20';
 
   return (
-    <div className="flex flex-col min-h-screen bg-[var(--color-linkler-bg)]">
-      <div className="flex flex-1">
-        <SideNav 
-          onOpenChat={handleOpenChat}
-          showSidePanel={showSidePanel}
-          selectedNavItemId={selectedNavItemId}
-          onPanelItemClick={handlePanelItemClick}
-          onClosePanel={handleClosePanel}
-        />
+    <div className="flex bg-[var(--color-linkler-bg)]">
+      <SideNav
+        onOpenChat={handleOpenChat}
+        showSidePanel={showSidePanel}
+        selectedNavItemId={selectedNavItemId}
+        onPanelItemClick={handlePanelItemClick}
+        onClosePanel={handleClosePanel}
+      />
 
-        <main className={`flex-1 transition-all duration-300 ${mainContentMargin} pb-16 lg:pb-0`}>
-          <Outlet context={{ handleOpenChat }} />
-        </main>
-      </div>
+      <main className={`flex-1 transition-all duration-300 ${mainContentMargin} pb-16 lg:pb-0`}>
+        <Outlet context={{ handleOpenChat }} />
+      </main>
 
-      <FloatingActionButton />
+      <FloatingPlusButton />
 
       {/* Mobile Navigation */}
-      <BottomNav 
-        onOpenChat={handleOpenChat} 
+      <BottomNav
+        onOpenChat={handleOpenChat}
         onPanelItemClick={handlePanelItemClick}
       />
 
