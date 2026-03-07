@@ -13,7 +13,6 @@ class ProfileUpdateView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         return self.request.user
-<<<<<<< Updated upstream
 
 class GuideListView(generics.ListAPIView):
     """
@@ -52,5 +51,3 @@ class UserDetailView(generics.RetrieveAPIView):
     permission_classes = [AllowAny]
     lookup_field = 'id'
     lookup_url_kwarg = 'user_id'
-=======
->>>>>>> Stashed changes
