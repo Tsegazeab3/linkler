@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
-import { useOutletContext } from 'react-router-dom';
+import { useOutletContext, Link, useLocation } from 'react-router-dom';
 import { followUser, unfollowUser, createDM } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 const PostCard = ({
   id,
   mediaType,
   mediaUrl,
   aspectRatio, // '1:1' or '4:5'
+  textAlignment = 'center',
   caption,
   timestamp,
   likeCount,
@@ -21,7 +23,21 @@ const PostCard = ({
   const [isCaptionExpanded, setIsCaptionExpanded] = useState(false);
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
   const [followLoading, setFollowLoading] = useState(false);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const { handleOpenChat } = useOutletContext();
+  const { user } = useAuth();
+  const location = useLocation();
+
+  const isAuthor = user?.id === userId || user?.pk === userId;
+
+  // Helper to ensure media URLs are handled correctly
+  const getFullMediaUrl = (url) => {
+    if (!url) return null;
+    // With Vite proxy, /media/... will be automatically routed to http://localhost:8000/media/...
+    return url;
+  };
+
+  const fullMediaUrl = getFullMediaUrl(mediaUrl);
 
   const handleFollow = async () => {
     setFollowLoading(true);
@@ -54,6 +70,25 @@ const PostCard = ({
 
   return (
     <div className="bg-white border border-gray-300 rounded-lg w-full max-w-sm mx-auto my-4 overflow-hidden shadow-sm">
+      {/* Lightbox Modal */}
+      {isLightboxOpen && (
+        <div 
+          className="fixed inset-0 z-[10000] bg-black/95 flex items-center justify-center p-4 animate-in fade-in duration-300 backdrop-blur-sm"
+          onClick={() => setIsLightboxOpen(false)}
+        >
+          <button className="absolute top-6 right-6 text-white hover:scale-110 transition-transform">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          <img 
+            src={fullMediaUrl} 
+            alt="Fullscreen view" 
+            className="max-w-full max-h-full object-contain rounded-lg shadow-2xl animate-in zoom-in-95 duration-300"
+          />
+        </div>
+      )}
+
       {/* User Info Section */}
       <div className="flex items-center p-2">
         <img
@@ -70,46 +105,70 @@ const PostCard = ({
           )}
         </div>
         <div className="flex items-center space-x-2">
-          <button 
-            onClick={handleChat}
-            className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-            title="Start Chat"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
-          </button>
-          <button 
-            onClick={handleFollow}
-            disabled={followLoading}
-            className={`${isFollowing ? 'text-gray-500' : 'text-blue-500'} text-xs font-bold px-3 py-1 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors`}
-          >
-            {isFollowing ? 'Following' : 'Follow'}
-          </button>
+          {isAuthor ? (
+            <Link
+              to={`/edit-post/${id}`}
+              state={{ background: location }}
+              className="text-xs font-bold px-3 py-1 bg-gray-50 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
+            >
+              Edit
+            </Link>
+          ) : (
+            <>
+              <button 
+                onClick={handleChat}
+                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                title="Start Chat"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+              </button>
+              <button 
+                onClick={handleFollow}
+                disabled={followLoading}
+                className={`${isFollowing ? 'text-gray-500' : 'text-blue-500'} text-xs font-bold px-3 py-1 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors`}
+              >
+                {isFollowing ? 'Following' : 'Follow'}
+              </button>
+            </>
+          )}
         </div>
       </div>
 
       {/* Media Renderer */}
-      <div className={`relative w-full bg-gray-200 ${aspectRatioClass}`}>
-        {mediaType === 'image' && (
-          <img
-            src={mediaUrl || 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80'}
-            alt="Post media"
-            className="absolute top-0 left-0 w-full h-full object-cover"
-            loading="lazy" // Compatible with lazy loading
-          />
-        )}
-        {mediaType === 'video' && (
-          <video
-            src={mediaUrl}
-            controls
-            className="absolute top-0 left-0 w-full h-full object-cover"
-            preload="metadata" // Compatible with preloading
-          >
-            Your browser does not support the video tag.
-          </video>
-        )}
-      </div>
+      {(mediaType === 'image' || mediaType === 'video') ? (
+        <div 
+            className={`relative w-full bg-gray-200 ${aspectRatioClass} ${mediaType === 'image' ? 'cursor-zoom-in' : ''}`}
+            onClick={() => mediaType === 'image' && setIsLightboxOpen(true)}
+        >
+          {mediaType === 'image' && (
+            <img
+              src={fullMediaUrl || 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80'}
+              alt="Post media"
+              className="absolute top-0 left-0 w-full h-full object-cover"
+              loading="lazy" // Compatible with lazy loading
+            />
+          )}
+          {mediaType === 'video' && (
+            <video
+              src={fullMediaUrl}
+              controls
+              className="absolute top-0 left-0 w-full h-full object-cover"
+              preload="metadata" // Compatible with preloading
+            >
+              Your browser does not support the video tag.
+            </video>
+          )}
+        </div>
+      ) : (
+        /* Text-only Post Style: Height is now relative to text length */
+        <div className={`relative w-full flex items-center justify-center py-12 px-6 bg-linear-to-br from-blue-50 to-indigo-50 border-y border-gray-100`}>
+           <p className={`text-lg md:text-xl text-gray-800 font-medium italic leading-relaxed w-full text-${textAlignment}`}>
+             {caption}
+           </p>
+        </div>
+      )}
 
       {/* Action Bar */}
       <div className="p-2 flex items-center justify-between">
@@ -191,7 +250,7 @@ const PostCard = ({
       </div>
 
       {/* Caption Block */}
-      {caption && (
+      {(caption && (mediaType === 'image' || mediaType === 'video')) && (
         <div className="px-2 py-1 text-sm text-gray-600">
           <p className={isCaptionExpanded ? '' : 'line-clamp-2'}>
             <span className="font-semibold mr-1">{username}</span>

@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+import bleach
 
 class Post(models.Model):
     """
@@ -37,6 +38,12 @@ class Post(models.Model):
         max_length=10,
         blank=True, null=True,
         help_text="Aspect ratio of the media (e.g., '1:1', '4:5')."
+    )
+    text_alignment = models.CharField(
+        max_length=10,
+        choices=[('left', 'Left'), ('center', 'Center'), ('right', 'Right')],
+        default='center',
+        help_text="Alignment of the text in text-only posts."
     )
     caption = models.TextField(
         blank=True,

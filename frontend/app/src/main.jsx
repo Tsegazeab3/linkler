@@ -22,8 +22,14 @@ import CreateTripPage from './pages/CreateTripPage.jsx';
 import PromotionsPage from './pages/PromotionsPage.jsx';
 import PromotionDetailPage from './pages/PromotionDetailPage.jsx';
 import GroupChatPage from './pages/GroupChatPage.jsx';
+import MessagesPage from './pages/MessagesPage.jsx';
+import GroupsPage from './pages/GroupsPage.jsx';
+import SavedGuidesPage from './pages/SavedGuidesPage.jsx';
+import SettingsPage from './pages/SettingsPage.jsx';
 import CreatePostModal from './components/CreatePostModal.jsx';
+import EditPostModal from './components/EditPostModal.jsx';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { NotificationProvider } from './context/NotificationContext';
 import AuthGuard from './components/AuthGuard';
 
 function NotFound() {
@@ -66,6 +72,10 @@ function AppRouter() {
           <Route path="promotions" element={<PromotionsPage />} />
           <Route path="promotions/:id" element={<PromotionDetailPage />} />
           <Route path="groups/:groupId" element={<GroupChatPage />} />
+          <Route path="messages" element={<AuthGuard><MessagesPage /></AuthGuard>} />
+          <Route path="groups" element={<AuthGuard><GroupsPage /></AuthGuard>} />
+          <Route path="saved" element={<AuthGuard><SavedGuidesPage /></AuthGuard>} />
+          <Route path="settings" element={<AuthGuard><SettingsPage /></AuthGuard>} />
         </Route>
         
         <Route path="*" element={<NotFound />} />
@@ -75,6 +85,7 @@ function AppRouter() {
         <Routes>
           <Route path="/create" element={<AuthGuard><CreatePostModal /></AuthGuard>} />
           <Route path="/create-trip" element={<AuthGuard><CreateTripPage /></AuthGuard>} />
+          <Route path="/edit-post/:id" element={<AuthGuard><EditPostModal /></AuthGuard>} />
         </Routes>
       )}
     </>
@@ -84,9 +95,11 @@ function AppRouter() {
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <AuthProvider>
-      <BrowserRouter>
-        <AppRouter />
-      </BrowserRouter>
+      <NotificationProvider>
+        <BrowserRouter>
+          <AppRouter />
+        </BrowserRouter>
+      </NotificationProvider>
     </AuthProvider>
   </StrictMode>,
 );

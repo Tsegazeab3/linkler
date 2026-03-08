@@ -66,15 +66,9 @@ function Header() {
               <RightArrowIcon className="h-5 w-5" />
             </button>
           </Link>
-          <Link to="/login">
+          <Link to="/signin">
             <button className="flex items-center justify-center gap-2 bg-white px-6 py-2 rounded-full border-2 transition-all duration-300 ease-in-out hover:shadow-xl hover:bg-gray-100 hover:-translate-x-1 hover:-translate-y-1">
-              <span className="font-bold text-sm whitespace-nowrap">Log in</span>
-              <RightArrowIcon className="h-5 w-5" />
-            </button>
-          </Link>
-          <Link to="/register-guide"> {/* New button for Register Guide */}
-            <button className="flex items-center justify-center gap-2 bg-blue-500 text-white px-3 md:px-6 py-2 rounded-full border-2 transition-all duration-300 ease-in-out hover:shadow-xl hover:bg-blue-600 hover:-translate-x-1 hover:-translate-y-1">
-              <span className="font-bold text-sm whitespace-nowrap">Register Guide</span>
+              <span className="font-bold text-sm whitespace-nowrap">Sign in</span>
               <RightArrowIcon className="h-5 w-5" />
             </button>
           </Link>
@@ -96,8 +90,7 @@ function Header() {
               {/* Mobile Only: Sign up / Log in (Hidden above 420px) */}
               <div className="flex flex-col gap-4 min-[420px]:hidden w-64 text-center pb-4 border-b border-gray-200">
                 <Link to="/signup" className="text-xl font-bold" onClick={toggleMenu}>Sign up</Link>
-                <Link to="/login" className="text-xl font-bold" onClick={toggleMenu}>Log in</Link>
-                <Link to="/register-guide" className="text-xl font-bold text-blue-600" onClick={toggleMenu}>Register Guide</Link> {/* New button for Register Guide */}
+                <Link to="/signin" className="text-xl font-bold" onClick={toggleMenu}>Sign in</Link>
               </div>
 
               {['Web', 'Support', 'Download', 'About', 'Contribute'].map((item) => (

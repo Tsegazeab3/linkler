@@ -3,83 +3,135 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import SvgHome from './icons/Home.jsx';
 import SvgFellowTravelers from './icons/FellowTravelers.jsx';
-import SvgNewGuides from './icons/NewGuides.jsx';
 import SvgChats from './icons/Chats.jsx';
+import SvgSettings from './icons/Settings.jsx';
+import SvgNewGuides from './icons/NewGuides.jsx';
+import SvgPromotions from './icons/Promotions.jsx';
 
 const BottomNav = ({ onOpenChat, onPanelItemClick }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, isAuthenticated } = useAuth();
+  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 
   const navItems = [
     { id: 'home', icon: SvgHome, label: 'Home', path: '/app' },
-    { id: 'travelers', icon: SvgFellowTravelers, label: 'Travelers', path: '/app/travelers' },
-    { id: 'create', label: 'Create', path: '/create', isCenter: true },
+    { id: 'travelers', icon: SvgFellowTravelers, label: 'Travelers', path: '/app/fellow_travelers' },
+    { id: 'messages', icon: SvgChats, label: 'Messages', path: '/app/messages' },
     { id: 'guides', icon: SvgNewGuides, label: 'Guides', path: '/app/guides' },
-    { id: 'messages', icon: SvgChats, label: 'Chats', path: '/app', panelId: 3 }, 
+    { id: 'promotions', icon: SvgPromotions, label: 'Deals', path: '/app/promotions' },
+    { id: 'settings', icon: SvgSettings, label: 'Settings', path: '/app/settings' },
   ];
 
   const handleNavClick = (item) => {
-    if (item.panelId && onPanelItemClick) {
-      onPanelItemClick(item.panelId);
-      return;
-    }
+    setIsMenuOpen(false);
     navigate(item.path);
   };
 
-  const handleCreateClick = () => {
-    navigate('/create', { state: { background: location } });
+  const handleCreateAction = (path) => {
+    setIsMenuOpen(false);
+    navigate(path, { state: { background: location } });
   };
 
+  const isHomePage = location.pathname === '/app';
+
   return (
-    <div className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-white border-t border-gray-200 flex items-center justify-around z-50 px-2">
-      {navItems.map((item) => {
-        const Icon = item.icon;
-        const isActive = location.pathname === item.path;
+    <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 flex flex-col items-center pb-6 pointer-events-none">
+      {/* Sileo-Style Floating Sheet (The 'Toaster') */}
+      {isHomePage && isMenuOpen && (
+        <div className="w-[92%] max-w-sm mb-4 animate-in fade-in slide-in-from-bottom-8 duration-300 pointer-events-auto">
+          <div className="bg-white/80 backdrop-blur-2xl border border-white/20 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] overflow-hidden">
+            <div className="p-2 grid grid-cols-2 gap-2">
+              <button
+                onClick={() => handleCreateAction('/create-trip')}
+                className="flex flex-col items-center justify-center py-6 px-4 rounded-[1.5rem] bg-blue-500/10 hover:bg-blue-500/20 active:scale-95 transition-all group"
+              >
+                <div className="w-12 h-12 bg-blue-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-500/30 mb-3 group-hover:scale-110 transition-transform">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                </div>
+                <span className="font-bold text-xs text-blue-600 uppercase tracking-widest">New Trip</span>
+              </button>
 
-        if (item.isCenter) {
-          return (
-            <button
-              key={item.id}
-              onClick={handleCreateClick}
-              className="flex items-center justify-center -mt-8 bg-[#3b82f6] text-white rounded-full w-14 h-14 shadow-lg border-4 border-[var(--color-linkler-bg)] active:scale-95 transition-transform"
+              <button
+                onClick={() => handleCreateAction('/create')}
+                className="flex flex-col items-center justify-center py-6 px-4 rounded-[1.5rem] bg-emerald-500/10 hover:bg-emerald-500/20 active:scale-95 transition-all group"
+              >
+                <div className="w-12 h-12 bg-emerald-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-emerald-500/30 mb-3 group-hover:scale-110 transition-transform">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+                </div>
+                <span className="font-bold text-xs text-emerald-600 uppercase tracking-widest">New Post</span>
+              </button>
+            </div>
+            
+            <button 
+                onClick={() => setIsMenuOpen(false)}
+                className="w-full py-4 bg-gray-50/50 text-gray-400 text-[10px] font-bold uppercase tracking-[0.2em] border-t border-gray-100 hover:text-gray-600 transition-colors"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
+                Close Menu
             </button>
-          );
-        }
-
-        return (
-          <button
-            key={item.id}
-            onClick={() => handleNavClick(item)}
-            className={`flex flex-col items-center justify-center w-12 h-full transition-colors ${isActive ? 'text-[#3b82f6]' : 'text-gray-400'}`}
-          >
-            {Icon && <Icon className="w-6 h-6" />}
-            <span className="text-[10px] mt-0.5 font-medium">{item.label}</span>
-          </button>
-        );
-      })}
-      
-      {isAuthenticated && user && (
-        <button
-          onClick={() => navigate(`/app/profile/${user.id}`)}
-          className={`flex flex-col items-center justify-center w-12 h-full ${location.pathname.includes('/profile/') ? 'text-[#3b82f6]' : 'text-gray-400'}`}
-        >
-          <div className="w-6 h-6 rounded-full bg-gray-200 overflow-hidden border border-gray-100">
-            {user.profile_picture ? (
-              <img src={user.profile_picture} alt="Profile" className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-[10px] font-bold">
-                {user.username?.charAt(0).toUpperCase()}
-              </div>
-            )}
           </div>
-          <span className="text-[10px] mt-0.5 font-medium">Profile</span>
-        </button>
+        </div>
       )}
+
+      {/* Main Create Button - Centered above the bar */}
+      {isHomePage && (
+        <div className="mb-4 pointer-events-auto">
+            <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className={`bg-blue-600 text-white rounded-full w-16 h-16 shadow-[0_10px_30px_rgba(37,99,235,0.4)] border-4 border-white active:scale-90 transition-all flex items-center justify-center ${isMenuOpen ? 'rotate-45 bg-gray-900 shadow-none' : ''}`}
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-9 w-9" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+                </svg>
+            </button>
+        </div>
+      )}
+
+      {/* Main Navigation Bar - Sileo Tab Bar Style */}
+      <div className="w-[94%] max-w-md h-16 bg-white/80 backdrop-blur-xl border border-white/20 rounded-[2rem] shadow-[0_10px_40px_rgba(0,0,0,0.08)] flex items-center pointer-events-auto overflow-hidden">
+        <div className="w-full h-full flex items-center overflow-x-auto no-scrollbar px-6 space-x-8 scroll-smooth">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = location.pathname === item.path;
+
+            return (
+              <button
+                key={item.id}
+                onClick={() => handleNavClick(item)}
+                className={`flex flex-col items-center justify-center min-w-[40px] h-full transition-all shrink-0 ${isActive ? 'text-blue-600' : 'text-gray-400'}`}
+              >
+                <div className={`transition-all duration-300 ${isActive ? 'scale-110 -translate-y-0.5' : 'opacity-70'}`}>
+                  {Icon && <Icon className="w-6 h-6" />}
+                </div>
+                <span className={`text-[8px] mt-1 font-black uppercase tracking-[0.15em] ${isActive ? 'opacity-100' : 'opacity-0 h-0 translate-y-2'} transition-all duration-300`}>
+                  {item.label}
+                </span>
+              </button>
+            );
+          })}
+
+          {/* Profile Link */}
+          {isAuthenticated && user && (
+            <button
+              onClick={() => { setIsMenuOpen(false); navigate(`/app/profile/${user.id}`); }}
+              className={`flex flex-col items-center justify-center min-w-[40px] h-full shrink-0 ${location.pathname.includes('/profile/') ? 'text-blue-600' : 'text-gray-400'}`}
+            >
+              <div className={`p-0.5 rounded-full border-2 transition-all ${location.pathname.includes('/profile/') ? 'border-blue-600 scale-110 -translate-y-0.5' : 'border-transparent opacity-70'}`}>
+                <div className="w-5 h-5 rounded-full bg-gray-100 overflow-hidden">
+                  <img 
+                    src={user.profile_picture || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80'} 
+                    alt="Profile" 
+                    className="w-full h-full object-cover" 
+                  />
+                </div>
+              </div>
+              <span className={`text-[8px] mt-1 font-black uppercase tracking-[0.15em] ${location.pathname.includes('/profile/') ? 'opacity-100' : 'opacity-0 h-0 translate-y-2'} transition-all duration-300`}>
+                Me
+              </span>
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

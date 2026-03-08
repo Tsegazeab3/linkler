@@ -1,19 +1,20 @@
 import React, { useState } from 'react';
 import { createPost } from '../services/api';
+import { useNotification } from '../context/NotificationContext';
 
 const MAX_CAPTION_LENGTH = 500;
 
 const PostDetails = ({ file, fileType, onBack, postMode, onSuccess }) => {
+  const { showNotification } = useNotification();
   const [caption, setCaption] = useState('');
   const [audience, setAudience] = useState('public');
   const [disableComments, setDisableComments] = useState(false);
   const [aspectRatio, setAspectRatio] = useState('1:1');
+  const [textAlignment, setTextAlignment] = useState('center');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
 
   const handleSubmit = (status) => {
     setLoading(true);
-    setError(null);
 
     const formData = new FormData();
     formData.append('caption', caption);
@@ -26,17 +27,18 @@ const PostDetails = ({ file, fileType, onBack, postMode, onSuccess }) => {
       formData.append('media_file', file);
       formData.append('media_type', fileType);
       formData.append('aspect_ratio', aspectRatio);
+    } else if (postMode === 'text') {
+      formData.append('text_alignment', textAlignment);
     }
 
     createPost(formData)
       .then(response => {
-        console.log('Post created successfully:', response.data);
-        alert('Post created successfully!');
-        onSuccess(); // Close the modal on success
+        showNotification('Post created successfully!', 'success');
+        if (onSuccess) onSuccess(); // Close the modal on success
       })
       .catch(err => {
         console.error('Error creating post:', err.response ? err.response.data : err);
-        setError('Failed to create post. Please try again.');
+        showNotification('Failed to create post. Please try again.', 'error');
       })
       .finally(() => {
         setLoading(false);
@@ -82,10 +84,26 @@ const PostDetails = ({ file, fileType, onBack, postMode, onSuccess }) => {
               disabled={loading}
             />
             <p className={`text-xs text-right mt-1 ${captionLengthColor}`}>{caption.length} / {MAX_CAPTION_LENGTH}</p>
-          </div>
+            </div>
 
-          {/* Settings */}
-          <div className="space-y-4">
+            {postMode === 'text' && (
+            <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Text Alignment</label>
+            <div className="flex space-x-4">
+              {['left', 'center', 'right'].map((align) => (
+                <button
+                  key={align}
+                  onClick={() => setTextAlignment(align)}
+                  className={`px-4 py-2 text-sm font-medium rounded-md border ${textAlignment === align ? 'bg-[#3b82f6] text-white border-[#3b82f6]' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`}
+                >
+                  {align.charAt(0).toUpperCase() + align.slice(1)}
+                </button>
+              ))}
+            </div>
+            </div>
+            )}
+
+            {/* Settings */}          <div className="space-y-4">
             <div>
               <label htmlFor="audience" className="block text-sm font-medium text-gray-700">Audience</label>
               <select id="audience" value={audience} onChange={(e) => setAudience(e.target.value)} disabled={loading} className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-[#3b82f6] focus:border-[#3b82f6] sm:text-sm rounded-md">
@@ -100,9 +118,6 @@ const PostDetails = ({ file, fileType, onBack, postMode, onSuccess }) => {
             </div>
           </div>
         </div>
-
-        {/* Error Message */}
-        {error && <p className="text-sm text-red-500 text-center my-2">{error}</p>}
 
         {/* Action Buttons */}
         <div className="flex justify-end items-center space-x-4 pt-4 mt-4 border-t border-gray-200">

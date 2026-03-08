@@ -72,8 +72,6 @@ INSTALLED_APPS = [
 
         'accounts',
 
-        'temp_registration_form',
-
         'posts',
         'discovery',
         'chat',
@@ -90,6 +88,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
+    'linkler.middleware.SanitizationMiddleware',
 ]
 
 # ... (rest of the file)

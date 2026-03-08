@@ -1,12 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import TripCard from '../components/TripCard';
-import ActionButtons from '../components/ActionButtons';
 import { getTrips } from '../services/api';
 
 const FellowTravelersPage = () => {
   const [trips, setTrips] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+  
+  // Swipe logic refs
+  const touchStartX = useRef(null);
+  const touchEndX = useRef(null);
+  const minSwipeDistance = 50;
 
   useEffect(() => {
     getTrips()
@@ -30,6 +34,29 @@ const FellowTravelersPage = () => {
   const handlePrevious = () => {
     if (currentIndex > 0) {
       setCurrentIndex(currentIndex - 1);
+    }
+  };
+
+  const onTouchStart = (e) => {
+    touchEndX.current = null;
+    touchStartX.current = e.targetTouches[0].clientX;
+  };
+
+  const onTouchMove = (e) => {
+    touchEndX.current = e.targetTouches[0].clientX;
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStartX.current || !touchEndX.current) return;
+    
+    const distance = touchStartX.current - touchEndX.current;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe) {
+      handleNext();
+    } else if (isRightSwipe) {
+      handlePrevious();
     }
   };
 
@@ -67,15 +94,31 @@ const FellowTravelersPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 lg:p-8">
-      <div className='items-center flex flex-col w-full'>
-        <TripCard trip={formattedTrip} />
-        <div className="mt-4 flex flex-col items-center">
-          <ActionButtons onNext={handleNext} onPrevious={handlePrevious} />
-          <p className="text-xs text-gray-500 mt-2">
-            Trip {currentIndex + 1} of {trips.length}
-          </p>
+    <div 
+      className="min-h-screen flex items-center justify-center p-4 lg:p-8 select-none"
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+    >
+      <div className='items-center flex flex-col w-full max-w-sm'>
+        <div className="relative w-full transition-all duration-300">
+           <TripCard trip={formattedTrip} />
         </div>
+        
+        {/* Pagination Dots */}
+        <div className="mt-6 flex items-center space-x-2">
+          {trips.slice(0, 10).map((_, idx) => (
+            <div 
+              key={idx} 
+              className={`h-1.5 transition-all duration-300 rounded-full ${idx === currentIndex ? 'w-6 bg-[#3b82f6]' : 'w-1.5 bg-gray-300'}`}
+            />
+          ))}
+          {trips.length > 10 && <span className="text-[10px] text-gray-400 font-bold">+{trips.length - 10}</span>}
+        </div>
+
+        <p className="text-[10px] uppercase tracking-widest text-gray-400 mt-4 font-bold">
+          Swipe left or right to explore
+        </p>
       </div>
     </div>
   );

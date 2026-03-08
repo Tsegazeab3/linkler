@@ -1,25 +1,13 @@
 """
 URL configuration for linkler project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.1/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.conf import settings
 from django.http import HttpResponse
+from django.conf.urls.static import static
 from django.views.static import serve
-from django.conf.urls.static import static # Import 'static'
+from .media_server import serve_media
 
 def serve_react_app(request):
     try:
@@ -35,23 +23,30 @@ def serve_react_app(request):
         )
 
 urlpatterns = [
+    # High priority: Media serving via standard serve view
+    re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
+    
+    # Core Admin
     path('admin/', admin.site.urls),
-    path('accounts/', include('allauth.urls')),
+    
+    # API Routes
     path('api/accounts/', include('accounts.urls')),
     path('api/posts/', include('posts.urls')),
     path('api/promotions/', include('discovery.urls')),
     path('api/chat/', include('chat.urls')),
-    # dj-rest-auth URLs
+    
+    # Authentication
+    path('accounts/', include('allauth.urls')),
     path('api/auth/', include('dj_rest_auth.urls')),
     path('api/auth/registration/', include('dj_rest_auth.registration.urls')),
+    
+    # React App Catch-alls
     path('complete-profile/', serve_react_app, name='profile_completion_app'),
-    path('', serve_react_app, name='react_app'), # Serve React app at root
+    path('', serve_react_app, name='react_app'), 
 ]
 
+# Static files serving for Development
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    # Serve React app's assets from /assets/
     urlpatterns += static('/assets/', document_root=settings.FRONTEND_BUILD_DIR / 'assets')
-    # Serve other static files that might be directly in the build root (e.g., /static/vite.svg)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.FRONTEND_BUILD_DIR)
-

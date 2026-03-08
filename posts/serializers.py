@@ -33,6 +33,7 @@ class PostSerializer(serializers.ModelSerializer):
             'media_file',
             'media_type',
             'aspect_ratio',
+            'text_alignment',
             'status',
             'audience',
             'allow_comments',

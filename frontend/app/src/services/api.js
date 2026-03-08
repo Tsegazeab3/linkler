@@ -85,6 +85,15 @@ export const updateProfile = (profileData) => {
 
 // Posts & Trips
 export const getPosts = () => api.get('posts/');
+export const getPost = (postId) => api.get(`posts/${postId}/`);
+export const updatePost = (postId, postData) => {
+  return api.patch(`posts/${postId}/`, postData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+};
+export const deletePost = (postId) => api.delete(`posts/${postId}/`);
 export const getTrips = () => api.get('posts/trips/');
 export const createTrip = (tripData) => api.post('posts/trips/', tripData);
 

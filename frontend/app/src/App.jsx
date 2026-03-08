@@ -60,7 +60,9 @@ function App() {
         <Outlet context={{ handleOpenChat }} />
       </main>
 
-      <FloatingPlusButton />
+      <div className="hidden lg:block">
+        <FloatingPlusButton />
+      </div>
 
       {/* Mobile Navigation */}
       <BottomNav

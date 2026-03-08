@@ -35,9 +35,11 @@ const IndexPage = () => {
           return (
             <PostCard
               key={post.id}
+              id={post.id}
               mediaType={post.media_type || (post.media_file ? (post.media_file.endsWith('.mp4') ? 'video' : 'image') : 'text')}
               mediaUrl={post.media_file}
               aspectRatio={post.aspect_ratio || '1:1'}
+              textAlignment={post.text_alignment || 'center'}
               caption={post.caption}
               timestamp={new Date(post.created_at).toLocaleDateString()}
               likeCount={post.likes_count}

@@ -6,6 +6,29 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from .serializers import PostSerializer, TripSerializer
 from .models import Post, Trip
 
+from rest_framework import permissions
+
+class IsAuthor(permissions.BasePermission):
+    """
+    Custom permission to only allow authors of a post to edit it.
+    """
+    def has_object_permission(self, request, view, obj):
+        return obj.user == request.user
+
+class PostUpdateView(generics.RetrieveUpdateDestroyAPIView):
+    """
+    API view for updating and deleting a Post.
+    """
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+    permission_classes = [IsAuthenticated, IsAuthor]
+    parser_classes = (MultiPartParser, FormParser)
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({"request": self.request})
+        return context
+
 class PostCreateView(APIView):
     """
     API view for creating a new Post.
@@ -19,7 +42,7 @@ class PostCreateView(APIView):
         """
         Handle POST request to create a new post.
         """
-        serializer = PostSerializer(data=request.data)
+        serializer = PostSerializer(data=request.data, context={'request': request})
         
         if serializer.is_valid():
             # Assign the current authenticated user to the post.
@@ -34,6 +57,11 @@ class PostListView(generics.ListAPIView):
     queryset = Post.objects.filter(status='published')
     serializer_class = PostSerializer
     permission_classes = [AllowAny]
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({"request": self.request})
+        return context
 
 class TripListCreateView(generics.ListCreateAPIView):
     queryset = Trip.objects.all()

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { login as apiLogin } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
+import StatusBanner from '../components/StatusBanner';
 
 function SignInPage() {
   const [email, setEmail] = useState('');
@@ -17,6 +18,7 @@ function SignInPage() {
   const handleSubmit = (event) => {
     event.preventDefault();
     setError(null);
+    setLoading(true);
     console.log('Login attempt with:', { email, password });
 
     apiLogin(email, password)
@@ -37,50 +39,52 @@ function SignInPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[var(--color-linkler-bg)]">
-      <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm">
-        <h1 className="text-2xl font-bold text-center text-[#3b82f6] mb-6">
-          Sign In to Linkler
+    <div className="min-h-screen flex items-center justify-center bg-[var(--color-linkler-bg)] px-4">
+      <StatusBanner message={error} onClose={() => setError(null)} />
+      
+      <div className="bg-white p-8 rounded-3xl shadow-xl w-full max-w-sm border border-gray-100">
+        <h1 className="text-3xl font-black text-center text-[#3b82f6] mb-8 uppercase tracking-tighter">
+          Linkler
         </h1>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="email" className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1 ml-1">
               Email
             </label>
             <input
               id="email"
               type="email"
+              placeholder="name@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#3b82f6] focus:border-[#3b82f6] sm:text-sm"
+              className="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#3b82f6]/20 focus:border-[#3b82f6] transition-all"
               disabled={loading}
             />
           </div>
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="password" className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1 ml-1">
               Password
             </label>
             <input
               id="password"
               type="password"
+              placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#3b82f6] focus:border-[#3b82f6] sm:text-sm"
+              className="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#3b82f6]/20 focus:border-[#3b82f6] transition-all"
               disabled={loading}
             />
           </div>
-          
-          {error && <p className="text-sm text-red-500 text-center">{error}</p>}
 
           <div>
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#3b82f6] hover:bg-[#3b82f6]/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3b82f6] disabled:opacity-50"
+              className="w-full flex justify-center py-4 px-4 bg-blue-600 hover:bg-blue-700 text-white text-sm font-black uppercase tracking-widest rounded-2xl shadow-lg shadow-blue-600/20 active:scale-95 transition-all disabled:opacity-50"
             >
-              {loading ? 'Signing In...' : 'Sign In'}
+              {loading ? 'Authenticating...' : 'Sign In'}
             </button>
           </div>
         </form>
