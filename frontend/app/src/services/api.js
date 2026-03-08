@@ -87,7 +87,7 @@ export const updateProfile = (profileData) => {
 export const getPosts = () => api.get('posts/');
 export const getPost = (postId) => api.get(`posts/${postId}/`);
 export const updatePost = (postId, postData) => {
-  return api.patch(`posts/${postId}/`, postData, {
+  return api.patch(`posts/${postId}/edit/`, postData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
@@ -96,6 +96,8 @@ export const updatePost = (postId, postData) => {
 export const deletePost = (postId) => api.delete(`posts/${postId}/`);
 export const getTrips = () => api.get('posts/trips/');
 export const createTrip = (tripData) => api.post('posts/trips/', tripData);
+export const createComment = (postId, text) => api.post('posts/comments/', { post: postId, text });
+export const toggleLike = (postId) => api.post(`posts/${postId}/like/`);
 
 // Guides & Promotions
 export const getGuides = () => api.get('accounts/guides/');

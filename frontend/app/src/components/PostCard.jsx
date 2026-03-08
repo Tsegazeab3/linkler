@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useOutletContext, Link, useLocation } from 'react-router-dom';
-import { followUser, unfollowUser, createDM } from '../services/api';
+import { useOutletContext, Link, useLocation, useNavigate } from 'react-router-dom';
+import { followUser, unfollowUser, createDM, toggleLike } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
 const PostCard = ({
@@ -11,8 +11,9 @@ const PostCard = ({
   textAlignment = 'center',
   caption,
   timestamp,
-  likeCount,
-  isLiked,
+  likeCount: initialLikeCount,
+  commentsCount,
+  isLiked: initialIsLiked,
   isSaved,
   username,
   userId,
@@ -23,23 +24,27 @@ const PostCard = ({
   const [isCaptionExpanded, setIsCaptionExpanded] = useState(false);
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
   const [followLoading, setFollowLoading] = useState(false);
-  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [isLiked, setIsLiked] = useState(initialIsLiked || false);
+  const [likeCount, setLikeCount] = useState(initialLikeCount || 0);
+  const [likeLoading, setLikeLoading] = useState(false);
+  
   const { handleOpenChat } = useOutletContext();
   const { user } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
 
   const isAuthor = user?.id === userId || user?.pk === userId;
 
   // Helper to ensure media URLs are handled correctly
   const getFullMediaUrl = (url) => {
     if (!url) return null;
-    // With Vite proxy, /media/... will be automatically routed to http://localhost:8000/media/...
     return url;
   };
 
   const fullMediaUrl = getFullMediaUrl(mediaUrl);
 
-  const handleFollow = async () => {
+  const handleFollow = async (e) => {
+    e.stopPropagation();
     setFollowLoading(true);
     try {
       if (isFollowing) {
@@ -56,7 +61,35 @@ const PostCard = ({
     }
   };
 
-  const handleChat = async () => {
+  const handleLike = async (e) => {
+    e.stopPropagation();
+    if (likeLoading) return;
+    
+    // Optimistic UI update
+    const wasLiked = isLiked;
+    setIsLiked(!wasLiked);
+    setLikeCount(prev => wasLiked ? Math.max(0, prev - 1) : prev + 1);
+    setLikeLoading(true);
+
+    try {
+      const res = await toggleLike(id);
+      if (res.data.status === 'liked') {
+         setIsLiked(true);
+      } else if (res.data.status === 'unliked') {
+         setIsLiked(false);
+      }
+    } catch (err) {
+      console.error('Like error:', err);
+      // Revert optimistic update on error
+      setIsLiked(wasLiked);
+      setLikeCount(prev => wasLiked ? prev + 1 : Math.max(0, prev - 1));
+    } finally {
+      setLikeLoading(false);
+    }
+  };
+
+  const handleChat = async (e) => {
+    e.stopPropagation();
     try {
       const res = await createDM(userId);
       handleOpenChat(res.data, 'dm');
@@ -65,45 +98,33 @@ const PostCard = ({
     }
   };
 
+  const handleOpenDetail = () => {
+    navigate(`/app/posts/${id}`, { state: { background: location } });
+  };
+
   // Determine aspect ratio class
   const aspectRatioClass = aspectRatio === '4:5' ? 'aspect-[4/5]' : 'aspect-square';
 
   return (
     <div className="bg-white border border-gray-300 rounded-lg w-full max-w-sm mx-auto my-4 overflow-hidden shadow-sm">
-      {/* Lightbox Modal */}
-      {isLightboxOpen && (
-        <div 
-          className="fixed inset-0 z-[10000] bg-black/95 flex items-center justify-center p-4 animate-in fade-in duration-300 backdrop-blur-sm"
-          onClick={() => setIsLightboxOpen(false)}
-        >
-          <button className="absolute top-6 right-6 text-white hover:scale-110 transition-transform">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-          <img 
-            src={fullMediaUrl} 
-            alt="Fullscreen view" 
-            className="max-w-full max-h-full object-contain rounded-lg shadow-2xl animate-in zoom-in-95 duration-300"
-          />
-        </div>
-      )}
-
+      
       {/* User Info Section */}
       <div className="flex items-center p-2">
-        <img
-          src={userProfilePic || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80'}
-          alt={`${username}'s profile`}
-          className="w-10 h-10 rounded-full mr-2 object-cover border border-gray-100"
-        />
-        <div className="flex-grow">
-          <div className="font-semibold text-gray-800 text-sm md:text-base">{username}</div>
-          {userBio && (
-            <p className="text-gray-500 pr-3 line-clamp-1 text-xs">
-              {userBio}
-            </p>
-          )}
-        </div>
+        <Link to={`/app/profile/${userId}`} className="flex items-center flex-grow">
+            <img
+            src={userProfilePic || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80'}
+            alt={`${username}'s profile`}
+            className="w-10 h-10 rounded-full mr-2 object-cover border border-gray-100"
+            />
+            <div className="flex-grow">
+            <div className="font-semibold text-gray-800 text-sm md:text-base">{username}</div>
+            {userBio && (
+                <p className="text-gray-500 pr-3 line-clamp-1 text-xs">
+                {userBio}
+                </p>
+            )}
+            </div>
+        </Link>
         <div className="flex items-center space-x-2">
           {isAuthor ? (
             <Link
@@ -136,34 +157,36 @@ const PostCard = ({
         </div>
       </div>
 
-      {/* Media Renderer */}
+      {/* Media Renderer - Now opens Detail Modal directly */}
       {(mediaType === 'image' || mediaType === 'video') ? (
         <div 
-            className={`relative w-full bg-gray-200 ${aspectRatioClass} ${mediaType === 'image' ? 'cursor-zoom-in' : ''}`}
-            onClick={() => mediaType === 'image' && setIsLightboxOpen(true)}
+            className={`relative w-full bg-gray-200 ${aspectRatioClass} cursor-zoom-in`}
+            onClick={handleOpenDetail}
         >
           {mediaType === 'image' && (
             <img
               src={fullMediaUrl || 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80'}
               alt="Post media"
               className="absolute top-0 left-0 w-full h-full object-cover"
-              loading="lazy" // Compatible with lazy loading
+              loading="lazy"
             />
           )}
           {mediaType === 'video' && (
             <video
               src={fullMediaUrl}
-              controls
               className="absolute top-0 left-0 w-full h-full object-cover"
-              preload="metadata" // Compatible with preloading
+              preload="metadata"
             >
               Your browser does not support the video tag.
             </video>
           )}
         </div>
       ) : (
-        /* Text-only Post Style: Height is now relative to text length */
-        <div className={`relative w-full flex items-center justify-center py-12 px-6 bg-linear-to-br from-blue-50 to-indigo-50 border-y border-gray-100`}>
+        /* Text-only Post Style */
+        <div 
+            onClick={handleOpenDetail}
+            className={`relative w-full flex items-center justify-center py-12 px-6 bg-linear-to-br from-blue-50 to-indigo-50 border-y border-gray-100 cursor-pointer hover:opacity-95 transition-opacity`}
+        >
            <p className={`text-lg md:text-xl text-gray-800 font-medium italic leading-relaxed w-full text-${textAlignment}`}>
              {caption}
            </p>
@@ -173,11 +196,13 @@ const PostCard = ({
       {/* Action Bar */}
       <div className="p-2 flex items-center justify-between">
         <div className="flex space-x-3">
-          <button className="flex items-center text-gray-700 hover:text-red-500">
-            {/* Like Icon */}
+          <button 
+            onClick={handleLike}
+            disabled={likeLoading}
+            className={`flex items-center hover:scale-110 transition-transform ${isLiked ? 'text-red-500' : 'text-gray-700 hover:text-red-500'}`}
+          >
             <svg
-              className={`w-6 h-6 ${isLiked ? 'text-red-500' : ''}`}
-              fill={isLiked ? 'currentColor' : 'none'}
+              className={`w-6 h-6 ${isLiked ? 'fill-current text-red-500' : 'fill-none'}`}
               stroke="currentColor"
               viewBox="0 0 24 24"
               xmlns="http://www.w3.org/2000/svg"
@@ -190,8 +215,10 @@ const PostCard = ({
               ></path>
             </svg>
           </button>
-          <button className="flex items-center text-gray-700 hover:text-blue-500">
-            {/* Comment Icon */}
+          <button 
+            onClick={handleOpenDetail}
+            className="flex items-center text-gray-700 hover:text-blue-500 hover:scale-110 transition-transform"
+          >
             <svg
               className="w-6 h-6"
               fill="none"
@@ -207,8 +234,7 @@ const PostCard = ({
               ></path>
             </svg>
           </button>
-          <button className="flex items-center text-gray-700 hover:text-purple-500">
-            {/* Share Icon */}
+          <button className="flex items-center text-gray-700 hover:text-purple-500 hover:scale-110 transition-transform">
             <svg
               className="w-6 h-6"
               fill="none"
@@ -225,8 +251,7 @@ const PostCard = ({
             </svg>
           </button>
         </div>
-        <button className="text-gray-700 hover:text-green-500">
-          {/* Save Icon */}
+        <button className="text-gray-700 hover:text-green-500 hover:scale-110 transition-transform">
           <svg
             className={`w-6 h-6 ${isSaved ? 'text-green-500' : ''}`}
             fill={isSaved ? 'currentColor' : 'none'}
@@ -244,9 +269,15 @@ const PostCard = ({
         </button>
       </div>
 
-      {/* Post Metadata (Like Count) */}
-      <div className="px-2 text-sm font-semibold text-gray-800">
-        {likeCount} likes
+      {/* Post Metadata */}
+      <div className="px-2 text-sm font-semibold text-gray-800 flex justify-between">
+        <span>{likeCount} likes</span>
+        <button 
+          onClick={handleOpenDetail}
+          className="text-gray-500 font-normal hover:underline"
+        >
+          {commentsCount} comments
+        </button>
       </div>
 
       {/* Caption Block */}
@@ -256,9 +287,9 @@ const PostCard = ({
             <span className="font-semibold mr-1">{username}</span>
             {caption}
           </p>
-          {caption.length > 100 && ( // Simple heuristic for showing "more" button
+          {caption.length > 100 && (
             <button
-              onClick={() => setIsCaptionExpanded(!isCaptionExpanded)}
+              onClick={(e) => { e.stopPropagation(); setIsCaptionExpanded(!isCaptionExpanded); }}
               className="text-gray-500 hover:underline text-xs mt-1"
             >
               {isCaptionExpanded ? 'less' : 'more'}
@@ -268,7 +299,7 @@ const PostCard = ({
       )}
 
       {/* Post Metadata (Timestamp) */}
-      <div className="px-2 py-1 text-xs text-gray-400">
+      <div className="px-2 py-1 text-xs text-gray-400 mb-2">
         {timestamp}
       </div>
     </div>

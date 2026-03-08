@@ -14,6 +14,7 @@ import SignInPage from './pages/SignInPage.jsx';
 import SignUpPage from './pages/SignUpPage.jsx';
 import ProfileCompletionPage from './pages/ProfileCompletionPage.jsx';
 import IndexPage from './pages/IndexPage.jsx';
+import PostDetailPage from './pages/PostDetailPage.jsx';
 import FellowTravelersPage from './pages/FellowTravelersPage.jsx';
 import NewGuidesPage from './pages/NewGuidesPage.jsx';
 import GuideDetailPage from './pages/GuideDetailPage.jsx';
@@ -83,6 +84,7 @@ function AppRouter() {
 
       {background && (
         <Routes>
+          <Route path="/app/posts/:postId" element={<AuthGuard><PostDetailPage /></AuthGuard>} />
           <Route path="/create" element={<AuthGuard><CreatePostModal /></AuthGuard>} />
           <Route path="/create-trip" element={<AuthGuard><CreateTripPage /></AuthGuard>} />
           <Route path="/edit-post/:id" element={<AuthGuard><EditPostModal /></AuthGuard>} />

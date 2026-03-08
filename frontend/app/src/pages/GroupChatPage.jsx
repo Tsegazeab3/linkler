@@ -86,9 +86,9 @@ const GroupChatPage = () => {
       {/* Message History */}
       <main ref={scrollRef} className="flex-grow overflow-y-auto p-4 space-y-4 no-scrollbar">
         {messages.map((msg, index) => {
-          const isMe = msg.sender_username !== group.name; // Simple check for demo, usually use user.id
+          const isMe = msg.sender === group.current_user_id;
           return (
-            <div key={index} className={`flex items-end gap-2 ${!isMe ? 'justify-start' : 'justify-end'}`}>
+            <div key={index} className={`flex items-end gap-2 ${isMe ? 'justify-end' : 'justify-start'}`}>
               <div className={`p-3 rounded-2xl max-w-lg shadow-sm ${isMe ? 'bg-[#3b82f6] text-white rounded-br-none' : 'bg-white text-gray-800 rounded-bl-none'}`}>
                 {!isMe && <p className="text-[10px] font-bold text-blue-600 mb-1">{msg.sender_username}</p>}
                 <p className="text-sm">{msg.text}</p>

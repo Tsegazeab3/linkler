@@ -13,7 +13,8 @@ class SanitizationMiddleware(MiddlewareMixin):
 
     def process_request(self, request):
         # 0. SKIP if request contains files or is multipart (to prevent corrupting binary data)
-        if request.FILES or 'multipart/form-data' in request.content_type:
+        content_type = request.content_type or ''
+        if request.FILES or 'multipart/form-data' in content_type:
             return None
 
         if request.method in ['POST', 'PUT', 'PATCH']:

@@ -137,27 +137,89 @@ class Post(models.Model):
             print(f"Error optimizing image: {e}")
             # If optimization fails, we save the original rather than crashing
 
-class Trip(models.Model):
+class Like(models.Model):
     """
-    Represents a trip plan created by a user looking for fellow travelers.
+    Represents a 'like' given to a post by a user.
     """
+    post = models.ForeignKey(
+        Post,
+        on_delete=models.CASCADE,
+        related_name='likes',
+        help_text="The post being liked."
+    )
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name='trips',
-        help_text="The user who created this trip plan."
+        related_name='liked_posts',
+        help_text="The user who liked the post."
     )
-    origin = models.CharField(max_length=100)
-    destination = models.CharField(max_length=100)
-    start_date = models.DateField()
-    end_date = models.DateField()
-    message = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ['-created_at']
-        verbose_name = "Trip"
-        verbose_name_plural = "Trips"
+        verbose_name = "Like"
+        verbose_name_plural = "Likes"
+        unique_together = ('post', 'user') # A user can only like a post once
 
     def __str__(self):
+        return f"{self.user.username} liked {self.post}"
+
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+        super().save(*args, **kwargs)
+        if is_new:
+            self.post.likes_count += 1
+            self.post.save()
+
+    def delete(self, *args, **kwargs):
+        post = self.post
+        super().delete(*args, **kwargs)
+        post.likes_count = max(0, post.likes_count - 1)
+        post.save()
+
+class Trip(models.Model):
+    # ... (rest of Trip model)
+    def __str__(self):
         return f"Trip from {self.origin} to {self.destination} by {self.user.username}"
+
+class Comment(models.Model):
+    """
+    Represents a comment made by a user on a post.
+    """
+    post = models.ForeignKey(
+        Post,
+        on_delete=models.CASCADE,
+        related_name='comments',
+        help_text="The post this comment belongs to."
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='comments',
+        help_text="The user who wrote this comment."
+    )
+    text = models.TextField(help_text="The content of the comment.")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at']
+        verbose_name = "Comment"
+        verbose_name_plural = "Comments"
+
+    def __str__(self):
+        return f"Comment by {self.user.username} on {self.post}"
+
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+        super().save(*args, **kwargs)
+        if is_new:
+            # Increment the comments_count on the post
+            self.post.comments_count += 1
+            self.post.save()
+
+    def delete(self, *args, **kwargs):
+        post = self.post
+        super().delete(*args, **kwargs)
+        # Decrement the comments_count on the post
+        post.comments_count = max(0, post.comments_count - 1)
+        post.save()

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Post, Trip
+from .models import Post, Trip, Comment
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -17,11 +17,21 @@ class UserShortSerializer(serializers.ModelSerializer):
             return obj.followers.filter(follower=request.user).exists()
         return False
 
+class CommentSerializer(serializers.ModelSerializer):
+    author = UserShortSerializer(source='user', read_only=True)
+
+    class Meta:
+        model = Comment
+        fields = ['id', 'post', 'user', 'author', 'text', 'created_at']
+        read_only_fields = ['user', 'created_at']
+
 class PostSerializer(serializers.ModelSerializer):
     """
     Serializer for creating and updating Post instances.
     """
     author = UserShortSerializer(source='user', read_only=True)
+    comments = CommentSerializer(many=True, read_only=True)
+    is_liked = serializers.SerializerMethodField()
     
     class Meta:
         model = Post
@@ -39,12 +49,20 @@ class PostSerializer(serializers.ModelSerializer):
             'allow_comments',
             'likes_count',
             'comments_count',
+            'comments',
             'saves_count',
+            'is_liked',
             'created_at',
         ]
         # 'user' should be read-only because it will be set automatically
         # from the request user, not from the request body.
         read_only_fields = ['user', 'created_at', 'id', 'likes_count', 'comments_count', 'saves_count']
+
+    def get_is_liked(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return obj.likes.filter(user=request.user).exists()
+        return False
 
 class TripSerializer(serializers.ModelSerializer):
     author = UserShortSerializer(source='user', read_only=True)

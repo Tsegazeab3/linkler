@@ -43,7 +43,8 @@ const IndexPage = () => {
               caption={post.caption}
               timestamp={new Date(post.created_at).toLocaleDateString()}
               likeCount={post.likes_count}
-              isLiked={false} // Would need a separate check for real liked status
+              commentsCount={post.comments_count}
+              isLiked={post.is_liked}
               isSaved={false}
               username={post.author?.username || 'user'}
               userId={post.author?.id}

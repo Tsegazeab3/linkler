@@ -47,19 +47,22 @@ const ChatWindow = ({ chat, type, onClose, index }) => {
   const content = (
     <>
       <div ref={scrollRef} className="flex-grow overflow-y-auto space-y-4 p-4 no-scrollbar">
-        {messages.map((msg, idx) => (
-          <div key={idx} className={`flex ${msg.sender_username === chat.name ? 'justify-start' : 'justify-end'}`}>
-            <div className={`p-3 rounded-lg max-w-[80%] ${msg.sender_username !== chat.name ? 'bg-[#3b82f6] text-white rounded-br-none' : 'bg-gray-100 text-gray-800 rounded-bl-none'}`}>
-              {type === 'group' && msg.sender_username !== chat.name && (
-                <p className="text-[10px] font-bold opacity-70 mb-1">{msg.sender_username}</p>
-              )}
-              <p className="text-sm">{msg.text}</p>
-              <p className={`text-[9px] mt-1 text-right ${msg.sender_username !== chat.username ? 'text-blue-100' : 'text-gray-400'}`}>
-                {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </p>
+        {messages.map((msg, idx) => {
+          const isMe = msg.sender === chat.current_user_id;
+          return (
+            <div key={idx} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+              <div className={`p-3 rounded-lg max-w-[80%] ${isMe ? 'bg-[#3b82f6] text-white rounded-br-none' : 'bg-gray-100 text-gray-800 rounded-bl-none'}`}>
+                {type === 'group' && !isMe && (
+                  <p className="text-[10px] font-bold opacity-70 mb-1">{msg.sender_username}</p>
+                )}
+                <p className="text-sm">{msg.text}</p>
+                <p className={`text-[9px] mt-1 text-right ${isMe ? 'text-blue-100' : 'text-gray-400'}`}>
+                  {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </p>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
       <form onSubmit={handleSend} className="p-3 flex-shrink-0 flex items-center border-t border-gray-100 bg-gray-50 rounded-b-lg">
         <input
