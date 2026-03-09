@@ -75,10 +75,19 @@ export const getProfile = () => {
 };
 
 export const updateProfile = (profileData) => {
+  const isFormData = profileData instanceof FormData;
   return api.patch('accounts/profile/', profileData, {
     headers: {
-      'Content-Type': 'application/json',
+      'Content-Type': isFormData ? 'multipart/form-data' : 'application/json',
     },
+  });
+};
+
+export const changePassword = (oldPassword, newPassword) => {
+  return api.post('auth/password/change/', {
+    old_password: oldPassword,
+    new_password1: newPassword,
+    new_password2: newPassword, // Assuming dj-rest-auth requires both
   });
 };
 
@@ -91,15 +100,32 @@ export const createTrip = (tripData) => api.post('posts/trips/', tripData);
 export const getGuides = () => api.get('accounts/guides/');
 export const getPromotions = () => api.get('promotions/');
 export const getUserDetail = (userId) => api.get(`accounts/${userId}/`);
+export const searchUsers = (query) => api.get(`accounts/search/?q=${encodeURIComponent(query)}`);
 export const getPromotionDetail = (id) => api.get(`promotions/${id}/`);
 
 // Chat
 export const getConversations = () => api.get('chat/conversations/');
 export const getMessages = (conversationId) => api.get(`chat/conversations/${conversationId}/messages/`);
-export const sendMessage = (conversationId, text) => api.post(`chat/conversations/${conversationId}/messages/`, { text });
+export const sendMessage = (conversationId, data) => {
+  // Check if data has an attachment or is just text
+  if (data instanceof FormData) {
+    return api.post(`chat/conversations/${conversationId}/messages/`, data, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  }
+  return api.post(`chat/conversations/${conversationId}/messages/`, { text: data });
+};
 export const markChatAsRead = (conversationId) => api.patch(`chat/conversations/${conversationId}/read/`);
 export const createDM = (recipientId) => api.post('chat/conversations/', { type: 'dm', recipient_id: recipientId });
 
 // Social
 export const followUser = (userId) => api.post(`accounts/${userId}/follow/`);
 export const unfollowUser = (userId) => api.delete(`accounts/${userId}/unfollow/`);
+
+// Post Interactions
+export const toggleLike = (postId) => api.post(`posts/${postId}/like/`);
+export const toggleSave = (postId) => api.post(`posts/${postId}/save/`);
+export const getComments = (postId) => api.get(`posts/${postId}/comments/`);
+export const addComment = (postId, text) => api.post(`posts/${postId}/comments/`, { text });

@@ -22,6 +22,7 @@ import CreateTripPage from './pages/CreateTripPage.jsx';
 import PromotionsPage from './pages/PromotionsPage.jsx';
 import PromotionDetailPage from './pages/PromotionDetailPage.jsx';
 import GroupChatPage from './pages/GroupChatPage.jsx';
+import SettingsPage from './pages/SettingsPage.jsx';
 import CreatePostModal from './components/CreatePostModal.jsx';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import AuthGuard from './components/AuthGuard';
@@ -66,6 +67,7 @@ function AppRouter() {
           <Route path="promotions" element={<PromotionsPage />} />
           <Route path="promotions/:id" element={<PromotionDetailPage />} />
           <Route path="groups/:groupId" element={<GroupChatPage />} />
+          <Route path="settings" element={<SettingsPage />} />
         </Route>
         
         <Route path="*" element={<NotFound />} />

@@ -3,6 +3,9 @@ import { useParams } from 'react-router-dom';
 import StarRating from '../components/StarRating';
 import { getUserDetail, createDM, followUser, unfollowUser } from '../services/api';
 import { useOutletContext } from 'react-router-dom';
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const GuideDetailPage = () => {
     const { id } = useParams();
@@ -67,51 +70,54 @@ const GuideDetailPage = () => {
         <div className="min-h-screen p-4 lg:p-8">
             <div className="max-w-4xl mx-auto">
                 {/* Guide Details Section */}
-                <div className="bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row border border-gray-100">
+                <Card className="rounded-2xl shadow-sm border-border/50 overflow-hidden flex flex-col md:flex-row">
                     <img src={guide.profile_picture || 'https://images.unsplash.com/photo-1440778303588-435521a205bc?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80'} alt={guide.username} className="w-full md:w-64 h-64 md:h-80 object-cover" />
-                    <div className="p-8 flex-1">
+                    <CardContent className="p-8 flex-1">
                         <div className="flex justify-between items-start">
                             <div>
-                                <h1 className="text-3xl font-bold text-gray-900">{guide.username}</h1>
-                                <p className="text-gray-500 font-medium">{guide.city}, {guide.country}</p>
+                                <h1 className="text-3xl font-bold tracking-tight">{guide.username}</h1>
+                                <p className="text-muted-foreground font-medium mt-1">{guide.city}, {guide.country}</p>
                             </div>
-                            <div className="bg-blue-50 px-3 py-1 rounded-full flex items-center">
-                                <span className="text-yellow-400 mr-1 text-sm">★</span>
+                            <div className="bg-blue-50 px-3 py-1.5 rounded-full flex items-center border border-blue-100">
+                                <span className="text-yellow-500 mr-1.5 text-sm">★</span>
                                 <span className="text-blue-700 font-bold">4.5</span>
                             </div>
                         </div>
                         
-                        <div className="mt-6 flex space-x-4">
+                        <div className="mt-6 flex space-x-6">
                             <div className="text-center">
-                                <p className="text-xl font-bold text-gray-900">{guide.followers_count}</p>
-                                <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Followers</p>
+                                <p className="text-xl font-bold text-foreground">{guide.followers_count}</p>
+                                <p className="text-[11px] text-muted-foreground uppercase tracking-wider font-semibold">Followers</p>
                             </div>
-                            <div className="text-center border-l border-gray-200 pl-4">
-                                <p className="text-xl font-bold text-gray-900">{guide.posts_count}</p>
-                                <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Posts</p>
+                            <div className="text-center border-l border-border pl-6">
+                                <p className="text-xl font-bold text-foreground">{guide.posts_count}</p>
+                                <p className="text-[11px] text-muted-foreground uppercase tracking-wider font-semibold">Posts</p>
                             </div>
                         </div>
 
-                        <p className="mt-6 text-gray-700 leading-relaxed italic">"{guide.bio || 'Professional local guide ready to show you the best spots.'}"</p>
-                        <p className="text-3xl font-black text-gray-900 mt-6">$25<span className="text-sm font-normal text-gray-400">/hour</span></p>
+                        <p className="mt-6 text-foreground/80 leading-relaxed italic text-lg opacity-90">"{guide.bio || 'Professional local guide ready to show you the best spots.'}"</p>
+                        <p className="text-3xl font-black text-foreground mt-6">${guide.price || '25'}<span className="text-sm font-medium text-muted-foreground ml-1">/hour</span></p>
                         
-                        <div className="mt-8 flex space-x-3">
-                            <button 
+                        <div className="mt-8 flex space-x-4">
+                            <Button 
                                 onClick={handleChat}
-                                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg shadow-blue-200 active:scale-95 flex items-center justify-center"
+                                size="lg"
+                                className="flex-1 rounded-xl shadow-lg ring-offset-background"
                             >
                                 <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
                                 Start Chat
-                            </button>
-                            <button 
+                            </Button>
+                            <Button 
                                 onClick={handleFollow}
-                                className={`flex-1 font-bold py-3 px-6 rounded-xl transition-all active:scale-95 flex items-center justify-center border-2 ${isFollowing ? 'border-gray-200 text-gray-500 hover:bg-gray-50' : 'border-blue-600 text-blue-600 hover:bg-blue-50'}`}
+                                size="lg"
+                                variant={isFollowing ? "outline" : "secondary"}
+                                className={`flex-1 rounded-xl font-bold ${isFollowing ? 'border-border text-muted-foreground' : ''}`}
                             >
                                 {isFollowing ? 'Following' : 'Follow'}
-                            </button>
+                            </Button>
                         </div>
-                    </div>
-                </div>
+                    </CardContent>
+                </Card>
 
                 {/* Schedule Section */}
                 {guide.schedule && guide.schedule.length > 0 && (
@@ -145,21 +151,26 @@ const GuideDetailPage = () => {
                 {/* Reviews Section */}
                 {guide.reviews && guide.reviews.length > 0 ? (
                     <div className="mt-12">
-                        <h2 className="text-3xl font-bold mb-6">Reviews</h2>
-                        <div className="space-y-6">
+                        <h2 className="text-2xl font-bold mb-6 tracking-tight">Reviews</h2>
+                        <div className="space-y-4">
                             {guide.reviews.map(review => (
-                                <div key={review.id} className="bg-white rounded-lg shadow p-6 flex items-start space-x-4">
-                                    <img src={review.avatar} alt={review.reviewer} className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
-                                    <div className="flex-grow">
-                                        <div className="flex items-center mb-2">
-                                            <h3 className="text-lg font-semibold">{review.reviewer}</h3>
-                                            <div className="ml-4">
-                                                <StarRating rating={review.rating} />
+                                <Card key={review.id} className="border-border/50 shadow-sm">
+                                    <CardContent className="p-6 flex items-start space-x-4">
+                                        <Avatar className="w-12 h-12 border border-border">
+                                            <AvatarImage src={review.avatar} alt={review.reviewer} className="object-cover" />
+                                            <AvatarFallback>{review.reviewer?.charAt(0).toUpperCase()}</AvatarFallback>
+                                        </Avatar>
+                                        <div className="flex-grow">
+                                            <div className="flex items-center mb-1">
+                                                <h3 className="text-base font-semibold">{review.reviewer}</h3>
+                                                <div className="ml-3">
+                                                    <StarRating rating={review.rating} />
+                                                </div>
                                             </div>
+                                            <p className="text-muted-foreground text-sm">{review.comment}</p>
                                         </div>
-                                        <p className="text-gray-700">{review.comment}</p>
-                                    </div>
-                                </div>
+                                    </CardContent>
+                                </Card>
                             ))}
                         </div>
                     </div>

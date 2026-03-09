@@ -109,3 +109,37 @@ class Trip(models.Model):
 
     def __str__(self):
         return f"Trip from {self.origin} to {self.destination} by {self.user.username}"
+
+class Like(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='post_likes')
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='post_likes')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'post')
+
+    def __str__(self):
+        return f"{self.user.username} liked {self.post.id}"
+
+class Save(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='post_saves')
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='post_saves')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'post')
+
+    def __str__(self):
+        return f"{self.user.username} saved {self.post.id}"
+
+class Comment(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='post_comments')
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='post_comments')
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.username} commented on {self.post.id}"

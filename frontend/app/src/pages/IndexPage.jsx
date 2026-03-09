@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import PostCard from '../components/PostCard';
 import { getPosts } from '../services/api';
+import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 
 const IndexPage = () => {
   const [posts, setPosts] = useState([]);
@@ -13,6 +15,9 @@ const IndexPage = () => {
       })
       .catch(err => {
         console.error('Error fetching posts:', err);
+        toast.error("Failed to load posts", {
+          description: "Please check your connection and try again."
+        });
       })
       .finally(() => {
         setLoading(false);
@@ -21,8 +26,23 @@ const IndexPage = () => {
 
   if (loading) {
     return (
-      <div className="flex-grow flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#3b82f6]"></div>
+      <div className="flex-grow p-4 space-y-6 max-w-sm mx-auto">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="space-y-4 rounded-xl border border-border/50 p-4">
+            <div className="flex items-center space-x-4">
+              <Skeleton className="h-10 w-10 rounded-full" />
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-3 w-32" />
+              </div>
+            </div>
+            <Skeleton className="aspect-square w-full rounded-lg" />
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-3/4" />
+            </div>
+          </div>
+        ))}
       </div>
     );
   }
@@ -35,18 +55,19 @@ const IndexPage = () => {
           return (
             <PostCard
               key={post.id}
+              id={post.id}
               mediaType={post.media_type || (post.media_file ? (post.media_file.endsWith('.mp4') ? 'video' : 'image') : 'text')}
               mediaUrl={post.media_file}
               aspectRatio={post.aspect_ratio || '1:1'}
               caption={post.caption}
               timestamp={new Date(post.created_at).toLocaleDateString()}
               likeCount={post.likes_count}
-              isLiked={false} // Would need a separate check for real liked status
-              isSaved={false}
+              isLiked={post.is_liked} 
+              isSaved={post.is_saved}
               username={post.author?.username || 'user'}
               userId={post.author?.id}
               userProfilePic={post.author?.profile_picture}
-              isFollowing={false}
+              isFollowing={post.author?.is_following}
               userBio={post.author?.bio || ''}
             />
           );

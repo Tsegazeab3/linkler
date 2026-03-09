@@ -1,0 +1,276 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { getProfile, updateProfile, changePassword } from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
+const SettingsPage = () => {
+  const { user, setUser } = useAuth();
+  const navigate = useNavigate();
+  
+  const [profileData, setProfileData] = useState({
+    username: '',
+    bio: '',
+  });
+  const [passwordData, setPasswordData] = useState({
+    oldPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+  
+  const [profileImage, setProfileImage] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
+  
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState({ type: '', text: '' });
+  const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    if (user) {
+      setProfileData({
+        username: user.username || '',
+        bio: user.bio || '',
+      });
+      setPreviewImage(user.profile_picture || null);
+    }
+  }, [user]);
+
+  const handleProfileChange = (e) => {
+    setProfileData({ ...profileData, [e.target.name]: e.target.value });
+  };
+
+  const handlePasswordChange = (e) => {
+    setPasswordData({ ...passwordData, [e.target.name]: e.target.value });
+  };
+
+  const handleImageChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setProfileImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const submitProfileUpdate = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage({ type: '', text: '' });
+
+    try {
+      let dataToSend;
+      
+      // Use FormData if there's an image, else JSON
+      if (profileImage) {
+        dataToSend = new FormData();
+        dataToSend.append('username', profileData.username);
+        dataToSend.append('bio', profileData.bio);
+        dataToSend.append('profile_picture', profileImage);
+      } else {
+        dataToSend = profileData;
+      }
+
+      const res = await updateProfile(dataToSend);
+      // Update local AuthContext user state
+      setUser(res.data);
+      setMessage({ type: 'success', text: 'Profile updated successfully!' });
+      setProfileImage(null); // Clear pending upload
+    } catch (err) {
+      console.error(err);
+      setMessage({ type: 'error', text: err.response?.data?.detail || 'Failed to update profile.' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const submitPasswordChange = async (e) => {
+    e.preventDefault();
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setMessage({ type: 'error', text: 'New passwords do not match.' });
+      return;
+    }
+    
+    setLoading(true);
+    setMessage({ type: '', text: '' });
+
+    try {
+      await changePassword(passwordData.oldPassword, passwordData.newPassword);
+      setMessage({ type: 'success', text: 'Password changed successfully!' });
+      setPasswordData({ oldPassword: '', newPassword: '', confirmPassword: '' });
+    } catch (err) {
+      console.error(err);
+      const errorMsg = err.response?.data?.old_password?.[0] || 'Failed to change password.';
+      setMessage({ type: 'error', text: errorMsg });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen p-4 lg:p-8 max-w-4xl mx-auto animate-in fade-in duration-500">
+      <div className="flex items-center gap-4 mb-8">
+        <button 
+          onClick={() => navigate(-1)}
+          className="p-2 rounded-full hover:bg-gray-100 transition text-gray-500"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+        </button>
+        <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
+      </div>
+
+      {message.text && (
+        <div className={`p-4 mb-6 rounded-xl font-medium ${message.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+          {message.text}
+        </div>
+      )}
+
+      <Tabs defaultValue="account" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 max-w-[400px] mb-8">
+          <TabsTrigger value="account">Profile Details</TabsTrigger>
+          <TabsTrigger value="security">Security</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="account">
+          <Card>
+            <CardHeader>
+              <CardTitle>Profile Details</CardTitle>
+              <CardDescription>Update your public profile information.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={submitProfileUpdate} className="space-y-6 mt-4">
+                {/* Avatar Upload */}
+                <div className="flex items-center gap-6">
+                  <div className="relative">
+                    <Avatar className="w-24 h-24 border-4 border-background shadow-md">
+                      <AvatarImage src={previewImage} className="object-cover" />
+                      <AvatarFallback className="bg-gradient-to-tr from-blue-100 to-[#3b82f6]/20 text-blue-500 font-bold text-3xl">
+                        {user?.username?.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <Button 
+                      type="button"
+                      size="icon"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="absolute bottom-0 right-0 w-8 h-8 rounded-full shadow-lg border-2 border-background"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                    </Button>
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      ref={fileInputRef} 
+                      onChange={handleImageChange} 
+                      className="hidden" 
+                    />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-foreground leading-tight">Profile Picture</h3>
+                    <p className="text-xs text-muted-foreground mt-1">JPEG, PNG, or GIF. Max 5MB.</p>
+                  </div>
+                </div>
+
+                {/* Form Fields */}
+                <div className="space-y-4 pt-4 border-t border-border">
+                  <div className="space-y-2">
+                    <Label>Username</Label>
+                    <Input
+                      name="username"
+                      value={profileData.username}
+                      onChange={handleProfileChange}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Bio</Label>
+                    <textarea
+                      name="bio"
+                      rows="4"
+                      value={profileData.bio}
+                      onChange={handleProfileChange}
+                      placeholder="Tell other travelers about yourself..."
+                      className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
+                    ></textarea>
+                  </div>
+                </div>
+
+                <div className="flex justify-end pt-2">
+                  <Button type="submit" disabled={loading}>
+                    {loading ? 'Saving...' : 'Save Profile'}
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="security">
+          <Card>
+            <CardHeader>
+              <CardTitle>Security</CardTitle>
+              <CardDescription>Manage your password to secure your account.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={submitPasswordChange} className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Current Password</Label>
+                  <Input
+                    type="password"
+                    name="oldPassword"
+                    value={passwordData.oldPassword}
+                    onChange={handlePasswordChange}
+                    required
+                  />
+                </div>
+                <div className="space-y-2 pt-2">
+                  <Label>New Password</Label>
+                  <Input
+                    type="password"
+                    name="newPassword"
+                    value={passwordData.newPassword}
+                    onChange={handlePasswordChange}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Confirm New Password</Label>
+                  <Input
+                    type="password"
+                    name="confirmPassword"
+                    value={passwordData.confirmPassword}
+                    onChange={handlePasswordChange}
+                    required
+                  />
+                </div>
+
+                <div className="pt-4 mt-4 border-t border-border">
+                  <Button
+                    type="submit"
+                    variant="secondary"
+                    disabled={loading}
+                    className="w-full"
+                  >
+                    Change Password
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+};
+
+export default SettingsPage;

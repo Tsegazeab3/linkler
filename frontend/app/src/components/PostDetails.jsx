@@ -1,5 +1,17 @@
 import React, { useState } from 'react';
 import { createPost } from '../services/api';
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from "sonner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const MAX_CAPTION_LENGTH = 500;
 
@@ -31,12 +43,17 @@ const PostDetails = ({ file, fileType, onBack, postMode, onSuccess }) => {
     createPost(formData)
       .then(response => {
         console.log('Post created successfully:', response.data);
-        alert('Post created successfully!');
+        toast.success("Post Created", {
+          description: "Your post has been shared successfully!"
+        });
         onSuccess(); // Close the modal on success
       })
       .catch(err => {
         console.error('Error creating post:', err.response ? err.response.data : err);
-        setError('Failed to create post. Please try again.');
+        const errorMsg = err.response?.data ? JSON.stringify(err.response.data) : 'Failed to create post. Please try again.';
+        toast.error("Error", {
+          description: errorMsg,
+        });
       })
       .finally(() => {
         setLoading(false);
@@ -65,56 +82,78 @@ const PostDetails = ({ file, fileType, onBack, postMode, onSuccess }) => {
       )}
 
       {/* Details Column */}
-      <div className={`${detailsWidth} flex flex-col`}>
-        <div className="flex-grow space-y-4">
+      <div className={`${detailsWidth} flex flex-col space-y-6`}>
+        <div className="flex-grow space-y-6">
           {/* Caption Input */}
-          <div>
-            <label htmlFor="caption" className="block text-sm font-medium text-gray-700 mb-2 flex items-center space-x-2">
-              <span>{postMode === 'media' ? 'Caption' : 'Your Text Post'}</span>
-            </label>
-            <textarea
+          <div className="space-y-2">
+            <Label htmlFor="caption" className="text-sm font-semibold">
+              {postMode === 'media' ? 'Caption' : 'Your Text Post'}
+            </Label>
+            <Textarea
               id="caption"
-              rows={postMode === 'media' ? 4 : 8}
               value={caption}
               onChange={(e) => setCaption(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-md focus:ring-[#3b82f6] focus:border-[#3b82f6] resize-none"
-              placeholder={postMode === 'media' ? 'Write a caption...' : 'What&apos;s on your mind?'}
+              className="min-h-[120px] resize-none focus-visible:ring-primary"
+              placeholder={postMode === 'media' ? 'Write a caption...' : "What's on your mind?"}
               disabled={loading}
             />
-            <p className={`text-xs text-right mt-1 ${captionLengthColor}`}>{caption.length} / {MAX_CAPTION_LENGTH}</p>
+            <div className="flex justify-end">
+              <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${caption.length > MAX_CAPTION_LENGTH ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-400'}`}>
+                {caption.length} / {MAX_CAPTION_LENGTH}
+              </span>
+            </div>
           </div>
 
           {/* Settings */}
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="audience" className="block text-sm font-medium text-gray-700">Audience</label>
-              <select id="audience" value={audience} onChange={(e) => setAudience(e.target.value)} disabled={loading} className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-[#3b82f6] focus:border-[#3b82f6] sm:text-sm rounded-md">
-                <option value="public">Public</option>
-                <option value="followers">Followers</option>
-                <option value="private">Private</option>
-              </select>
+          <div className="grid grid-cols-1 gap-6 pt-2">
+            <div className="space-y-2">
+              <Label htmlFor="audience" className="text-sm font-semibold">Audience</Label>
+              <Select value={audience} onValueChange={setAudience} disabled={loading}>
+                <SelectTrigger id="audience" className="w-full">
+                  <SelectValue placeholder="Select audience" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="public">Public</SelectItem>
+                  <SelectItem value="followers">Followers</SelectItem>
+                  <SelectItem value="private">Private</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-            <div className="flex items-center">
-              <input id="disable-comments" type="checkbox" checked={disableComments} onChange={(e) => setDisableComments(e.target.checked)} disabled={loading} className="h-4 w-4 text-[#3b82f6] focus:ring-[#3b82f6] border-gray-300 rounded" />
-              <label htmlFor="disable-comments" className="ml-2 block text-sm text-gray-900">Disable comments</label>
+            
+            <div className="flex items-center space-x-3 p-3 rounded-lg border border-border/50 bg-muted/30">
+              <Checkbox 
+                id="disable-comments" 
+                checked={disableComments} 
+                onCheckedChange={setDisableComments} 
+                disabled={loading}
+              />
+              <div className="grid gap-1.5 leading-none">
+                <Label
+                  htmlFor="disable-comments"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Disable comments
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Prevent others from commenting on this post.
+                </p>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Error Message */}
-        {error && <p className="text-sm text-red-500 text-center my-2">{error}</p>}
-
         {/* Action Buttons */}
-        <div className="flex justify-end items-center space-x-4 pt-4 mt-4 border-t border-gray-200">
-          <button onClick={onBack} disabled={loading} className="py-2 px-4 text-sm font-semibold text-gray-600 hover:bg-gray-100 rounded-md transition duration-200 disabled:opacity-50">
+        <div className="flex items-center gap-3 pt-6 mt-2 border-t border-border/50">
+          <Button variant="ghost" onClick={onBack} disabled={loading} className="px-6">
             Back
-          </button>
-          <button onClick={handleSaveDraft} disabled={loading} className="py-2 px-4 text-sm font-semibold border border-gray-600 text-gray-600 rounded-md hover:bg-gray-50 transition duration-200 disabled:opacity-50">
-            {loading ? 'Saving...' : 'Save as Draft'}
-          </button>
-          <button onClick={handlePost} disabled={loading} className="py-2 px-6 bg-[#3b82f6] text-white rounded-md font-semibold hover:bg-[#3b82f6]/90 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
-            {loading ? 'Posting...' : 'Post'}
-          </button>
+          </Button>
+          <div className="flex-1" />
+          <Button variant="outline" onClick={handleSaveDraft} disabled={loading}>
+            {loading ? 'Saving...' : 'Save Draft'}
+          </Button>
+          <Button onClick={handlePost} disabled={loading} className="px-8 font-bold">
+            {loading ? 'Posting...' : 'Share Post'}
+          </Button>
         </div>
       </div>
     </div>

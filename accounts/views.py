@@ -1,6 +1,7 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from django.db.models import Q
 from .models import CustomUser, Follow
 from .serializers import UserSerializer
 
@@ -51,3 +52,20 @@ class UserDetailView(generics.RetrieveAPIView):
     permission_classes = [AllowAny]
     lookup_field = 'id'
     lookup_url_kwarg = 'user_id'
+
+class UserSearchView(generics.ListAPIView):
+    """
+    View to search users by username, email, or bio.
+    """
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        query = self.request.query_params.get('q', '')
+        if query:
+            return CustomUser.objects.filter(
+                Q(username__icontains=query) | 
+                Q(email__icontains=query) |
+                Q(bio__icontains=query)
+            ).order_by('username')[:20]
+        return CustomUser.objects.none()

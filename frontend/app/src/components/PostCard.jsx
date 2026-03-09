@@ -1,6 +1,12 @@
 import React, { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { followUser, unfollowUser, createDM } from '../services/api';
+import { followUser, unfollowUser, createDM, toggleLike, toggleSave } from '../services/api';
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { Heart, MessageCircle, Send, Bookmark, Share2 } from "lucide-react";
+import CommentSection from './CommentSection';
 
 const PostCard = ({
   id,
@@ -21,6 +27,13 @@ const PostCard = ({
   const [isCaptionExpanded, setIsCaptionExpanded] = useState(false);
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
   const [followLoading, setFollowLoading] = useState(false);
+  
+  // Interaction State
+  const [liked, setLiked] = useState(isLiked);
+  const [saved, setSaved] = useState(isSaved);
+  const [likes, setLikes] = useState(likeCount);
+  const [showComments, setShowComments] = useState(false);
+
   const { handleOpenChat } = useOutletContext();
 
   const handleFollow = async () => {
@@ -29,12 +42,15 @@ const PostCard = ({
       if (isFollowing) {
         await unfollowUser(userId);
         setIsFollowing(false);
+        toast.info(`Unfollowed ${username}`);
       } else {
         await followUser(userId);
         setIsFollowing(true);
+        toast.success(`Following ${username}`);
       }
     } catch (err) {
       console.error('Follow error:', err);
+      toast.error("Follow action failed");
     } finally {
       setFollowLoading(false);
     }
@@ -46,173 +62,190 @@ const PostCard = ({
       handleOpenChat(res.data, 'dm');
     } catch (err) {
       console.error('Chat error:', err);
+      toast.error("Failed to start chat");
     }
+  };
+
+  const handleLike = async () => {
+    // Optimistic Update
+    const previousLiked = liked;
+    const previousLikes = likes;
+    
+    setLiked(!liked);
+    setLikes(liked ? likes - 1 : likes + 1);
+
+    try {
+      const res = await toggleLike(id);
+      setLiked(res.data.is_liked);
+      setLikes(res.data.likes_count);
+    } catch (err) {
+      console.error('Like error:', err);
+      // Rollback
+      setLiked(previousLiked);
+      setLikes(previousLikes);
+      toast.error("Failed to update like");
+    }
+  };
+
+  const handleSave = async () => {
+    const previousSaved = saved;
+    setSaved(!saved);
+
+    try {
+      const res = await toggleSave(id);
+      setSaved(res.data.is_saved);
+      toast.success(res.data.is_saved ? "Post saved" : "Post removed from saves");
+    } catch (err) {
+      console.error('Save error:', err);
+      setSaved(previousSaved);
+      toast.error("Failed to update save status");
+    }
+  };
+
+  const handleComment = () => {
+    setShowComments(!showComments);
+  };
+
+  const handleShare = () => {
+    const url = window.location.origin + `/posts/${id}`;
+    navigator.clipboard.writeText(url);
+    toast.success("Link copied to clipboard", {
+        description: "Share this post with your friends!"
+    });
   };
 
   // Determine aspect ratio class
   const aspectRatioClass = aspectRatio === '4:5' ? 'aspect-[4/5]' : 'aspect-square';
 
   return (
-    <div className="bg-white border border-gray-300 rounded-lg w-full max-w-sm mx-auto my-4 overflow-hidden shadow-sm">
+    <Card className="w-full max-w-sm mx-auto my-4 overflow-hidden border-border/50 shadow-sm hover:shadow-md transition-shadow">
       {/* User Info Section */}
-      <div className="flex items-center p-2">
-        <img
-          src={userProfilePic || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80'}
-          alt={`${username}'s profile`}
-          className="w-10 h-10 rounded-full mr-2 object-cover border border-gray-100"
-        />
-        <div className="flex-grow">
-          <div className="font-semibold text-gray-800 text-sm md:text-base">{username}</div>
+      <CardHeader className="flex flex-row items-center p-3 space-y-0">
+        <Avatar className="w-10 h-10 mr-3 border border-border">
+          <AvatarImage src={userProfilePic} alt={`${username}'s profile`} className="object-cover" />
+          <AvatarFallback>{username?.charAt(0).toUpperCase()}</AvatarFallback>
+        </Avatar>
+        <div className="flex-grow min-w-0">
+          <div className="font-semibold text-sm md:text-base truncate leading-tight">{username}</div>
           {userBio && (
-            <p className="text-gray-500 pr-3 line-clamp-1 text-xs">
+            <p className="text-muted-foreground truncate text-xs mt-0.5">
               {userBio}
             </p>
           )}
         </div>
-        <div className="flex items-center space-x-2">
-          <button 
+        <div className="flex items-center space-x-2 ml-2 flex-shrink-0">
+          <Button 
+            variant="ghost" 
+            size="icon" 
             onClick={handleChat}
-            className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+            className="h-8 w-8 rounded-full text-muted-foreground hover:text-primary transition-colors"
             title="Start Chat"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
-          </button>
-          <button 
+            <MessageCircle className="h-5 w-5" />
+          </Button>
+          <Button 
+            variant={isFollowing ? "secondary" : "default"}
+            size="sm"
             onClick={handleFollow}
             disabled={followLoading}
-            className={`${isFollowing ? 'text-gray-500' : 'text-blue-500'} text-xs font-bold px-3 py-1 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors`}
+            className="h-8 text-xs font-bold rounded-full px-4 transition-all"
           >
             {isFollowing ? 'Following' : 'Follow'}
-          </button>
+          </Button>
         </div>
-      </div>
+      </CardHeader>
 
       {/* Media Renderer */}
-      <div className={`relative w-full bg-gray-200 ${aspectRatioClass}`}>
-        {mediaType === 'image' && (
-          <img
-            src={mediaUrl || 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80'}
-            alt="Post media"
-            className="absolute top-0 left-0 w-full h-full object-cover"
-            loading="lazy" // Compatible with lazy loading
-          />
-        )}
-        {mediaType === 'video' && (
-          <video
-            src={mediaUrl}
-            controls
-            className="absolute top-0 left-0 w-full h-full object-cover"
-            preload="metadata" // Compatible with preloading
-          >
-            Your browser does not support the video tag.
-          </video>
-        )}
-      </div>
-
-      {/* Action Bar */}
-      <div className="p-2 flex items-center justify-between">
-        <div className="flex space-x-3">
-          <button className="flex items-center text-gray-700 hover:text-red-500">
-            {/* Like Icon */}
-            <svg
-              className={`w-6 h-6 ${isLiked ? 'text-red-500' : ''}`}
-              fill={isLiked ? 'currentColor' : 'none'}
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
+      <CardContent className="p-0">
+        <div className={`relative w-full bg-muted ${aspectRatioClass}`}>
+          {mediaType === 'image' && (
+            <img
+              src={mediaUrl || 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80'}
+              alt="Post media"
+              className="absolute top-0 left-0 w-full h-full object-cover"
+              loading="lazy" // Compatible with lazy loading
+            />
+          )}
+          {mediaType === 'video' && (
+            <video
+              src={mediaUrl}
+              controls
+              className="absolute top-0 left-0 w-full h-full object-cover"
+              preload="metadata" // Compatible with preloading
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-              ></path>
-            </svg>
-          </button>
-          <button className="flex items-center text-gray-700 hover:text-blue-500">
-            {/* Comment Icon */}
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-              ></path>
-            </svg>
-          </button>
-          <button className="flex items-center text-gray-700 hover:text-purple-500">
-            {/* Share Icon */}
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"
-              ></path>
-            </svg>
-          </button>
-        </div>
-        <button className="text-gray-700 hover:text-green-500">
-          {/* Save Icon */}
-          <svg
-            className={`w-6 h-6 ${isSaved ? 'text-green-500' : ''}`}
-            fill={isSaved ? 'currentColor' : 'none'}
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
-            ></path>
-          </svg>
-        </button>
-      </div>
-
-      {/* Post Metadata (Like Count) */}
-      <div className="px-2 text-sm font-semibold text-gray-800">
-        {likeCount} likes
-      </div>
-
-      {/* Caption Block */}
-      {caption && (
-        <div className="px-2 py-1 text-sm text-gray-600">
-          <p className={isCaptionExpanded ? '' : 'line-clamp-2'}>
-            <span className="font-semibold mr-1">{username}</span>
-            {caption}
-          </p>
-          {caption.length > 100 && ( // Simple heuristic for showing "more" button
-            <button
-              onClick={() => setIsCaptionExpanded(!isCaptionExpanded)}
-              className="text-gray-500 hover:underline text-xs mt-1"
-            >
-              {isCaptionExpanded ? 'less' : 'more'}
-            </button>
+              Your browser does not support the video tag.
+            </video>
           )}
         </div>
-      )}
+      </CardContent>
 
-      {/* Post Metadata (Timestamp) */}
-      <div className="px-2 py-1 text-xs text-gray-400">
-        {timestamp}
-      </div>
-    </div>
+      {/* Action Bar & Metadata */}
+      <CardFooter className="flex flex-col items-start p-4 pt-2 gap-2">
+        <div className="flex items-center justify-between w-full">
+          <div className="flex space-x-1 -ml-2">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className={`rounded-full transition-colors ${liked ? 'text-red-500 hover:text-red-600 hover:bg-red-50' : 'text-muted-foreground hover:text-red-500'}`}
+              onClick={handleLike}
+            >
+              <Heart className={`w-6 h-6 ${liked ? 'fill-current' : ''}`} />
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="rounded-full text-muted-foreground hover:text-blue-500 hover:bg-blue-50 transition-colors"
+                onClick={handleComment}
+            >
+              <MessageCircle className="w-6 h-6" />
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className={`rounded-full text-muted-foreground hover:text-indigo-500 hover:bg-indigo-50 transition-colors`}
+                onClick={handleShare}
+            >
+              <Share2 className="w-6 h-6" />
+            </Button>
+          </div>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className={`rounded-full -mr-2 transition-colors ${saved ? 'text-emerald-500 hover:text-emerald-600 hover:bg-emerald-50' : 'text-muted-foreground hover:text-emerald-500'}`}
+            onClick={handleSave}
+          >
+            <Bookmark className={`w-6 h-6 ${saved ? 'fill-current' : ''}`} />
+          </Button>
+        </div>
+
+        <div className="text-sm font-semibold text-foreground px-0.5">
+          {likes} likes
+        </div>
+
+        {caption && (
+          <div className="text-sm text-foreground/90 w-full px-0.5 mb-1">
+            <p className={isCaptionExpanded ? '' : 'line-clamp-2'}>
+              <span className="font-bold mr-1.5 hover:underline cursor-pointer">{username}</span>
+              {caption}
+            </p>
+            {caption.length > 80 && (
+              <button
+                onClick={() => setIsCaptionExpanded(!isCaptionExpanded)}
+                className="text-primary hover:text-primary/80 text-xs mt-1 font-bold transition-colors"
+              >
+                {isCaptionExpanded ? 'Show less' : 'Read more'}
+              </button>
+            )}
+          </div>
+        )}
+
+        {showComments && <CommentSection postId={id} />}
+
+        <div className="text-[11px] text-muted-foreground mt-1 tracking-wide uppercase px-0.5">
+          {timestamp}
+        </div>
+      </CardFooter>
+    </Card>
   );
 };
 
