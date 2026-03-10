@@ -102,10 +102,11 @@ class PostListView(generics.ListAPIView):
     serializer_class = PostSerializer
     permission_classes = [AllowAny]
 
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context.update({"request": self.request})
-        return context
+class PostDetailView(generics.RetrieveAPIView):
+    queryset = Post.objects.filter(status='published')
+    serializer_class = PostSerializer
+    permission_classes = [AllowAny]
+    lookup_url_kwarg = 'post_id'
 
 class TripListCreateView(generics.ListCreateAPIView):
     queryset = Trip.objects.all()

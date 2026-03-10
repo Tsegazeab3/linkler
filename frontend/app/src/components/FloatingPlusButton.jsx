@@ -17,7 +17,7 @@ const FloatingPlusButton = () => {
     };
 
     return (
-        <div className="fixed bottom-8 right-8 z-30">
+        <div className="hidden lg:block fixed bottom-8 right-8 z-30">
             <div className="relative flex flex-col items-end">
                 {/* Expanded Action Buttons */}
                 {isOpen && (

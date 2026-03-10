@@ -11,6 +11,11 @@ function App() {
   const [selectedNavItemId, setSelectedNavItemId] = useState(null);
 
   const handlePanelItemClick = (itemId) => {
+    if (itemId === null) {
+      setShowSidePanel(false);
+      return;
+    }
+
     if (showSidePanel && selectedNavItemId === itemId) {
       setShowSidePanel(false);
       setSelectedNavItemId(null);
@@ -26,7 +31,14 @@ function App() {
   };
 
   const handleOpenChat = (chat, type) => {
-    // Prevent opening the same chat twice
+    // Check if we are on mobile (screen width < 1024px)
+    if (window.innerWidth < 1024) {
+      navigate(`/app/chat/${chat.id}`);
+      setShowSidePanel(false);
+      return;
+    }
+
+    // Desktop: Floating windows
     const existingChat = openChats.find(c => c.id === chat.id && c.type === type);
     if (!existingChat) {
       // Limit to 3 open chats for sanity, remove the oldest if full
@@ -68,6 +80,8 @@ function App() {
       <BottomNav
         onOpenChat={handleOpenChat}
         onPanelItemClick={handlePanelItemClick}
+        selectedNavItemId={selectedNavItemId}
+        showSidePanel={showSidePanel}
       />
 
       {/* Render Open Chat Windows */}

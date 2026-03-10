@@ -8,54 +8,14 @@ import SvgSavedGuides from './icons/SavedGuides.jsx';
 import SvgFellowTravelers from './icons/FellowTravelers.jsx';
 import SvgGroups from './icons/Groups.jsx';
 import SvgNewGuides from './icons/NewGuides.jsx';
+import SvgPromotions from './icons/Promotions.jsx';
 import SvgSettings from './icons/Settings.jsx';
 import SvgPromotions from './icons/Promotions.jsx';
 
-const SidePanelItem = ({
-  onClick,
-  image,
-  imageAlt,
-  title,
-  subtitle,
-  time,
-  unread,
-  isSquareImage = false,
-  as: Component = 'button',
-  fallback,
-}) => (
-  <Component
-    onClick={onClick}
-    className="w-full text-left p-2 rounded-lg hover:bg-[var(--color-linkler-hover)] transition-colors duration-200 flex items-center space-x-3 focus:outline-none"
-  >
-    {image ? (
-      <img
-        src={image}
-        alt={imageAlt}
-        className={`${isSquareImage ? 'w-12 h-12 rounded-md object-cover' : 'w-10 h-10 rounded-full object-cover'} flex-shrink-0`}
-      />
-    ) : (
-      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold flex-shrink-0 overflow-hidden">
-        {fallback}
-      </div>
-    )}
-
-    <div className="flex-grow overflow-hidden">
-      <div className="flex justify-between items-center">
-        <h4 className={`font-semibold text-sm truncate ${unread ? 'text-gray-800' : 'text-black'}`}>
-          {title}
-        </h4>
-        {time && <span className="text-xs text-black flex-shrink-0">{time}</span>}
-      </div>
-
-      <div className={`text-xs truncate ${unread ? 'text-gray-800 font-medium' : 'text-black'}`}>
-        {subtitle}
-      </div>
-    </div>
-
-    {unread && (
-      <div className="w-2 h-2 bg-[#3b82f6] rounded-full flex-shrink-0 self-center ml-2"></div>
-    )}
-  </Component>
+const SvgSearch = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+  </svg>
 );
 
 const ConversationPreview = ({ conversation, onSelect, isGroup = false, as = 'button' }) => {
@@ -130,8 +90,8 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
     { id: 4, icon: SvgGroups, name: 'Groups', type: 'panel' },
     { id: 5, icon: SvgFellowTravelers, name: 'Fellow Travelers', type: 'link', href: '/app/fellow_travelers' },
     { id: 6, icon: SvgNewGuides, name: 'New Guides', type: 'link', href: '/app/guides' },
-    { id: 7, icon: SvgPromotions, name: 'Promotions', type: 'link', href: '/app/promotions' },
-    { id: 8, icon: SvgSettings, name: 'Settings', type: 'panel' },
+    { id: 7, icon: SvgPromotions, name: 'Deals', type: 'link', href: '/app/promotions' },
+    { id: 8, icon: SvgSettings, name: 'Settings', type: 'link', href: '/app/settings' },
   ];
 
   const selectedNavItem = navItems.find(item => item.id === selectedNavItemId);
@@ -187,15 +147,29 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
         return <p className="text-gray-400 text-center py-10">You haven&apos;t saved any guides yet.</p>;
       case 'Groups':
         return (
-          <PreviewList
-            items={conversations.filter(c => c.type === 'group')}
-            renderItem={conv => (
-              <Link to={`/app/groups/${conv.id}`} key={conv.id} onClick={onClosePanel}>
-                <ConversationPreview conversation={conv} isGroup as="div" />
-              </Link>
-            )}
-            emptyMessage="You haven&apos;t joined any groups yet."
-          />
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <SearchBar placeholder="Search groups..." />
+            <PreviewList 
+              items={filteredGroups} 
+              renderItem={conv => (
+                <Link to={`/app/chat/${conv.id}`} key={conv.id} onClick={onClosePanel}>
+                  <GroupChatPreview conversation={conv} />
+                </Link>
+              )} 
+              emptyMessage={
+                <EmptyState 
+                  icon={<SvgGroups className="w-8 h-8" />}
+                  title="No Groups Joined"
+                  desc="Join a group to connect with travelers going to similar destinations."
+                  action={
+                    <Button>
+                      Discover Groups
+                    </Button>
+                  }
+                />
+              }
+            />
+          </div>
         );
       case 'Settings':
         return (
@@ -239,7 +213,7 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
             </span>
           )}
         </span>
-        <span className="text-[10px] mt-0.5">{item.name}</span>
+        <span className="text-[10px] mt-0.5 leading-tight text-center px-1 w-full">{item.name}</span>
       </>
     );
 

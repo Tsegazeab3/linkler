@@ -4,7 +4,7 @@ import HeroSection from '../components/HeroSection';
 
 function LandingPage() {
   return (
-    <div className="relative">
+    <div className="relative bg-linkler-bg min-h-screen">
       <SimpleHeader />
       <HeroSection />
     </div>

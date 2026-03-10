@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
-import { useOutletContext, Link, useLocation, useNavigate } from 'react-router-dom';
-import { followUser, unfollowUser, createDM, toggleLike } from '../services/api';
-import { useAuth } from '../context/AuthContext';
+import { useOutletContext, useNavigate, useLocation } from 'react-router-dom';
+import { followUser, unfollowUser, createDM, toggleLike, toggleSave } from '../services/api';
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { Heart, MessageCircle, Send, Bookmark, Share2 } from "lucide-react";
+import CommentSection from './CommentSection';
 
 const PostCard = ({
   id,
@@ -19,7 +24,7 @@ const PostCard = ({
   userId,
   userProfilePic,
   isFollowing: initialIsFollowing,
-  userBio, // New prop
+  userBio,
 }) => {
   const [isCaptionExpanded, setIsCaptionExpanded] = useState(false);
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
@@ -35,11 +40,9 @@ const PostCard = ({
 
   const isAuthor = user?.id === userId || user?.pk === userId;
 
-  // Helper to ensure media URLs are handled correctly
-  const getFullMediaUrl = (url) => {
-    if (!url) return null;
-    return url;
-  };
+  const { handleOpenChat } = useOutletContext();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const fullMediaUrl = getFullMediaUrl(mediaUrl);
 
@@ -102,6 +105,10 @@ const PostCard = ({
     navigate(`/app/posts/${id}`, { state: { background: location } });
   };
 
+  const handleOpenDetail = () => {
+    navigate(`/app/posts/${id}`, { state: { background: location } });
+  };
+
   // Determine aspect ratio class
   const aspectRatioClass = aspectRatio === '4:5' ? 'aspect-[4/5]' : 'aspect-square';
 
@@ -109,76 +116,49 @@ const PostCard = ({
     <div className="bg-white border border-gray-300 rounded-lg w-full max-w-sm mx-auto my-4 overflow-hidden shadow-sm">
       
       {/* User Info Section */}
-      <div className="flex items-center p-2">
-        <Link to={`/app/profile/${userId}`} className="flex items-center flex-grow">
-            <img
-            src={userProfilePic || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80'}
-            alt={`${username}'s profile`}
-            className="w-10 h-10 rounded-full mr-2 object-cover border border-gray-100"
-            />
-            <div className="flex-grow">
-            <div className="font-semibold text-gray-800 text-sm md:text-base">{username}</div>
-            {userBio && (
-                <p className="text-gray-500 pr-3 line-clamp-1 text-xs">
-                {userBio}
-                </p>
-            )}
-            </div>
-        </Link>
-        <div className="flex items-center space-x-2">
-          {isAuthor ? (
-            <Link
-              to={`/edit-post/${id}`}
-              state={{ background: location }}
-              className="text-xs font-bold px-3 py-1 bg-gray-50 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
-            >
-              Edit
-            </Link>
-          ) : (
-            <>
-              <button 
-                onClick={handleChat}
-                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-                title="Start Chat"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                </svg>
-              </button>
-              <button 
-                onClick={handleFollow}
-                disabled={followLoading}
-                className={`${isFollowing ? 'text-gray-500' : 'text-blue-500'} text-xs font-bold px-3 py-1 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors`}
-              >
-                {isFollowing ? 'Following' : 'Follow'}
-              </button>
-            </>
+      <CardHeader className="flex flex-row items-center p-3 space-y-0">
+        <Avatar className="w-10 h-10 mr-3 border border-border cursor-pointer" onClick={() => navigate(`/app/profile/${userId}`)}>
+          <AvatarImage src={userProfilePic} alt={`${username}'s profile`} className="object-cover" />
+          <AvatarFallback>{username?.charAt(0).toUpperCase()}</AvatarFallback>
+        </Avatar>
+        <div className="flex-grow min-w-0">
+          <div className="font-semibold text-sm md:text-base truncate leading-tight cursor-pointer" onClick={() => navigate(`/app/profile/${userId}`)}>{username}</div>
+          {userBio && (
+            <p className="text-muted-foreground truncate text-xs mt-0.5">
+              {userBio}
+            </p>
           )}
         </div>
       </div>
 
-      {/* Media Renderer - Now opens Detail Modal directly */}
-      {(mediaType === 'image' || mediaType === 'video') ? (
-        <div 
-            className={`relative w-full bg-gray-200 ${aspectRatioClass} cursor-zoom-in`}
-            onClick={handleOpenDetail}
-        >
-          {mediaType === 'image' && (
-            <img
-              src={fullMediaUrl || 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80'}
-              alt="Post media"
-              className="absolute top-0 left-0 w-full h-full object-cover"
-              loading="lazy"
-            />
-          )}
-          {mediaType === 'video' && (
-            <video
-              src={fullMediaUrl}
-              className="absolute top-0 left-0 w-full h-full object-cover"
-              preload="metadata"
-            >
-              Your browser does not support the video tag.
-            </video>
+      {/* Media Renderer */}
+      <CardContent className="p-0">
+        <div className={`relative w-full bg-muted ${aspectRatioClass} cursor-zoom-in`} onClick={handleOpenDetail}>
+          {mediaUrl ? (
+            <>
+              {mediaType === 'image' && (
+                <img
+                  src={mediaUrl}
+                  alt="Post media"
+                  className="absolute top-0 left-0 w-full h-full object-cover"
+                  loading="lazy"
+                />
+              )}
+              {mediaType === 'video' && (
+                <video
+                  src={mediaUrl}
+                  className="absolute top-0 left-0 w-full h-full object-cover"
+                  preload="metadata"
+                />
+              )}
+            </>
+          ) : (
+            /* Text-only Post Style */
+            <div className="absolute inset-0 flex items-center justify-center p-8 bg-gradient-to-br from-blue-50 to-indigo-50">
+               <p className="text-lg md:text-xl text-gray-800 font-medium italic text-center leading-relaxed">
+                 {caption}
+               </p>
+            </div>
           )}
         </div>
       ) : (
@@ -207,24 +187,13 @@ const PostCard = ({
               viewBox="0 0 24 24"
               xmlns="http://www.w3.org/2000/svg"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-              ></path>
-            </svg>
-          </button>
-          <button 
-            onClick={handleOpenDetail}
-            className="flex items-center text-gray-700 hover:text-blue-500 hover:scale-110 transition-transform"
-          >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
+              <Heart className={`w-6 h-6 ${liked ? 'fill-current' : ''}`} />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className={`rounded-full transition-colors ${showComments ? 'text-blue-500 bg-blue-50' : 'text-muted-foreground hover:text-blue-500 hover:bg-blue-50'}`}
+              onClick={handleComment}
             >
               <path
                 strokeLinecap="round"
@@ -269,16 +238,24 @@ const PostCard = ({
         </button>
       </div>
 
-      {/* Post Metadata */}
-      <div className="px-2 text-sm font-semibold text-gray-800 flex justify-between">
-        <span>{likeCount} likes</span>
-        <button 
-          onClick={handleOpenDetail}
-          className="text-gray-500 font-normal hover:underline"
-        >
-          {commentsCount} comments
-        </button>
-      </div>
+        {(caption && mediaUrl) && (
+          <div className="text-sm text-foreground/90 w-full px-0.5 mb-1">
+            <p className={isCaptionExpanded ? '' : 'line-clamp-2'}>
+              <span className="font-bold mr-1.5 hover:underline cursor-pointer" onClick={() => navigate(`/app/profile/${userId}`)}>{username}</span>
+              {caption}
+            </p>
+            {caption.length > 80 && (
+              <button
+                onClick={() => setIsCaptionExpanded(!isCaptionExpanded)}
+                className="text-primary hover:text-primary/80 text-xs mt-1 font-bold transition-colors"
+              >
+                {isCaptionExpanded ? 'Show less' : 'Read more'}
+              </button>
+            )}
+          </div>
+        )}
+
+        {showComments && <CommentSection postId={id} />}
 
       {/* Caption Block */}
       {(caption && (mediaType === 'image' || mediaType === 'video')) && (

@@ -1,8 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getPost, createComment, followUser, unfollowUser } from '../services/api';
+import { getPost, addComment, toggleLike, followUser, unfollowUser } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
+import { Heart, MessageCircle, Send, X, Maximize2, Minimize2, Loader2 } from "lucide-react";
 
 const PostDetailPage = () => {
   const { postId } = useParams();
@@ -35,7 +40,7 @@ const PostDetailPage = () => {
         e.preventDefault();
       }
     };
-    
+
     // Block native trackpad pinch-zoom globally (ctrl + wheel)
     const preventWheelZoom = (e) => {
       if (e.ctrlKey) {
@@ -43,7 +48,6 @@ const PostDetailPage = () => {
       }
     };
 
-    // Add listeners with passive: false to allow preventDefault
     document.addEventListener('touchstart', preventTouchZoom, { passive: false });
     document.addEventListener('touchmove', preventTouchZoom, { passive: false });
     document.addEventListener('wheel', preventWheelZoom, { passive: false });
@@ -53,7 +57,10 @@ const PostDetailPage = () => {
         setPost(res.data);
         setIsFollowing(res.data.author?.is_following || false);
       })
-      .catch(err => console.error('Error fetching post:', err))
+      .catch(err => {
+        console.error('Error fetching post:', err);
+        toast.error("Failed to load post");
+      })
       .finally(() => setLoading(false));
 
     return () => {
@@ -174,15 +181,17 @@ const PostDetailPage = () => {
     if (!newComment.trim()) return;
     setIsSubmitting(true);
     try {
-      const res = await createComment(postId, newComment);
+      const res = await addComment(postId, newComment);
       setPost({
         ...post,
-        comments: [...(post.comments || []), res.data],
+        post_comments: [res.data, ...(post.post_comments || [])],
         comments_count: (post.comments_count || 0) + 1
       });
       setNewComment('');
+      toast.success("Comment added");
     } catch (err) {
       console.error('Comment error:', err);
+      toast.error("Failed to post comment");
     } finally {
       setIsSubmitting(false);
     }
@@ -194,41 +203,41 @@ const PostDetailPage = () => {
       if (isFollowing) {
         await unfollowUser(post.author.id);
         setIsFollowing(false);
+        toast.info(`Unfollowed ${post.author.username}`);
       } else {
         await followUser(post.author.id);
         setIsFollowing(true);
+        toast.success(`Following ${post.author.username}`);
       }
     } catch (err) {
       console.error('Follow error:', err);
+      toast.error("Action failed");
     }
   };
 
   const handleLike = async (e) => {
     e.stopPropagation();
-    if (isSubmitting) return; // Reusing isSubmitting for simplicity or create likeLoading
-    
-    // Optimistic UI update
+
     const wasLiked = post.is_liked;
     setPost(prev => ({
-        ...prev,
-        is_liked: !wasLiked,
-        likes_count: wasLiked ? Math.max(0, prev.likes_count - 1) : prev.likes_count + 1
+      ...prev,
+      is_liked: !wasLiked,
+      likes_count: wasLiked ? Math.max(0, prev.likes_count - 1) : prev.likes_count + 1
     }));
 
     try {
       const res = await toggleLike(postId);
-      if (res.data.status === 'liked') {
-          setPost(prev => ({ ...prev, is_liked: true }));
-      } else {
-          setPost(prev => ({ ...prev, is_liked: false }));
-      }
+      setPost(prev => ({
+        ...prev,
+        is_liked: res.data.is_liked,
+        likes_count: res.data.likes_count
+      }));
     } catch (err) {
       console.error('Like error:', err);
-      // Revert
       setPost(prev => ({
-          ...prev,
-          is_liked: wasLiked,
-          likes_count: wasLiked ? prev.likes_count + 1 : Math.max(0, prev.likes_count - 1)
+        ...prev,
+        is_liked: wasLiked,
+        likes_count: wasLiked ? prev.likes_count + 1 : Math.max(0, prev.likes_count - 1)
       }));
     }
   };
@@ -236,158 +245,167 @@ const PostDetailPage = () => {
   if (loading) return null;
 
   const content = (
-    <div 
+    <div
       className={`fixed inset-0 z-[10000] flex items-center justify-center transition-all duration-300 ${show ? 'opacity-100 backdrop-blur-lg' : 'opacity-0'} bg-black/90`}
       onClick={handleClose}
-      style={{ touchAction: 'pan-y' }} // Let native scroll work but isolate zoom
+      style={{ touchAction: 'pan-y' }}
     >
-      {/* UI: Close button & Mode Toggle (Fixed, Never Zooms) */}
       <div className="absolute top-4 left-4 lg:top-6 lg:left-6 z-[10002] flex space-x-3">
-        <button onClick={handleClose} className="w-10 h-10 lg:w-12 lg:h-12 bg-black/50 lg:bg-white/10 backdrop-blur-md text-white rounded-full flex items-center justify-center hover:bg-black/70 lg:hover:bg-white/20 transition-colors">
-            ✕
-        </button>
-        <button onClick={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }} className="w-10 h-10 lg:w-12 lg:h-12 bg-black/50 lg:bg-white/10 backdrop-blur-md text-white rounded-full flex items-center justify-center hover:bg-black/70 lg:hover:bg-white/20 transition-colors">
-            {isExpanded ? '💬' : '⛶'}
-        </button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleClose}
+          className="h-10 w-10 lg:h-12 lg:w-12 bg-black/50 lg:bg-white/10 backdrop-blur-md text-white rounded-full hover:bg-black/70 lg:hover:bg-white/20 transition-colors"
+        >
+          <X className="h-5 w-5 lg:h-6 lg:w-6" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }}
+          className="h-10 w-10 lg:h-12 lg:w-12 bg-black/50 lg:bg-white/10 backdrop-blur-md text-white rounded-full hover:bg-black/70 lg:hover:bg-white/20 transition-colors"
+        >
+          {isExpanded ? <Minimize2 className="h-5 w-5 lg:h-6 lg:w-6" /> : <Maximize2 className="h-5 w-5 lg:h-6 lg:w-6" />}
+        </Button>
       </div>
 
-      <div 
+      <div
         className={`w-full h-full lg:w-[1000px] lg:h-[85vh] flex flex-col lg:flex-row bg-white lg:rounded-3xl lg:shadow-2xl overflow-hidden`}
         onClick={(e) => e.stopPropagation()}
       >
-        
-        {/* Media Zone: custom pinch zoom */}
-        <div 
-            className={`bg-black flex items-center justify-center relative overflow-hidden touch-none transition-all duration-500 ease-in-out ${isExpanded ? 'h-full lg:h-auto lg:w-full' : 'h-[30vh] shrink-0 lg:h-auto lg:w-[600px] lg:flex-grow'}`}
-            style={{ cursor: isExpanded ? (scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'zoom-out') : 'zoom-in' }}
-            onClick={handleMediaClick}
-            onDoubleClick={handleDoubleClick}
+
+        <div
+          className={`bg-black flex items-center justify-center relative overflow-hidden touch-none transition-all duration-500 ease-in-out ${isExpanded ? 'h-full lg:h-auto lg:w-full' : 'h-[40vh] shrink-0 lg:h-auto lg:w-[600px] lg:flex-grow'}`}
+          style={{ cursor: isExpanded ? (scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'zoom-out') : 'zoom-in' }}
+          onClick={handleMediaClick}
+          onDoubleClick={handleDoubleClick}
         >
           {post.media_file ? (
-            <div 
-                className="w-full h-full flex items-center justify-center min-w-full min-h-full"
-                onTouchStart={handleTouchStart}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={handleTouchEnd}
-                onWheel={handleWheel}
-                onMouseDown={handleMouseDown}
-                onMouseMove={handleMouseMove}
-                onMouseUp={handleMouseUp}
-                onMouseLeave={handleMouseUp}
+            <div
+              className="w-full h-full flex items-center justify-center min-w-full min-h-full"
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              onWheel={handleWheel}
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseUp}
             >
-                {post.media_type === 'video' ? (
-                    <video src={post.media_file} controls className="max-h-full w-full object-contain" />
-                ) : (
-                    <img 
-                        src={post.media_file} 
-                        alt="Post" 
-                        style={{ 
-                            transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})`,
-                            transition: isDragging ? 'none' : 'transform 0.1s ease-out'
-                        }}
-                        className="max-h-full max-w-full object-contain mx-auto my-auto" 
-                        draggable="false"
-                    />
-                )}
+              {post.media_type === 'video' ? (
+                <video src={post.media_file} controls className="max-h-full w-full object-contain" />
+              ) : (
+                <img
+                  src={post.media_file}
+                  alt="Post"
+                  style={{
+                    transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})`,
+                    transition: isDragging ? 'none' : 'transform 0.1s ease-out'
+                  }}
+                  className="max-h-full max-w-full object-contain mx-auto my-auto"
+                  draggable="false"
+                />
+              )}
             </div>
           ) : (
             <div className="w-full h-full flex items-center justify-center p-12 bg-linear-to-br from-indigo-50 to-blue-50">
-              <p className={`text-2xl text-gray-800 font-medium italic text-${post.text_alignment || 'center'}`}>
+              <p className={`text-2xl text-gray-800 font-medium italic text-center`}>
                 {post.caption}
               </p>
             </div>
           )}
         </div>
 
-        {/* Static Pane: never zooms, stays same size */}
-        <div 
-            className={`bg-white lg:border-l border-gray-100 flex flex-col transition-all duration-500 overflow-hidden ${isExpanded ? 'h-0 lg:h-auto lg:w-0 opacity-0' : 'h-auto flex-grow lg:w-[450px] opacity-100'}`}
+        <div
+          className={`bg-white lg:border-l border-gray-100 flex flex-col transition-all duration-500 overflow-hidden ${isExpanded ? 'h-0 lg:h-auto lg:w-0 opacity-0' : 'h-auto flex-grow lg:w-[450px] opacity-100'}`}
         >
-          {/* Header */}
           <div className="flex items-center p-4 border-b shrink-0">
-            <img
-              src={post.author?.profile_picture || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80'}
-              className="w-10 h-10 rounded-full mr-3 object-cover border"
-              alt={post.author?.username}
-            />
+            <Avatar className="h-10 w-10 mr-3 border border-border shadow-sm">
+              <AvatarImage src={post.author?.profile_picture} className="object-cover" />
+              <AvatarFallback>{post.author?.username?.charAt(0).toUpperCase()}</AvatarFallback>
+            </Avatar>
             <div className="flex-grow min-w-0">
               <p className="font-bold text-sm truncate">{post.author?.username}</p>
-              <p className="text-xs text-gray-500 truncate line-clamp-1">{post.author?.bio || ''}</p>
+              <p className="text-xs text-muted-foreground truncate line-clamp-1">{post.author?.bio || ''}</p>
             </div>
             {user?.id !== post.author?.id && (
-              <button onClick={handleFollow} className={`text-xs font-bold px-3 py-1 rounded-full border transition-colors ${isFollowing ? 'text-gray-400 border-gray-100' : 'text-blue-500 border-blue-500 hover:bg-blue-50'}`}>
+              <Button
+                variant={isFollowing ? "secondary" : "outline"}
+                size="sm"
+                onClick={handleFollow}
+                className="h-8 text-xs font-bold rounded-full px-4"
+              >
                 {isFollowing ? 'Following' : 'Follow'}
-              </button>
+              </Button>
             )}
           </div>
 
-          {/* Comments List */}
           <div className="flex-grow overflow-y-auto no-scrollbar p-4 space-y-6">
             {post.media_file && post.caption && (
-               <div className="flex space-x-3 mb-2">
-                 <img src={post.author?.profile_picture} className="w-8 h-8 rounded-full border flex-shrink-0" />
-                 <div className="text-sm">
-                    <p><span className="font-bold mr-2">{post.author?.username}</span>{post.caption}</p>
-                    <p className="text-[10px] text-gray-400 mt-1 uppercase tracking-tighter">{new Date(post.created_at).toLocaleDateString()}</p>
-                 </div>
-               </div>
-            )}
-            
-            <div className="space-y-5">
-                {post.comments?.map(comment => (
-                <div key={comment.id} className="flex space-x-3">
-                    <img src={comment.author?.profile_picture} className="w-8 h-8 rounded-full border flex-shrink-0" />
-                    <div>
-                        <div className="bg-gray-50 p-3 rounded-2xl rounded-tl-none">
-                            <p className="text-sm">
-                                <span className="font-bold mr-2">{comment.author?.username}</span>
-                                {comment.text}
-                            </p>
-                        </div>
-                        <p className="text-[9px] text-gray-400 mt-1 ml-1 font-medium">{new Date(comment.created_at).toLocaleDateString()}</p>
-                    </div>
+              <div className="flex space-x-3 mb-2">
+                <Avatar className="h-8 w-8 border border-border/30 shadow-sm flex-shrink-0">
+                  <AvatarImage src={post.author?.profile_picture} className="object-cover" />
+                  <AvatarFallback>{post.author?.username?.charAt(0).toUpperCase()}</AvatarFallback>
+                </Avatar>
+                <div className="text-sm">
+                  <p><span className="font-bold mr-2">{post.author?.username}</span>{post.caption}</p>
+                  <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-tighter">{new Date(post.created_at).toLocaleDateString()}</p>
                 </div>
-                ))}
+              </div>
+            )}
+
+            <div className="space-y-5">
+              {post.post_comments?.map(comment => (
+                <div key={comment.id} className="flex space-x-3 animate-in fade-in slide-in-from-left-2 duration-300">
+                  <Avatar className="h-8 w-8 border border-border/30 shadow-sm flex-shrink-0">
+                    <AvatarImage src={comment.author?.profile_picture} className="object-cover" />
+                    <AvatarFallback>{comment.author?.username?.charAt(0).toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-grow">
+                    <div className="bg-muted/30 p-3 rounded-2xl rounded-tl-none border border-border/50">
+                      <p className="text-sm">
+                        <span className="font-bold mr-2">{comment.author?.username}</span>
+                        {comment.text}
+                      </p>
+                    </div>
+                    <p className="text-[9px] text-muted-foreground mt-1 ml-1 font-medium">{new Date(comment.created_at).toLocaleDateString()}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* Footer */}
           <div className="p-4 border-t bg-white shrink-0">
             <div className="flex items-center justify-between mb-4">
-               <div className="flex items-center space-x-3">
-                  <button 
-                    onClick={handleLike}
-                    className={`flex items-center hover:scale-110 transition-transform ${post.is_liked ? 'text-red-500' : 'text-gray-700 hover:text-red-500'}`}
-                  >
-                    <svg
-                      className={`w-6 h-6 ${post.is_liked ? 'fill-current text-red-500' : 'fill-none'}`}
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                      ></path>
-                    </svg>
-                  </button>
-                  <span className="text-xs font-bold text-gray-800">{post.likes_count || 0} likes</span>
-               </div>
+              <div className="flex items-center space-x-3">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleLike}
+                  className={`rounded-full transition-colors ${post.is_liked ? 'text-red-500 hover:text-red-600' : 'text-muted-foreground hover:text-red-500'}`}
+                >
+                  <Heart className={`h-6 w-6 ${post.is_liked ? 'fill-current' : ''}`} />
+                </Button>
+                <span className="text-xs font-bold text-foreground">{post.likes_count || 0} likes</span>
+              </div>
             </div>
             <form onSubmit={handleAddComment} className="flex items-center gap-2">
-              <input
-                type="text"
+              <Input
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 placeholder="Add a comment..."
-                className="flex-grow text-sm p-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-blue-500/20"
+                className="flex-grow text-sm bg-muted/30 border-none rounded-xl focus-visible:ring-1 focus-visible:ring-primary/20"
                 disabled={isSubmitting}
               />
-              <button type="submit" disabled={isSubmitting || !newComment.trim()} className="text-blue-500 font-bold px-2 disabled:opacity-30">
-                Post
-              </button>
+              <Button
+                type="submit"
+                variant="ghost"
+                size="sm"
+                disabled={isSubmitting || !newComment.trim()}
+                className="text-primary font-bold hover:bg-transparent"
+              >
+                {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              </Button>
             </form>
           </div>
         </div>

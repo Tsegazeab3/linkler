@@ -18,14 +18,12 @@ import PostDetailPage from './pages/PostDetailPage.jsx';
 import FellowTravelersPage from './pages/FellowTravelersPage.jsx';
 import NewGuidesPage from './pages/NewGuidesPage.jsx';
 import GuideDetailPage from './pages/GuideDetailPage.jsx';
+import PostDetailPage from './pages/PostDetailPage.jsx';
 import UserProfilePage from './pages/UserProfilePage.jsx';
 import CreateTripPage from './pages/CreateTripPage.jsx';
 import PromotionsPage from './pages/PromotionsPage.jsx';
 import PromotionDetailPage from './pages/PromotionDetailPage.jsx';
-import GroupChatPage from './pages/GroupChatPage.jsx';
-import MessagesPage from './pages/MessagesPage.jsx';
-import GroupsPage from './pages/GroupsPage.jsx';
-import SavedGuidesPage from './pages/SavedGuidesPage.jsx';
+import ChatPage from './pages/ChatPage.jsx';
 import SettingsPage from './pages/SettingsPage.jsx';
 import CreatePostModal from './components/CreatePostModal.jsx';
 import EditPostModal from './components/EditPostModal.jsx';
@@ -69,14 +67,12 @@ function AppRouter() {
           <Route path="fellow_travelers" element={<FellowTravelersPage />} />
           <Route path="guides" element={<NewGuidesPage />} />
           <Route path="guides/:id" element={<GuideDetailPage />} />
+          <Route path="posts/:postId" element={<PostDetailPage />} />
           <Route path="profile/:userId" element={<UserProfilePage />} />
           <Route path="promotions" element={<PromotionsPage />} />
           <Route path="promotions/:id" element={<PromotionDetailPage />} />
-          <Route path="groups/:groupId" element={<GroupChatPage />} />
-          <Route path="messages" element={<AuthGuard><MessagesPage /></AuthGuard>} />
-          <Route path="groups" element={<AuthGuard><GroupsPage /></AuthGuard>} />
-          <Route path="saved" element={<AuthGuard><SavedGuidesPage /></AuthGuard>} />
-          <Route path="settings" element={<AuthGuard><SettingsPage /></AuthGuard>} />
+          <Route path="chat/:conversationId" element={<ChatPage />} />
+          <Route path="settings" element={<SettingsPage />} />
         </Route>
         
         <Route path="*" element={<NotFound />} />
