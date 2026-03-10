@@ -18,6 +18,7 @@ import PostDetailPage from './pages/PostDetailPage.jsx';
 import FellowTravelersPage from './pages/FellowTravelersPage.jsx';
 import NewGuidesPage from './pages/NewGuidesPage.jsx';
 import GuideDetailPage from './pages/GuideDetailPage.jsx';
+import PostDetailPage from './pages/PostDetailPage.jsx';
 import UserProfilePage from './pages/UserProfilePage.jsx';
 import CreateTripPage from './pages/CreateTripPage.jsx';
 import PromotionsPage from './pages/PromotionsPage.jsx';

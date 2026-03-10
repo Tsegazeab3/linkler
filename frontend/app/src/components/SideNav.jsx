@@ -10,7 +10,6 @@ import SvgGroups from './icons/Groups.jsx';
 import SvgNewGuides from './icons/NewGuides.jsx';
 import SvgPromotions from './icons/Promotions.jsx';
 import SvgSettings from './icons/Settings.jsx';
-import SvgPromotions from './icons/Promotions.jsx';
 
 const SvgSearch = (props) => (
   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" {...props}>

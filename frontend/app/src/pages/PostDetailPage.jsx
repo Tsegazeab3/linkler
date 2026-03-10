@@ -40,7 +40,7 @@ const PostDetailPage = () => {
         e.preventDefault();
       }
     };
-
+    
     // Block native trackpad pinch-zoom globally (ctrl + wheel)
     const preventWheelZoom = (e) => {
       if (e.ctrlKey) {
@@ -217,27 +217,27 @@ const PostDetailPage = () => {
 
   const handleLike = async (e) => {
     e.stopPropagation();
-
+    
     const wasLiked = post.is_liked;
     setPost(prev => ({
-      ...prev,
-      is_liked: !wasLiked,
-      likes_count: wasLiked ? Math.max(0, prev.likes_count - 1) : prev.likes_count + 1
+        ...prev,
+        is_liked: !wasLiked,
+        likes_count: wasLiked ? Math.max(0, prev.likes_count - 1) : prev.likes_count + 1
     }));
 
     try {
       const res = await toggleLike(postId);
-      setPost(prev => ({
-        ...prev,
+      setPost(prev => ({ 
+        ...prev, 
         is_liked: res.data.is_liked,
         likes_count: res.data.likes_count
       }));
     } catch (err) {
       console.error('Like error:', err);
       setPost(prev => ({
-        ...prev,
-        is_liked: wasLiked,
-        likes_count: wasLiked ? prev.likes_count + 1 : Math.max(0, prev.likes_count - 1)
+          ...prev,
+          is_liked: wasLiked,
+          likes_count: wasLiked ? prev.likes_count + 1 : Math.max(0, prev.likes_count - 1)
       }));
     }
   };
@@ -245,67 +245,67 @@ const PostDetailPage = () => {
   if (loading) return null;
 
   const content = (
-    <div
+    <div 
       className={`fixed inset-0 z-[10000] flex items-center justify-center transition-all duration-300 ${show ? 'opacity-100 backdrop-blur-lg' : 'opacity-0'} bg-black/90`}
       onClick={handleClose}
       style={{ touchAction: 'pan-y' }}
     >
       <div className="absolute top-4 left-4 lg:top-6 lg:left-6 z-[10002] flex space-x-3">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleClose}
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={handleClose} 
           className="h-10 w-10 lg:h-12 lg:w-12 bg-black/50 lg:bg-white/10 backdrop-blur-md text-white rounded-full hover:bg-black/70 lg:hover:bg-white/20 transition-colors"
         >
           <X className="h-5 w-5 lg:h-6 lg:w-6" />
         </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }}
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }} 
           className="h-10 w-10 lg:h-12 lg:w-12 bg-black/50 lg:bg-white/10 backdrop-blur-md text-white rounded-full hover:bg-black/70 lg:hover:bg-white/20 transition-colors"
         >
           {isExpanded ? <Minimize2 className="h-5 w-5 lg:h-6 lg:w-6" /> : <Maximize2 className="h-5 w-5 lg:h-6 lg:w-6" />}
         </Button>
       </div>
 
-      <div
+      <div 
         className={`w-full h-full lg:w-[1000px] lg:h-[85vh] flex flex-col lg:flex-row bg-white lg:rounded-3xl lg:shadow-2xl overflow-hidden`}
         onClick={(e) => e.stopPropagation()}
       >
-
-        <div
-          className={`bg-black flex items-center justify-center relative overflow-hidden touch-none transition-all duration-500 ease-in-out ${isExpanded ? 'h-full lg:h-auto lg:w-full' : 'h-[40vh] shrink-0 lg:h-auto lg:w-[600px] lg:flex-grow'}`}
-          style={{ cursor: isExpanded ? (scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'zoom-out') : 'zoom-in' }}
-          onClick={handleMediaClick}
-          onDoubleClick={handleDoubleClick}
+        
+        <div 
+            className={`bg-black flex items-center justify-center relative overflow-hidden touch-none transition-all duration-500 ease-in-out ${isExpanded ? 'h-full lg:h-auto lg:w-full' : 'h-[40vh] shrink-0 lg:h-auto lg:w-[600px] lg:flex-grow'}`}
+            style={{ cursor: isExpanded ? (scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'zoom-out') : 'zoom-in' }}
+            onClick={handleMediaClick}
+            onDoubleClick={handleDoubleClick}
         >
           {post.media_file ? (
-            <div
-              className="w-full h-full flex items-center justify-center min-w-full min-h-full"
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
-              onWheel={handleWheel}
-              onMouseDown={handleMouseDown}
-              onMouseMove={handleMouseMove}
-              onMouseUp={handleMouseUp}
-              onMouseLeave={handleMouseUp}
+            <div 
+                className="w-full h-full flex items-center justify-center min-w-full min-h-full"
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+                onWheel={handleWheel}
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseUp}
             >
-              {post.media_type === 'video' ? (
-                <video src={post.media_file} controls className="max-h-full w-full object-contain" />
-              ) : (
-                <img
-                  src={post.media_file}
-                  alt="Post"
-                  style={{
-                    transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})`,
-                    transition: isDragging ? 'none' : 'transform 0.1s ease-out'
-                  }}
-                  className="max-h-full max-w-full object-contain mx-auto my-auto"
-                  draggable="false"
-                />
-              )}
+                {post.media_type === 'video' ? (
+                    <video src={post.media_file} controls className="max-h-full w-full object-contain" />
+                ) : (
+                    <img 
+                        src={post.media_file} 
+                        alt="Post" 
+                        style={{ 
+                            transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})`,
+                            transition: isDragging ? 'none' : 'transform 0.1s ease-out'
+                        }}
+                        className="max-h-full max-w-full object-contain mx-auto my-auto" 
+                        draggable="false"
+                    />
+                )}
             </div>
           ) : (
             <div className="w-full h-full flex items-center justify-center p-12 bg-linear-to-br from-indigo-50 to-blue-50">
@@ -316,22 +316,22 @@ const PostDetailPage = () => {
           )}
         </div>
 
-        <div
-          className={`bg-white lg:border-l border-gray-100 flex flex-col transition-all duration-500 overflow-hidden ${isExpanded ? 'h-0 lg:h-auto lg:w-0 opacity-0' : 'h-auto flex-grow lg:w-[450px] opacity-100'}`}
+        <div 
+            className={`bg-white lg:border-l border-gray-100 flex flex-col transition-all duration-500 overflow-hidden ${isExpanded ? 'h-0 lg:h-auto lg:w-0 opacity-0' : 'h-auto flex-grow lg:w-[450px] opacity-100'}`}
         >
           <div className="flex items-center p-4 border-b shrink-0">
             <Avatar className="h-10 w-10 mr-3 border border-border shadow-sm">
-              <AvatarImage src={post.author?.profile_picture} className="object-cover" />
-              <AvatarFallback>{post.author?.username?.charAt(0).toUpperCase()}</AvatarFallback>
+                <AvatarImage src={post.author?.profile_picture} className="object-cover" />
+                <AvatarFallback>{post.author?.username?.charAt(0).toUpperCase()}</AvatarFallback>
             </Avatar>
             <div className="flex-grow min-w-0">
               <p className="font-bold text-sm truncate">{post.author?.username}</p>
               <p className="text-xs text-muted-foreground truncate line-clamp-1">{post.author?.bio || ''}</p>
             </div>
             {user?.id !== post.author?.id && (
-              <Button
-                variant={isFollowing ? "secondary" : "outline"}
-                size="sm"
+              <Button 
+                variant={isFollowing ? "secondary" : "outline"} 
+                size="sm" 
                 onClick={handleFollow}
                 className="h-8 text-xs font-bold rounded-full px-4"
               >
@@ -342,52 +342,52 @@ const PostDetailPage = () => {
 
           <div className="flex-grow overflow-y-auto no-scrollbar p-4 space-y-6">
             {post.media_file && post.caption && (
-              <div className="flex space-x-3 mb-2">
-                <Avatar className="h-8 w-8 border border-border/30 shadow-sm flex-shrink-0">
-                  <AvatarImage src={post.author?.profile_picture} className="object-cover" />
-                  <AvatarFallback>{post.author?.username?.charAt(0).toUpperCase()}</AvatarFallback>
-                </Avatar>
-                <div className="text-sm">
-                  <p><span className="font-bold mr-2">{post.author?.username}</span>{post.caption}</p>
-                  <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-tighter">{new Date(post.created_at).toLocaleDateString()}</p>
-                </div>
-              </div>
+               <div className="flex space-x-3 mb-2">
+                 <Avatar className="h-8 w-8 border border-border/30 shadow-sm flex-shrink-0">
+                    <AvatarImage src={post.author?.profile_picture} className="object-cover" />
+                    <AvatarFallback>{post.author?.username?.charAt(0).toUpperCase()}</AvatarFallback>
+                 </Avatar>
+                 <div className="text-sm">
+                    <p><span className="font-bold mr-2">{post.author?.username}</span>{post.caption}</p>
+                    <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-tighter">{new Date(post.created_at).toLocaleDateString()}</p>
+                 </div>
+               </div>
             )}
-
+            
             <div className="space-y-5">
-              {post.post_comments?.map(comment => (
+                {post.post_comments?.map(comment => (
                 <div key={comment.id} className="flex space-x-3 animate-in fade-in slide-in-from-left-2 duration-300">
-                  <Avatar className="h-8 w-8 border border-border/30 shadow-sm flex-shrink-0">
-                    <AvatarImage src={comment.author?.profile_picture} className="object-cover" />
-                    <AvatarFallback>{comment.author?.username?.charAt(0).toUpperCase()}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-grow">
-                    <div className="bg-muted/30 p-3 rounded-2xl rounded-tl-none border border-border/50">
-                      <p className="text-sm">
-                        <span className="font-bold mr-2">{comment.author?.username}</span>
-                        {comment.text}
-                      </p>
+                    <Avatar className="h-8 w-8 border border-border/30 shadow-sm flex-shrink-0">
+                        <AvatarImage src={comment.author?.profile_picture} className="object-cover" />
+                        <AvatarFallback>{comment.author?.username?.charAt(0).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-grow">
+                        <div className="bg-muted/30 p-3 rounded-2xl rounded-tl-none border border-border/50">
+                            <p className="text-sm">
+                                <span className="font-bold mr-2">{comment.author?.username}</span>
+                                {comment.text}
+                            </p>
+                        </div>
+                        <p className="text-[9px] text-muted-foreground mt-1 ml-1 font-medium">{new Date(comment.created_at).toLocaleDateString()}</p>
                     </div>
-                    <p className="text-[9px] text-muted-foreground mt-1 ml-1 font-medium">{new Date(comment.created_at).toLocaleDateString()}</p>
-                  </div>
                 </div>
-              ))}
+                ))}
             </div>
           </div>
 
           <div className="p-4 border-t bg-white shrink-0">
             <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center space-x-3">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleLike}
-                  className={`rounded-full transition-colors ${post.is_liked ? 'text-red-500 hover:text-red-600' : 'text-muted-foreground hover:text-red-500'}`}
-                >
-                  <Heart className={`h-6 w-6 ${post.is_liked ? 'fill-current' : ''}`} />
-                </Button>
-                <span className="text-xs font-bold text-foreground">{post.likes_count || 0} likes</span>
-              </div>
+               <div className="flex items-center space-x-3">
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    onClick={handleLike}
+                    className={`rounded-full transition-colors ${post.is_liked ? 'text-red-500 hover:text-red-600' : 'text-muted-foreground hover:text-red-500'}`}
+                  >
+                    <Heart className={`h-6 w-6 ${post.is_liked ? 'fill-current' : ''}`} />
+                  </Button>
+                  <span className="text-xs font-bold text-foreground">{post.likes_count || 0} likes</span>
+               </div>
             </div>
             <form onSubmit={handleAddComment} className="flex items-center gap-2">
               <Input
@@ -397,11 +397,11 @@ const PostDetailPage = () => {
                 className="flex-grow text-sm bg-muted/30 border-none rounded-xl focus-visible:ring-1 focus-visible:ring-primary/20"
                 disabled={isSubmitting}
               />
-              <Button
-                type="submit"
-                variant="ghost"
+              <Button 
+                type="submit" 
+                variant="ghost" 
                 size="sm"
-                disabled={isSubmitting || !newComment.trim()}
+                disabled={isSubmitting || !newComment.trim()} 
                 className="text-primary font-bold hover:bg-transparent"
               >
                 {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
