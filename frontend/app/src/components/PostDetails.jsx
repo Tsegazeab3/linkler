@@ -63,7 +63,7 @@ const PostDetails = ({ file, fileType, onBack, postMode, onSuccess }) => {
   const handlePost = () => handleSubmit('published');
   const handleSaveDraft = () => handleSubmit('draft');
 
-  const captionLengthColor = caption.length > MAX_CAPTION_LENGTH ? 'text-red-500' : 'text-gray-400';
+  const captionLengthColor = caption.length > MAX_CAPTION_LENGTH ? 'text-error' : 'text-ui-muted';
   const detailsWidth = postMode === 'media' ? 'md:w-1/2' : 'w-full max-w-2xl mx-auto';
 
   return (
@@ -71,7 +71,7 @@ const PostDetails = ({ file, fileType, onBack, postMode, onSuccess }) => {
       {/* Media Preview */}
       {postMode === 'media' && (
         <div className="md:w-1/2">
-          <div className="relative w-full aspect-square overflow-hidden rounded-lg bg-gray-100">
+          <div className="relative w-full aspect-square overflow-hidden rounded-lg bg-ui-bg-alt">
             {fileType === 'image' ? (
               <img src={URL.createObjectURL(file)} alt="Preview" className="absolute top-0 left-0 w-full h-full object-cover" />
             ) : (
@@ -98,7 +98,7 @@ const PostDetails = ({ file, fileType, onBack, postMode, onSuccess }) => {
               disabled={loading}
             />
             <div className="flex justify-end">
-              <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${caption.length > MAX_CAPTION_LENGTH ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-400'}`}>
+              <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${caption.length > MAX_CAPTION_LENGTH ? 'bg-error-light text-error' : 'bg-ui-bg-alt text-ui-muted'}`}>
                 {caption.length} / {MAX_CAPTION_LENGTH}
               </span>
             </div>

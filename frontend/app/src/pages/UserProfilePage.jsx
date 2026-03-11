@@ -26,7 +26,7 @@ const UserProfilePage = () => {
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand"></div>
             </div>
         );
     }
@@ -34,7 +34,7 @@ const UserProfilePage = () => {
     if (error || !user) {
         return (
             <div className="min-h-screen flex items-center justify-center p-4">
-                <p className="text-red-500 font-semibold">{error || 'User not found'}</p>
+                <p className="text-error font-semibold">{error || 'User not found'}</p>
             </div>
         );
     }
@@ -47,35 +47,35 @@ const UserProfilePage = () => {
                     <img 
                         src={user.profile_picture || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&auto=format&fit=crop&w=150&q=80'} 
                         alt={user.username} 
-                        className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover mb-4 md:mb-0 md:mr-8 shadow-lg border-2 border-white" 
+                        className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover mb-4 md:mb-0 md:mr-8 shadow-lg border-2 border-ui-white" 
                     />
                     <div className="flex-1">
                         <div className="flex flex-col md:flex-row md:items-center md:space-x-4">
-                            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{user.username}</h1>
+                            <h1 className="text-2xl md:text-3xl font-bold text-ui-text-main">{user.username}</h1>
                             <div className="flex items-center justify-center space-x-2 mt-2 md:mt-0">
                                 {user.account_type === 'guide' && (
-                                    <span className="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                                    <span className="bg-brand-light text-brand text-xs font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
                                         Guide
                                     </span>
                                 )}
                             </div>
                         </div>
-                        <div className="flex items-center justify-center md:justify-start space-x-6 mt-4 text-sm md:text-base text-gray-600">
-                            <p><span className="font-bold text-black">{user.posts_count || 0}</span> posts</p>
-                            <p><span className="font-bold text-black">{user.followers_count || 0}</span> followers</p>
-                            <p><span className="font-bold text-black">{user.following_count || 0}</span> following</p>
+                        <div className="flex items-center justify-center md:justify-start space-x-6 mt-4 text-sm md:text-base text-ui-text-secondary">
+                            <p><span className="font-bold text-ui-text-main">{user.posts_count || 0}</span> posts</p>
+                            <p><span className="font-bold text-ui-text-main">{user.followers_count || 0}</span> followers</p>
+                            <p><span className="font-bold text-ui-text-main">{user.following_count || 0}</span> following</p>
                         </div>
-                        <div className="mt-4 text-gray-700 max-w-lg mx-auto md:mx-0">
-                            <p className="font-medium text-gray-900 mb-1">{user.city}, {user.country}</p>
+                        <div className="mt-4 text-ui-text-secondary max-w-lg mx-auto md:mx-0">
+                            <p className="font-medium text-ui-text-main mb-1">{user.city}, {user.country}</p>
                             <p className="whitespace-pre-wrap">{user.bio}</p>
                         </div>
                     </div>
                 </div>
 
                 {/* Posts Grid */}
-                <div className="border-t border-gray-200 pt-8">
+                <div className="border-t border-ui-border pt-8">
                     <div className="flex items-center justify-center mb-6 space-x-8">
-                        <button className="border-t-2 border-black pt-4 text-xs font-bold uppercase tracking-widest flex items-center">
+                        <button className="border-t-2 border-ui-text-main pt-4 text-xs font-bold uppercase tracking-widest flex items-center text-ui-text-main">
                             <svg className="w-3 h-3 mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M2 2h20v20H2V2zm2 2v16h16V4H4zm3 3h4v4H7V7zm6 0h4v4h-4V7zm-6 6h4v4H7v-4zm6 0h4v4h-4v-4z"/></svg>
                             Posts
                         </button>
@@ -83,7 +83,7 @@ const UserProfilePage = () => {
                     {user.posts && user.posts.length > 0 ? (
                         <div className="grid grid-cols-3 gap-1 md:gap-6">
                             {user.posts.map(post => (
-                                <div key={post.id} className="relative aspect-square group overflow-hidden bg-gray-100 rounded-sm">
+                                <div key={post.id} className="relative aspect-square group overflow-hidden bg-ui-bg-alt rounded-sm">
                                     {post.media_file ? (
                                         post.media_file.endsWith('.mp4') ? (
                                             <video src={post.media_file} className="w-full h-full object-cover" />
@@ -91,7 +91,7 @@ const UserProfilePage = () => {
                                             <img src={post.media_file} alt={post.caption} className="w-full h-full object-cover md:hover:scale-105 transition-transform duration-500" />
                                         )
                                     ) : (
-                                        <div className="w-full h-full flex items-center justify-center p-2 text-center text-[10px] md:text-sm text-gray-500 overflow-hidden">
+                                        <div className="w-full h-full flex items-center justify-center p-2 text-center text-[10px] md:text-sm text-ui-muted overflow-hidden">
                                             {post.caption}
                                         </div>
                                     )}
@@ -105,7 +105,7 @@ const UserProfilePage = () => {
                             ))}
                         </div>
                     ) : (
-                        <div className="text-center py-20 text-gray-500 italic">
+                        <div className="text-center py-20 text-ui-muted italic">
                             No posts to show yet.
                         </div>
                     )}

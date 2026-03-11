@@ -184,8 +184,8 @@ const PostCard = ({
             </>
           ) : (
             /* Text-only Post Style */
-            <div className="absolute inset-0 flex items-center justify-center p-8 bg-gradient-to-br from-blue-50 to-indigo-50">
-               <p className="text-lg md:text-xl text-gray-800 font-medium italic text-center leading-relaxed">
+            <div className="absolute inset-0 flex items-center justify-center p-8 bg-gradient-to-br from-brand-light to-accent-indigo/10">
+               <p className="text-lg md:text-xl text-ui-text-main font-medium italic text-center leading-relaxed">
                  {caption}
                </p>
             </div>
@@ -200,7 +200,7 @@ const PostCard = ({
             <Button
               variant="ghost"
               size="icon"
-              className={`rounded-full transition-colors ${liked ? 'text-red-500 hover:text-red-600 hover:bg-red-50' : 'text-muted-foreground hover:text-red-500'}`}
+              className={`rounded-full transition-colors ${liked ? 'text-like hover:text-error-hover hover:bg-error-light' : 'text-muted-foreground hover:text-like'}`}
               onClick={handleLike}
             >
               <Heart className={`w-6 h-6 ${liked ? 'fill-current' : ''}`} />
@@ -208,7 +208,7 @@ const PostCard = ({
             <Button
               variant="ghost"
               size="icon"
-              className={`rounded-full transition-colors ${showComments ? 'text-blue-500 bg-blue-50' : 'text-muted-foreground hover:text-blue-500 hover:bg-blue-50'}`}
+              className={`rounded-full transition-colors ${showComments ? 'text-comment bg-brand-light' : 'text-muted-foreground hover:text-comment hover:bg-brand-light'}`}
               onClick={handleComment}
             >
               <MessageCircle className="w-6 h-6" />
@@ -216,7 +216,7 @@ const PostCard = ({
             <Button
               variant="ghost"
               size="icon"
-              className={`rounded-full text-muted-foreground hover:text-indigo-500 hover:bg-indigo-50 transition-colors`}
+              className={`rounded-full text-muted-foreground hover:text-accent-indigo hover:bg-accent-indigo/10 transition-colors`}
               onClick={handleShare}
             >
               <Share2 className="w-6 h-6" />
@@ -225,7 +225,7 @@ const PostCard = ({
           <Button
             variant="ghost"
             size="icon"
-            className={`rounded-full -mr-2 transition-colors ${saved ? 'text-emerald-500 hover:text-emerald-600 hover:bg-emerald-50' : 'text-muted-foreground hover:text-emerald-500'}`}
+            className={`rounded-full -mr-2 transition-colors ${saved ? 'text-save hover:text-success-hover hover:bg-success-light' : 'text-muted-foreground hover:text-save'}`}
             onClick={handleSave}
           >
             <Bookmark className={`w-6 h-6 ${saved ? 'fill-current' : ''}`} />

@@ -26,6 +26,7 @@ import ChatPage from './pages/ChatPage.jsx';
 import SettingsPage from './pages/SettingsPage.jsx';
 import CreatePostModal from './components/CreatePostModal.jsx';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import AuthGuard from './components/AuthGuard';
 
 function NotFound() {
@@ -88,10 +89,12 @@ function AppRouter() {
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <AuthProvider>
-      <BrowserRouter>
-        <AppRouter />
-      </BrowserRouter>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <BrowserRouter>
+          <AppRouter />
+        </BrowserRouter>
+      </AuthProvider>
+    </ThemeProvider>
   </StrictMode>,
 );

@@ -44,14 +44,14 @@ function SignInPage() {
     <div className="flex items-center justify-center min-h-screen bg-[var(--color-linkler-bg)] p-4 sm:p-8">
       <div className="flex w-full max-w-5xl mx-auto bg-white rounded-3xl shadow-xl overflow-hidden min-h-[600px]">
         {/* Left Column (Branding/Illustration) - Hidden on mobile */}
-        <div className="hidden lg:flex flex-col justify-between w-1/2 p-12 bg-gradient-to-br from-blue-600 to-indigo-700 text-white relative overflow-hidden">
+        <div className="hidden lg:flex flex-col justify-between w-1/2 p-12 bg-gradient-to-br from-brand to-accent-indigo text-white relative overflow-hidden">
           {/* Decorative circles */}
           <div className="absolute top-[-10%] right-[-10%] w-64 h-64 bg-white/10 rounded-full blur-2xl"></div>
-          <div className="absolute bottom-[-10%] left-[-10%] w-80 h-80 bg-blue-400/20 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-[-10%] left-[-10%] w-80 h-80 bg-brand-light/20 rounded-full blur-3xl"></div>
           
           <div className="relative z-10 space-y-2">
             <h1 className="text-4xl font-extrabold tracking-tight">Welcome back to Linkler</h1>
-            <p className="text-blue-100 text-lg leading-relaxed">
+            <p className="text-brand-light text-lg leading-relaxed">
               Sign in to continue connecting with fellow travelers and expert guides.
             </p>
           </div>
@@ -64,7 +64,7 @@ function SignInPage() {
              </div>
           </div>
           
-          <div className="relative z-10 text-sm font-medium text-blue-200">
+          <div className="relative z-10 text-sm font-medium text-brand-light/60">
             © 2026 Linkler. All rights reserved.
           </div>
         </div>

@@ -115,15 +115,15 @@ const CompleteProfilePage = () => {
   }
   
   if (error) {
-    return <div className="flex justify-center items-center min-h-screen text-red-500">{error}</div>;
+    return <div className="flex justify-center items-center min-h-screen text-error">{error}</div>;
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
-      <div className="w-full max-w-2xl p-8 space-y-8 bg-white rounded-lg shadow-md">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-ui-bg p-4">
+      <div className="w-full max-w-2xl p-8 space-y-8 bg-ui-white rounded-lg shadow-md">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-800">Complete Your Profile</h1>
-          <p className="mt-2 text-gray-600">Add a few more details to get the most out of Linkler.</p>
+          <h1 className="text-3xl font-bold text-ui-text-main">Complete Your Profile</h1>
+          <p className="mt-2 text-ui-text-secondary">Add a few more details to get the most out of Linkler.</p>
         </div>
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
@@ -144,7 +144,7 @@ const CompleteProfilePage = () => {
             <button 
               type="button" 
               onClick={() => fileInputRef.current.click()}
-              className="px-4 py-2 text-sm font-medium text-indigo-600 bg-white border border-indigo-600 rounded-md hover:bg-indigo-50"
+              className="px-4 py-2 text-sm font-medium text-accent-indigo bg-ui-white border border-accent-indigo rounded-md hover:bg-brand-light"
             >
               Change Picture
             </button>
@@ -152,12 +152,12 @@ const CompleteProfilePage = () => {
 
           {/* Bio Section */}
           <div>
-            <label htmlFor="bio" className="block text-sm font-medium text-gray-700">Bio</label>
+            <label htmlFor="bio" className="block text-sm font-medium text-ui-text-secondary">Bio</label>
             <textarea
               id="bio"
               name="bio"
               rows="3"
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+              className="mt-1 block w-full px-3 py-2 border border-ui-border rounded-md shadow-sm"
               placeholder="Tell us a little about yourself"
               value={formData.bio}
               onChange={handleChange}
@@ -166,32 +166,32 @@ const CompleteProfilePage = () => {
 
           {/* All other fields */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <input name="username" type="text" required placeholder="Username" value={formData.username} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md" />
-            <input name="age" type="number" placeholder="Age" value={formData.age} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md" />
-            <input name="nationality" type="text" placeholder="Nationality" value={formData.nationality} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md" />
-            <input name="residence" type="text" placeholder="Residence" value={formData.residence} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md" />
-            <input name="phone_no" type="text" placeholder="Phone Number" value={formData.phone_no} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md" />
-            <input name="city" type="text" placeholder="City" value={formData.city} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md" />
-            <input name="country" type="text" placeholder="Country" value={formData.country} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md" />
-            <input name="whatsapp" type="text" placeholder="WhatsApp" value={formData.whatsapp} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md" />
-            <input name="telegram" type="text" placeholder="Telegram" value={formData.telegram} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md" />
-            <input name="facebook" type="url" placeholder="Facebook URL" value={formData.facebook} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md" />
-            <input name="instagram" type="url" placeholder="Instagram URL" value={formData.instagram} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md" />
-            <input name="git_hub" type="url" placeholder="GitHub URL" value={formData.git_hub} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md" />
-            <input name="linkedin" type="url" placeholder="LinkedIn URL" value={formData.linkedin} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md" />
+            <input name="username" type="text" required placeholder="Username" value={formData.username} onChange={handleChange} className="w-full px-3 py-2 border border-ui-border rounded-md" />
+            <input name="age" type="number" placeholder="Age" value={formData.age} onChange={handleChange} className="w-full px-3 py-2 border border-ui-border rounded-md" />
+            <input name="nationality" type="text" placeholder="Nationality" value={formData.nationality} onChange={handleChange} className="w-full px-3 py-2 border border-ui-border rounded-md" />
+            <input name="residence" type="text" placeholder="Residence" value={formData.residence} onChange={handleChange} className="w-full px-3 py-2 border border-ui-border rounded-md" />
+            <input name="phone_no" type="text" placeholder="Phone Number" value={formData.phone_no} onChange={handleChange} className="w-full px-3 py-2 border border-ui-border rounded-md" />
+            <input name="city" type="text" placeholder="City" value={formData.city} onChange={handleChange} className="w-full px-3 py-2 border border-ui-border rounded-md" />
+            <input name="country" type="text" placeholder="Country" value={formData.country} onChange={handleChange} className="w-full px-3 py-2 border border-ui-border rounded-md" />
+            <input name="whatsapp" type="text" placeholder="WhatsApp" value={formData.whatsapp} onChange={handleChange} className="w-full px-3 py-2 border border-ui-border rounded-md" />
+            <input name="telegram" type="text" placeholder="Telegram" value={formData.telegram} onChange={handleChange} className="w-full px-3 py-2 border border-ui-border rounded-md" />
+            <input name="facebook" type="url" placeholder="Facebook URL" value={formData.facebook} onChange={handleChange} className="w-full px-3 py-2 border border-ui-border rounded-md" />
+            <input name="instagram" type="url" placeholder="Instagram URL" value={formData.instagram} onChange={handleChange} className="w-full px-3 py-2 border border-ui-border rounded-md" />
+            <input name="git_hub" type="url" placeholder="GitHub URL" value={formData.git_hub} onChange={handleChange} className="w-full px-3 py-2 border border-ui-border rounded-md" />
+            <input name="linkedin" type="url" placeholder="LinkedIn URL" value={formData.linkedin} onChange={handleChange} className="w-full px-3 py-2 border border-ui-border rounded-md" />
           </div>
 
           <div className="flex justify-between space-x-4 pt-4">
             <button
               type="button"
               onClick={handleSkip}
-              className="w-1/2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
+              className="w-1/2 px-4 py-2 text-sm font-medium text-ui-text-secondary bg-ui-bg-alt rounded-md hover:bg-ui-border"
             >
               Skip for now
             </button>
             <button
               type="submit"
-              className="w-1/2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700"
+              className="w-1/2 px-4 py-2 text-sm font-medium text-white bg-accent-indigo rounded-md hover:bg-accent-indigo/90"
             >
               Save Profile
             </button>

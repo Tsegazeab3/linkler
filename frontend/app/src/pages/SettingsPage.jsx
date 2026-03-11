@@ -119,17 +119,17 @@ const SettingsPage = () => {
       <div className="flex items-center gap-4 mb-8">
         <button 
           onClick={() => navigate(-1)}
-          className="p-2 rounded-full hover:bg-gray-100 transition text-gray-500"
+          className="p-2 rounded-full hover:bg-ui-bg-alt transition text-ui-muted"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
         </button>
-        <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
+        <h1 className="text-3xl font-bold text-ui-text-main">Settings</h1>
       </div>
 
       {message.text && (
-        <div className={`p-4 mb-6 rounded-xl font-medium ${message.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+        <div className={`p-4 mb-6 rounded-xl font-medium ${message.type === 'success' ? 'bg-success-light text-success-hover border border-success/20' : 'bg-error-light text-error-hover border border-error/20'}`}>
           {message.text}
         </div>
       )}
@@ -151,9 +151,9 @@ const SettingsPage = () => {
                 {/* Avatar Upload */}
                 <div className="flex items-center gap-6">
                   <div className="relative">
-                    <Avatar className="w-24 h-24 border-4 border-background shadow-md">
+                    <Avatar className="w-24 h-24 border-4 border-ui-white shadow-md">
                       <AvatarImage src={previewImage} className="object-cover" />
-                      <AvatarFallback className="bg-gradient-to-tr from-blue-100 to-[#3b82f6]/20 text-blue-500 font-bold text-3xl">
+                      <AvatarFallback className="bg-gradient-to-tr from-brand-light to-brand/20 text-brand font-bold text-3xl">
                         {user?.username?.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>

@@ -63,30 +63,30 @@ const CreateTripPage = () => {
 
   return ReactDOM.createPortal(
     <div
-      className={`fixed inset-0 bg-white/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 transition-opacity duration-200 ${show ? 'opacity-100' : 'opacity-0'}`}
+      className={`fixed inset-0 bg-ui-white/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 transition-opacity duration-200 ${show ? 'opacity-100' : 'opacity-0'}`}
       onClick={handleClose}
     >
       <div
-        className={`bg-white p-6 md:p-8 rounded-lg shadow-xl w-full max-w-md transition-all duration-200 relative ${show ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
+        className={`bg-ui-white p-6 md:p-8 rounded-lg shadow-xl w-full max-w-md transition-all duration-200 relative ${show ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
         onClick={(e) => e.stopPropagation()}
       >
-        <button onClick={handleClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 z-10">
+        <button onClick={handleClose} className="absolute top-4 right-4 text-ui-muted hover:text-ui-text-main z-10">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
 
         <div className="text-center mb-6">
-          <h1 className="text-3xl font-bold text-[#3b82f6]">
+          <h1 className="text-3xl font-bold text-brand">
             Plan Your Journey
           </h1>
-          <p className="text-gray-500 mt-2 text-sm">
+          <p className="text-ui-muted mt-2 text-sm">
             Tell us about your next adventure!
           </p>
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 text-red-500 text-sm rounded-md border border-red-100">
+          <div className="mb-4 p-3 bg-error-light text-error text-sm rounded-md border border-error/20">
             {error}
           </div>
         )}
@@ -94,7 +94,7 @@ const CreateTripPage = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="origin" className="block text-sm font-medium text-gray-700">Origin</label>
+              <label htmlFor="origin" className="block text-sm font-medium text-ui-text-secondary">Origin</label>
               <input
                 type="text"
                 name="origin"
@@ -102,12 +102,12 @@ const CreateTripPage = () => {
                 value={tripData.origin}
                 onChange={handleChange}
                 placeholder="e.g. Dubai"
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#3b82f6] focus:border-[#3b82f6]"
+                className="mt-1 block w-full border border-ui-border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-brand focus:border-brand"
                 required
               />
             </div>
             <div>
-              <label htmlFor="destination" className="block text-sm font-medium text-gray-700">Destination</label>
+              <label htmlFor="destination" className="block text-sm font-medium text-ui-text-secondary">Destination</label>
               <input
                 type="text"
                 name="destination"
@@ -115,7 +115,7 @@ const CreateTripPage = () => {
                 value={tripData.destination}
                 onChange={handleChange}
                 placeholder="e.g. Muscat"
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#3b82f6] focus:border-[#3b82f6]"
+                className="mt-1 block w-full border border-ui-border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-brand focus:border-brand"
                 required
               />
             </div>
@@ -123,40 +123,40 @@ const CreateTripPage = () => {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="start_date" className="block text-sm font-medium text-gray-700">Start Date</label>
+              <label htmlFor="start_date" className="block text-sm font-medium text-ui-text-secondary">Start Date</label>
               <input
                 type="date"
                 name="start_date"
                 id="start_date"
                 value={tripData.start_date}
                 onChange={handleChange}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#3b82f6] focus:border-[#3b82f6]"
+                className="mt-1 block w-full border border-ui-border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-brand focus:border-brand"
                 required
               />
             </div>
             <div>
-              <label htmlFor="end_date" className="block text-sm font-medium text-gray-700">End Date</label>
+              <label htmlFor="end_date" className="block text-sm font-medium text-ui-text-secondary">End Date</label>
               <input
                 type="date"
                 name="end_date"
                 id="end_date"
                 value={tripData.end_date}
                 onChange={handleChange}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#3b82f6] focus:border-[#3b82f6]"
+                className="mt-1 block w-full border border-ui-border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-brand focus:border-brand"
                 required
               />
             </div>
           </div>
 
           <div>
-            <label htmlFor="message" className="block text-sm font-medium text-gray-700">Message</label>
+            <label htmlFor="message" className="block text-sm font-medium text-ui-text-secondary">Message</label>
             <textarea
               name="message"
               id="message"
               rows="3"
               value={tripData.message}
               onChange={handleChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#3b82f6] focus:border-[#3b82f6]"
+              className="mt-1 block w-full border border-ui-border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-brand focus:border-brand"
               placeholder="Tell others what you're looking for..."
               required
             ></textarea>
@@ -165,7 +165,7 @@ const CreateTripPage = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#3b82f6] hover:bg-[#3b82f6]/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3b82f6] disabled:opacity-50"
+            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-brand hover:bg-brand-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand disabled:opacity-50"
           >
             {loading ? 'Creating...' : 'Create Trip'}
           </button>

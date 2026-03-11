@@ -29,9 +29,9 @@ function Header() {
 
       {/* Column 1: Title */}
       <div className="col-span-1">
-        <div id="title" className="top-4 left-4 sm:top-8 sm:left-8 text-4xl  text-black drop-shadow-blue font-display italic">
+        <div id="title" className="top-4 left-4 sm:top-8 sm:left-8 text-4xl  text-ui-text-main drop-shadow-blue font-display italic">
           <div className={`transition-opacity duration-300 ${isScrolled ? 'opacity-0' : 'opacity-100'}`}>
-            <span className="bg-linear-to-r from-blue-500 to-purple-500 font-bold bg-clip-text text-transparent">
+            <span className="bg-linear-to-r from-brand to-accent-purple font-bold bg-clip-text text-transparent">
               <Link to="/">Linkler</Link>
             </span>
           </div>
@@ -87,18 +87,18 @@ function Header() {
               className="hamburger-icon flex flex-col justify-between h-[24px] w-[30px] cursor-pointer relative z-30"
               onClick={toggleMenu}
             >
-              <span className={`w-full h-[2px] bg-black transition-all duration-300 ${isOpen ? 'rotate-45 translate-y-[11px]' : ''}`}></span>
-              <span className={`w-full h-[2px] bg-black transition-all duration-300 ${isOpen ? 'opacity-0' : ''}`}></span>
-              <span className={`w-full h-[2px] bg-black transition-all duration-300 ${isOpen ? '-rotate-45 -translate-y-[11px]' : ''}`}></span>
+              <span className={`w-full h-[2px] bg-ui-text-main transition-all duration-300 ${isOpen ? 'rotate-45 translate-y-[11px]' : ''}`}></span>
+              <span className={`w-full h-[2px] bg-ui-text-main transition-all duration-300 ${isOpen ? 'opacity-0' : ''}`}></span>
+              <span className={`w-full h-[2px] bg-ui-text-main transition-all duration-300 ${isOpen ? '-rotate-45 -translate-y-[11px]' : ''}`}></span>
             </div>
 
-            <div className={`fixed inset-0 z-20 bg-white/95 backdrop-blur-xl flex flex-col items-center justify-center gap-6 transition-opacity duration-300 ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+            <div className={`fixed inset-0 z-20 bg-ui-white/95 backdrop-blur-xl flex flex-col items-center justify-center gap-6 transition-opacity duration-300 ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
 
               {/* Mobile Only: Sign up / Log in (Hidden above 420px) */}
-              <div className="flex flex-col gap-4 min-[420px]:hidden w-64 text-center pb-4 border-b border-gray-200">
+              <div className="flex flex-col gap-4 min-[420px]:hidden w-64 text-center pb-4 border-b border-ui-border">
                 <Link to="/signup" className="text-xl font-bold" onClick={toggleMenu}>Sign up</Link>
                 <Link to="/login" className="text-xl font-bold" onClick={toggleMenu}>Log in</Link>
-                <Link to="/register-guide" className="text-xl font-bold text-blue-600" onClick={toggleMenu}>Register Guide</Link> {/* New button for Register Guide */}
+                <Link to="/register-guide" className="text-xl font-bold text-brand" onClick={toggleMenu}>Register Guide</Link> {/* New button for Register Guide */}
               </div>
 
               {['Web', 'Support', 'Download', 'About', 'Contribute'].map((item) => (

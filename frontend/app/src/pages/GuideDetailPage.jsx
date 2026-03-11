@@ -57,30 +57,30 @@ const GuideDetailPage = () => {
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand"></div>
             </div>
         );
     }
 
     if (error || !guide) {
-        return <div className="p-8 text-center text-red-500 font-bold">{error || 'Guide not found!'}</div>;
+        return <div className="p-8 text-center text-error font-bold">{error || 'Guide not found!'}</div>;
     }
 
     return (
         <div className="min-h-screen p-4 lg:p-8">
             <div className="max-w-4xl mx-auto">
                 {/* Guide Details Section */}
-                <Card className="rounded-2xl shadow-sm border-border/50 overflow-hidden flex flex-col md:flex-row">
+                <Card className="rounded-2xl shadow-sm border-ui-border/50 overflow-hidden flex flex-col md:flex-row">
                     <img src={guide.profile_picture || 'https://images.unsplash.com/photo-1440778303588-435521a205bc?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80'} alt={guide.username} className="w-full md:w-64 h-64 md:h-80 object-cover" />
                     <CardContent className="p-8 flex-1">
                         <div className="flex justify-between items-start">
                             <div>
-                                <h1 className="text-3xl font-bold tracking-tight">{guide.username}</h1>
-                                <p className="text-muted-foreground font-medium mt-1">{guide.city}, {guide.country}</p>
+                                <h1 className="text-3xl font-bold tracking-tight text-ui-text-main">{guide.username}</h1>
+                                <p className="text-ui-muted font-medium mt-1">{guide.city}, {guide.country}</p>
                             </div>
-                            <div className="bg-blue-50 px-3 py-1.5 rounded-full flex items-center border border-blue-100">
-                                <span className="text-yellow-500 mr-1.5 text-sm">★</span>
-                                <span className="text-blue-700 font-bold">4.5</span>
+                            <div className="bg-brand-light px-3 py-1.5 rounded-full flex items-center border border-brand/10">
+                                <span className="text-warning mr-1.5 text-sm">★</span>
+                                <span className="text-brand font-bold">4.5</span>
                             </div>
                         </div>
                         
@@ -122,13 +122,13 @@ const GuideDetailPage = () => {
                 {/* Schedule Section */}
                 {guide.schedule && guide.schedule.length > 0 && (
                     <div className="mt-12">
-                        <h2 className="text-3xl font-bold mb-6">Availability</h2>
-                        <div className="bg-white rounded-lg shadow p-6">
+                        <h2 className="text-3xl font-bold mb-6 text-ui-text-main">Availability</h2>
+                        <div className="bg-ui-white rounded-lg shadow p-6">
                             <ul className="space-y-2">
                                 {guide.schedule.map(slot => (
                                     <li key={slot.day} className="flex justify-between">
-                                        <span className="font-semibold">{slot.day}</span>
-                                        <span>{slot.time}</span>
+                                        <span className="font-semibold text-ui-text-main">{slot.day}</span>
+                                        <span className="text-ui-text-secondary">{slot.time}</span>
                                     </li>
                                 ))}
                             </ul>

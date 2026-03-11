@@ -38,9 +38,9 @@ const SignUpPage = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-linkler-bg">
-      <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold text-center text-gray-900">Sign Up</h2>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-[var(--color-linkler-bg)]">
+      <div className="w-full max-w-md p-8 space-y-8 bg-ui-white rounded-lg shadow-md">
+        <h2 className="text-2xl font-bold text-center text-ui-text-main">Sign Up</h2>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
@@ -53,7 +53,7 @@ const SignUpPage = () => {
                 type="email"
                 autoComplete="email"
                 required
-                className="relative block w-full px-3 py-2 text-gray-900 placeholder-gray-500 border border-gray-300 rounded-none appearance-none rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className="relative block w-full px-3 py-2 text-ui-text-main placeholder-ui-muted border border-ui-border rounded-none appearance-none rounded-t-md focus:outline-none focus:ring-accent-indigo focus:border-accent-indigo focus:z-10 sm:text-sm"
                 placeholder="Email address"
                 value={formData.email}
                 onChange={handleChange}
@@ -69,7 +69,7 @@ const SignUpPage = () => {
                 type="password"
                 autoComplete="current-password"
                 required
-                className="relative block w-full px-3 py-2 text-gray-900 placeholder-gray-500 border border-gray-300 rounded-none appearance-none rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className="relative block w-full px-3 py-2 text-ui-text-main placeholder-ui-muted border border-ui-border rounded-none appearance-none rounded-b-md focus:outline-none focus:ring-accent-indigo focus:border-accent-indigo focus:z-10 sm:text-sm"
                 placeholder="Password"
                 value={formData.password}
                 onChange={handleChange}
@@ -80,7 +80,7 @@ const SignUpPage = () => {
           <div>
             <button
               type="submit"
-              className="relative flex justify-center w-full px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md group hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="relative flex justify-center w-full px-4 py-2 text-sm font-medium text-white bg-accent-indigo border border-transparent rounded-md group hover:bg-accent-indigo/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-indigo"
             >
               Sign Up
             </button>
@@ -89,17 +89,17 @@ const SignUpPage = () => {
 
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300" />
+            <div className="w-full border-t border-ui-border" />
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 text-gray-500 bg-white">Or continue with</span>
+            <span className="px-2 text-ui-muted bg-ui-white">Or continue with</span>
           </div>
         </div>
 
         <div>
           <a
             href="http://127.0.0.1:8000/accounts/google/login/?process=login"
-            className="relative flex justify-center w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm group hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            className="relative flex justify-center w-full px-4 py-2 text-sm font-medium text-ui-text-secondary bg-ui-white border border-ui-border rounded-md shadow-sm group hover:bg-ui-bg-alt focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-indigo"
           >
             Sign in with Google
           </a>

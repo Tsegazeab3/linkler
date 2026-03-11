@@ -46,32 +46,32 @@ const BottomNav = ({ onPanelItemClick, selectedNavItemId, showSidePanel }) => {
       {/* Sileo-Style Popup Menu (The 'Toaster') */}
       {isMenuOpen && (
         <div className="w-[92%] max-w-sm mb-4 animate-in fade-in slide-in-from-bottom-8 duration-300">
-          <div className="bg-white border border-gray-200 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] overflow-hidden">
+          <div className="bg-ui-white border border-ui-border rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] overflow-hidden">
             <div className="p-2 grid grid-cols-2 gap-2">
               <button
                 onClick={() => handleCreateAction('/create-trip')}
-                className="flex flex-col items-center justify-center py-6 px-4 rounded-[1.5rem] bg-blue-500/10 hover:bg-blue-500/20 active:scale-95 transition-all group"
+                className="flex flex-col items-center justify-center py-6 px-4 rounded-[1.5rem] bg-brand/10 hover:bg-brand/20 active:scale-95 transition-all group"
               >
-                <div className="w-12 h-12 bg-blue-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-500/30 mb-3 group-hover:scale-110 transition-transform">
+                <div className="w-12 h-12 bg-brand rounded-2xl flex items-center justify-center text-white shadow-lg shadow-brand/30 mb-3 group-hover:scale-110 transition-transform">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 </div>
-                <span className="font-bold text-xs text-blue-600 uppercase tracking-widest">New Trip</span>
+                <span className="font-bold text-xs text-brand uppercase tracking-widest">New Trip</span>
               </button>
 
               <button
                 onClick={() => handleCreateAction('/create')}
-                className="flex flex-col items-center justify-center py-6 px-4 rounded-[1.5rem] bg-emerald-500/10 hover:bg-emerald-500/20 active:scale-95 transition-all group"
+                className="flex flex-col items-center justify-center py-6 px-4 rounded-[1.5rem] bg-success/10 hover:bg-success/20 active:scale-95 transition-all group"
               >
-                <div className="w-12 h-12 bg-emerald-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-emerald-500/30 mb-3 group-hover:scale-110 transition-transform">
+                <div className="w-12 h-12 bg-success rounded-2xl flex items-center justify-center text-white shadow-lg shadow-success/30 mb-3 group-hover:scale-110 transition-transform">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
                 </div>
-                <span className="font-bold text-xs text-emerald-600 uppercase tracking-widest">New Post</span>
+                <span className="font-bold text-xs text-success uppercase tracking-widest">New Post</span>
               </button>
             </div>
             
             <button 
                 onClick={() => setIsMenuOpen(false)}
-                className="w-full py-4 bg-gray-50/50 text-gray-400 text-[10px] font-bold uppercase tracking-[0.2em] border-t border-gray-100 hover:text-gray-600 transition-colors"
+                className="w-full py-4 bg-ui-bg-alt/50 text-ui-muted text-[10px] font-bold uppercase tracking-[0.2em] border-t border-ui-border/50 hover:text-ui-text-secondary transition-colors"
             >
                 Close Menu
             </button>
@@ -83,7 +83,7 @@ const BottomNav = ({ onPanelItemClick, selectedNavItemId, showSidePanel }) => {
       <div className="mb-2">
           <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className={`bg-blue-600 text-white rounded-full w-16 h-16 shadow-[0_10px_30px_rgba(37,99,235,0.4)] border-4 border-white active:scale-90 transition-all flex items-center justify-center ${isMenuOpen ? 'rotate-45 bg-gray-900 shadow-none' : ''}`}
+              className={`bg-brand text-white rounded-full w-16 h-16 shadow-[0_10px_30px_rgba(37,99,235,0.4)] border-4 border-ui-white active:scale-90 transition-all flex items-center justify-center ${isMenuOpen ? 'rotate-45 bg-ui-text-main shadow-none' : ''}`}
           >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-9 w-9" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
@@ -92,7 +92,7 @@ const BottomNav = ({ onPanelItemClick, selectedNavItemId, showSidePanel }) => {
       </div>
 
       {/* Main Navigation Bar - Full Width & Swipable */}
-      <div className="w-full h-16 bg-white border-t border-gray-200 flex items-center overflow-hidden">
+      <div className="w-full h-16 bg-ui-white border-t border-ui-border flex items-center overflow-hidden">
         <div className="w-full h-full flex items-center overflow-x-auto no-scrollbar px-6 space-x-8 scroll-smooth">
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -104,7 +104,7 @@ const BottomNav = ({ onPanelItemClick, selectedNavItemId, showSidePanel }) => {
               <button
                 key={item.id}
                 onClick={() => handleNavClick(item)}
-                className={`flex flex-col items-center justify-center min-w-[48px] h-full transition-all shrink-0 ${isActive ? 'text-blue-600' : 'text-gray-500'}`}
+                className={`flex flex-col items-center justify-center min-w-[48px] h-full transition-all shrink-0 ${isActive ? 'text-brand' : 'text-ui-muted'}`}
               >
                 <div className={`transition-all duration-300 ${isActive ? 'scale-110 -translate-y-0.5' : ''}`}>
                   {Icon && <Icon className="w-6 h-6" />}
@@ -123,13 +123,13 @@ const BottomNav = ({ onPanelItemClick, selectedNavItemId, showSidePanel }) => {
                 if (showSidePanel) onPanelItemClick(null);
                 isAuthenticated && user ? navigate(`/app/profile/${user.id}`) : navigate('/signin');
             }}
-            className={`flex flex-col items-center justify-center min-w-[48px] h-full shrink-0 ${location.pathname.includes('/profile/') || location.pathname === '/signin' ? 'text-blue-600' : 'text-gray-500'}`}
+            className={`flex flex-col items-center justify-center min-w-[48px] h-full shrink-0 ${location.pathname.includes('/profile/') || location.pathname === '/signin' ? 'text-brand' : 'text-ui-muted'}`}
           >
             <div className={`transition-all duration-300 ${location.pathname.includes('/profile/') || location.pathname === '/signin' ? 'scale-110 -translate-y-0.5' : ''}`}>
                 {isAuthenticated && user ? (
-                  <Avatar className="w-6 h-6 border border-gray-200">
+                  <Avatar className="w-6 h-6 border border-ui-border">
                     <AvatarImage src={user.profile_picture} alt="Profile" className="object-cover" />
-                    <AvatarFallback className="text-[10px] text-gray-500">{user.username?.charAt(0).toUpperCase()}</AvatarFallback>
+                    <AvatarFallback className="text-[10px] text-ui-muted">{user.username?.charAt(0).toUpperCase()}</AvatarFallback>
                   </Avatar>
                 ) : (
                   <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

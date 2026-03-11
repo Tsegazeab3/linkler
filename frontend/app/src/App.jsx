@@ -82,13 +82,13 @@ function App() {
 
         <main className={`flex-1 transition-[margin] duration-300 ease-in-out ${mainContentMargin} pb-16 lg:pb-0 min-w-0 flex flex-col`}>
           {/* Mobile Top Header (only visible on small screens) */}
-          <div className="lg:hidden sticky top-0 z-[30] bg-white/95 backdrop-blur-md border-b border-gray-100 px-4 py-3 flex items-center justify-between">
-            <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent italic font-display">
+          <div className="lg:hidden sticky top-0 z-[30] bg-ui-white/95 backdrop-blur-md border-b border-ui-border px-4 py-3 flex items-center justify-between">
+            <h1 className="text-xl font-bold bg-gradient-to-r from-brand to-accent-indigo bg-clip-text text-transparent italic font-display">
               Linkler
             </h1>
             <button
               onClick={() => setIsSearchOpen(true)}
-              className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 text-gray-600 active:scale-95 transition-transform"
+              className="w-10 h-10 flex items-center justify-center rounded-full bg-ui-bg-alt text-ui-text-secondary active:scale-95 transition-transform"
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
                 <path fillRule="evenodd" d="M10.5 3.75a6.75 6.75 0 100 13.5 6.75 6.75 0 000-13.5zM2.25 10.5a8.25 8.25 0 1114.59 5.28l4.69 4.69a.75.75 0 11-1.06 1.06l-4.69-4.69A8.25 8.25 0 012.25 10.5z" clipRule="evenodd" />
