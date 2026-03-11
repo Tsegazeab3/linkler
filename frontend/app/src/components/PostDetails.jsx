@@ -120,7 +120,7 @@ const PostDetails = ({ file, fileType, onBack, postMode, onSuccess }) => {
               </Select>
             </div>
             
-            <div className="flex items-center space-x-3 p-3 rounded-lg border border-border/50 bg-muted/30">
+            <div className="flex items-center space-x-3 p-3 rounded-lg border border-ui-border/50 bg-ui-bg-alt/30">
               <Checkbox 
                 id="disable-comments" 
                 checked={disableComments} 
@@ -134,7 +134,7 @@ const PostDetails = ({ file, fileType, onBack, postMode, onSuccess }) => {
                 >
                   Disable comments
                 </Label>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-ui-muted">
                   Prevent others from commenting on this post.
                 </p>
               </div>
@@ -143,7 +143,7 @@ const PostDetails = ({ file, fileType, onBack, postMode, onSuccess }) => {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-3 pt-6 mt-2 border-t border-border/50">
+        <div className="flex items-center gap-3 pt-6 mt-2 border-t border-ui-border/50">
           <Button variant="ghost" onClick={onBack} disabled={loading} className="px-6">
             Back
           </Button>

@@ -74,24 +74,24 @@ const CreatePostModal = () => {
 
   return ReactDOM.createPortal(
     <div
-      className={`fixed inset-0 bg-white/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 transition-opacity duration-200 ${show ? 'opacity-100' : 'opacity-0'}`}
+      className={`fixed inset-0 bg-ui-white/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 transition-opacity duration-200 ${show ? 'opacity-100' : 'opacity-0'}`}
       onClick={handleClose}
     >
       <div
-        className={`bg-white p-6 md:p-8 rounded-lg shadow-xl w-full ${containerWidth} transition-all duration-200 relative ${show ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
+        className={`bg-ui-white p-6 md:p-8 rounded-lg shadow-xl w-full ${containerWidth} transition-all duration-200 relative ${show ? 'opacity-100 scale-100' : 'opacity-0 scale-95'} border border-ui-border/50`}
         onClick={(e) => e.stopPropagation()}
       >
-        <button onClick={handleClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 z-10">
+        <button onClick={handleClose} className="absolute top-4 right-4 text-ui-muted hover:text-ui-text-main z-10">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
 
         <div className="text-center mb-6">
-          <h1 className="text-3xl font-bold text-[var(--color-primary)]">
+          <h1 className="text-3xl font-bold text-ui-text-main">
             {getTitle()}
           </h1>
-          <p className="text-gray-500 mt-2 text-sm">
+          <p className="text-ui-text-secondary mt-2 text-sm">
             {getSubtitle()}
           </p>
         </div>

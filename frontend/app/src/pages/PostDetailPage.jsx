@@ -270,12 +270,12 @@ const PostDetailPage = () => {
       </div>
 
       <div 
-        className={`w-full h-full lg:w-[1000px] lg:h-[85vh] flex flex-col lg:flex-row bg-white lg:rounded-3xl lg:shadow-2xl overflow-hidden`}
+        className={`w-full h-full lg:w-[1000px] lg:h-[85vh] flex flex-col lg:flex-row bg-ui-white lg:rounded-3xl lg:shadow-2xl overflow-hidden`}
         onClick={(e) => e.stopPropagation()}
       >
         
         <div 
-            className={`bg-black flex items-center justify-center relative overflow-hidden touch-none transition-all duration-500 ease-in-out ${isExpanded ? 'h-full lg:h-auto lg:w-full' : 'h-[40vh] shrink-0 lg:h-auto lg:w-[600px] lg:flex-grow'}`}
+            className={`bg-ui-bg flex items-center justify-center relative overflow-hidden touch-none transition-all duration-500 ease-in-out ${isExpanded ? 'h-full lg:h-auto lg:w-full' : 'h-[40vh] shrink-0 lg:h-auto lg:w-[600px] lg:flex-grow'}`}
             style={{ cursor: isExpanded ? (scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'zoom-out') : 'zoom-in' }}
             onClick={handleMediaClick}
             onDoubleClick={handleDoubleClick}
@@ -308,8 +308,8 @@ const PostDetailPage = () => {
                 )}
             </div>
           ) : (
-            <div className="w-full h-full flex items-center justify-center p-12 bg-linear-to-br from-indigo-50 to-blue-50">
-              <p className={`text-2xl text-gray-800 font-medium italic text-center`}>
+            <div className="w-full h-full flex items-center justify-center p-12 bg-gradient-to-br from-brand-light to-accent-indigo/10">
+              <p className={`text-2xl text-ui-text-main font-medium italic text-center`}>
                 {post.caption}
               </p>
             </div>
@@ -317,16 +317,16 @@ const PostDetailPage = () => {
         </div>
 
         <div 
-            className={`bg-white lg:border-l border-gray-100 flex flex-col transition-all duration-500 overflow-hidden ${isExpanded ? 'h-0 lg:h-auto lg:w-0 opacity-0' : 'h-auto flex-grow lg:w-[450px] opacity-100'}`}
+            className={`bg-ui-white lg:border-l border-ui-border flex flex-col transition-all duration-500 overflow-hidden ${isExpanded ? 'h-0 lg:h-auto lg:w-0 opacity-0' : 'h-auto flex-grow lg:w-[450px] opacity-100'}`}
         >
-          <div className="flex items-center p-4 border-b shrink-0">
-            <Avatar className="h-10 w-10 mr-3 border border-border shadow-sm">
+          <div className="flex items-center p-4 border-b border-ui-border shrink-0">
+            <Avatar className="h-10 w-10 mr-3 border border-ui-border shadow-sm">
                 <AvatarImage src={post.author?.profile_picture} className="object-cover" />
                 <AvatarFallback>{post.author?.username?.charAt(0).toUpperCase()}</AvatarFallback>
             </Avatar>
             <div className="flex-grow min-w-0">
-              <p className="font-bold text-sm truncate">{post.author?.username}</p>
-              <p className="text-xs text-muted-foreground truncate line-clamp-1">{post.author?.bio || ''}</p>
+              <p className="font-bold text-sm text-ui-text-main truncate">{post.author?.username}</p>
+              <p className="text-xs text-ui-muted truncate line-clamp-1">{post.author?.bio || ''}</p>
             </div>
             {user?.id !== post.author?.id && (
               <Button 
@@ -343,13 +343,13 @@ const PostDetailPage = () => {
           <div className="flex-grow overflow-y-auto no-scrollbar p-4 space-y-6">
             {post.media_file && post.caption && (
                <div className="flex space-x-3 mb-2">
-                 <Avatar className="h-8 w-8 border border-border/30 shadow-sm flex-shrink-0">
+                 <Avatar className="h-8 w-8 border border-ui-border/30 shadow-sm flex-shrink-0">
                     <AvatarImage src={post.author?.profile_picture} className="object-cover" />
                     <AvatarFallback>{post.author?.username?.charAt(0).toUpperCase()}</AvatarFallback>
                  </Avatar>
                  <div className="text-sm">
-                    <p><span className="font-bold mr-2">{post.author?.username}</span>{post.caption}</p>
-                    <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-tighter">{new Date(post.created_at).toLocaleDateString()}</p>
+                    <p><span className="font-bold mr-2 text-ui-text-main">{post.author?.username}</span><span className="text-ui-text-secondary">{post.caption}</span></p>
+                    <p className="text-[10px] text-ui-muted mt-1 uppercase tracking-tighter">{new Date(post.created_at).toLocaleDateString()}</p>
                  </div>
                </div>
             )}
@@ -357,36 +357,36 @@ const PostDetailPage = () => {
             <div className="space-y-5">
                 {post.post_comments?.map(comment => (
                 <div key={comment.id} className="flex space-x-3 animate-in fade-in slide-in-from-left-2 duration-300">
-                    <Avatar className="h-8 w-8 border border-border/30 shadow-sm flex-shrink-0">
+                    <Avatar className="h-8 w-8 border border-ui-border/30 shadow-sm flex-shrink-0">
                         <AvatarImage src={comment.author?.profile_picture} className="object-cover" />
                         <AvatarFallback>{comment.author?.username?.charAt(0).toUpperCase()}</AvatarFallback>
                     </Avatar>
                     <div className="flex-grow">
-                        <div className="bg-muted/30 p-3 rounded-2xl rounded-tl-none border border-border/50">
+                        <div className="bg-ui-bg-alt/50 p-3 rounded-2xl rounded-tl-none border border-ui-border/50">
                             <p className="text-sm">
-                                <span className="font-bold mr-2">{comment.author?.username}</span>
-                                {comment.text}
+                                <span className="font-bold mr-2 text-ui-text-main">{comment.author?.username}</span>
+                                <span className="text-ui-text-secondary">{comment.text}</span>
                             </p>
                         </div>
-                        <p className="text-[9px] text-muted-foreground mt-1 ml-1 font-medium">{new Date(comment.created_at).toLocaleDateString()}</p>
+                        <p className="text-[9px] text-ui-muted mt-1 ml-1 font-medium">{new Date(comment.created_at).toLocaleDateString()}</p>
                     </div>
                 </div>
                 ))}
             </div>
           </div>
 
-          <div className="p-4 border-t bg-white shrink-0">
+          <div className="p-4 border-t border-ui-border bg-ui-white shrink-0">
             <div className="flex items-center justify-between mb-4">
                <div className="flex items-center space-x-3">
                   <Button 
                     variant="ghost" 
                     size="icon"
                     onClick={handleLike}
-                    className={`rounded-full transition-colors ${post.is_liked ? 'text-red-500 hover:text-red-600' : 'text-muted-foreground hover:text-red-500'}`}
+                    className={`rounded-full transition-colors ${post.is_liked ? 'text-like hover:text-error-hover' : 'text-ui-muted hover:text-like'}`}
                   >
                     <Heart className={`h-6 w-6 ${post.is_liked ? 'fill-current' : ''}`} />
                   </Button>
-                  <span className="text-xs font-bold text-foreground">{post.likes_count || 0} likes</span>
+                  <span className="text-xs font-bold text-ui-text-main">{post.likes_count || 0} likes</span>
                </div>
             </div>
             <form onSubmit={handleAddComment} className="flex items-center gap-2">
@@ -394,7 +394,7 @@ const PostDetailPage = () => {
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 placeholder="Add a comment..."
-                className="flex-grow text-sm bg-muted/30 border-none rounded-xl focus-visible:ring-1 focus-visible:ring-primary/20"
+                className="flex-grow text-sm bg-ui-bg-alt/50 border-none rounded-xl focus-visible:ring-1 focus-visible:ring-brand/20 text-ui-text-main"
                 disabled={isSubmitting}
               />
               <Button 
@@ -402,7 +402,7 @@ const PostDetailPage = () => {
                 variant="ghost" 
                 size="sm"
                 disabled={isSubmitting || !newComment.trim()} 
-                className="text-primary font-bold hover:bg-transparent"
+                className="text-brand font-bold hover:bg-transparent"
               >
                 {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               </Button>

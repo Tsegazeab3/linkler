@@ -78,15 +78,15 @@ const MediaSelection = ({ onFileSelect, onTextOnly, isMobile }) => {
           onDrop={handleDrop}
           onClick={() => fileInputRef.current.click()}
         >
-          <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
-          <div className="relative flex flex-col items-center justify-center border-2 border-dashed border-border/50 rounded-2xl p-16 bg-white hover:border-primary/50 transition duration-300">
-            <div className="p-4 rounded-full bg-primary/5 mb-6 group-hover:scale-110 transition-transform duration-300">
-              <UploadCloud className="h-12 w-12 text-primary" strokeWidth={1.5} />
+          <div className="absolute -inset-1 bg-gradient-to-r from-brand to-accent-indigo rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
+          <div className="relative flex flex-col items-center justify-center border-2 border-dashed border-ui-border rounded-2xl p-16 bg-ui-white hover:border-brand/50 transition duration-300">
+            <div className="p-4 rounded-full bg-brand/5 mb-6 group-hover:scale-110 transition-transform duration-300">
+              <UploadCloud className="h-12 w-12 text-brand" strokeWidth={1.5} />
             </div>
-            <p className="mb-2 text-xl font-bold tracking-tight text-foreground">
+            <p className="mb-2 text-xl font-bold tracking-tight text-ui-text-main">
               Drag & Drop photos or videos
             </p>
-            <p className="text-sm text-muted-foreground font-medium">
+            <p className="text-sm text-ui-muted font-medium">
               or click to browse your files
             </p>
           </div>
@@ -96,10 +96,10 @@ const MediaSelection = ({ onFileSelect, onTextOnly, isMobile }) => {
       {/* Separator and Text-Only Option */}
       <div className="relative">
         <div className="absolute inset-0 flex items-center" aria-hidden="true">
-          <div className="w-full border-t border-border/50" />
+          <div className="w-full border-t border-ui-border" />
         </div>
-        <div className="relative flex justify-center text-xs uppercase font-bold tracking-widest text-muted-foreground/60">
-          <span className="bg-white px-4">OR</span>
+        <div className="relative flex justify-center text-xs uppercase font-bold tracking-widest text-ui-muted/60">
+          <span className="bg-ui-white px-4">OR</span>
         </div>
       </div>
 
