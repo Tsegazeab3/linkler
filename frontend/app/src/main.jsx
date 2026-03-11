@@ -18,7 +18,6 @@ import PostDetailPage from './pages/PostDetailPage.jsx';
 import FellowTravelersPage from './pages/FellowTravelersPage.jsx';
 import NewGuidesPage from './pages/NewGuidesPage.jsx';
 import GuideDetailPage from './pages/GuideDetailPage.jsx';
-import PostDetailPage from './pages/PostDetailPage.jsx';
 import UserProfilePage from './pages/UserProfilePage.jsx';
 import CreateTripPage from './pages/CreateTripPage.jsx';
 import PromotionsPage from './pages/PromotionsPage.jsx';
@@ -38,13 +37,13 @@ function NotFound() {
 // Logic to handle the root path based on auth status
 function HomeRedirect() {
   const { isAuthenticated, loading } = useAuth();
-  
+
   if (loading) return null; // Or a loading spinner
-  
+
   if (isAuthenticated) {
     return <Navigate to="/app" replace />;
   }
-  
+
   return <LandingPage />;
 }
 
@@ -60,7 +59,7 @@ function AppRouter() {
         <Route path="/signin" element={<SignInPage />} />
         <Route path="/signup" element={<SignUpPage />} />
         <Route path="/complete-profile" element={<AuthGuard><ProfileCompletionPage /></AuthGuard>} />
-        
+
         {/* Protected App Routes */}
         <Route path="/app" element={<AuthGuard><App /></AuthGuard>}>
           <Route index element={<IndexPage />} />
@@ -74,7 +73,7 @@ function AppRouter() {
           <Route path="chat/:conversationId" element={<ChatPage />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
-        
+
         <Route path="*" element={<NotFound />} />
       </Routes>
 
