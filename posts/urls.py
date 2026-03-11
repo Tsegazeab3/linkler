@@ -12,5 +12,4 @@ urlpatterns = [
     path('<int:post_id>/save/', SaveToggleView.as_view(), name='post-save'),
     path('<int:post_id>/comments/', CommentListCreateView.as_view(), name='post-comments'),
     path('trips/', TripListCreateView.as_view(), name='trip-list-create'),
-    path('comments/', CommentCreateView.as_view(), name='comment-create'),
 ]

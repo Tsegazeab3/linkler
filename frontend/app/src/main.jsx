@@ -14,7 +14,6 @@ import SignInPage from './pages/SignInPage.jsx';
 import SignUpPage from './pages/SignUpPage.jsx';
 import ProfileCompletionPage from './pages/ProfileCompletionPage.jsx';
 import IndexPage from './pages/IndexPage.jsx';
-import PostDetailPage from './pages/PostDetailPage.jsx';
 import FellowTravelersPage from './pages/FellowTravelersPage.jsx';
 import NewGuidesPage from './pages/NewGuidesPage.jsx';
 import GuideDetailPage from './pages/GuideDetailPage.jsx';
@@ -26,9 +25,7 @@ import PromotionDetailPage from './pages/PromotionDetailPage.jsx';
 import ChatPage from './pages/ChatPage.jsx';
 import SettingsPage from './pages/SettingsPage.jsx';
 import CreatePostModal from './components/CreatePostModal.jsx';
-import EditPostModal from './components/EditPostModal.jsx';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { NotificationProvider } from './context/NotificationContext';
 import AuthGuard from './components/AuthGuard';
 
 function NotFound() {
@@ -38,13 +35,13 @@ function NotFound() {
 // Logic to handle the root path based on auth status
 function HomeRedirect() {
   const { isAuthenticated, loading } = useAuth();
-
+  
   if (loading) return null; // Or a loading spinner
-
+  
   if (isAuthenticated) {
     return <Navigate to="/app" replace />;
   }
-
+  
   return <LandingPage />;
 }
 
@@ -60,11 +57,11 @@ function AppRouter() {
         <Route path="/signin" element={<SignInPage />} />
         <Route path="/signup" element={<SignUpPage />} />
         <Route path="/complete-profile" element={<AuthGuard><ProfileCompletionPage /></AuthGuard>} />
-
+        
         {/* Protected App Routes */}
         <Route path="/app" element={<AuthGuard><App /></AuthGuard>}>
           <Route index element={<IndexPage />} />
-          <Route path="fellow_travelers" element={<FellowTravelersPage />} />
+          <Route path="travelers" element={<FellowTravelersPage />} />
           <Route path="guides" element={<NewGuidesPage />} />
           <Route path="guides/:id" element={<GuideDetailPage />} />
           <Route path="posts/:postId" element={<PostDetailPage />} />
@@ -74,7 +71,7 @@ function AppRouter() {
           <Route path="chat/:conversationId" element={<ChatPage />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
-
+        
         <Route path="*" element={<NotFound />} />
       </Routes>
 
@@ -83,7 +80,6 @@ function AppRouter() {
           <Route path="/app/posts/:postId" element={<AuthGuard><PostDetailPage /></AuthGuard>} />
           <Route path="/create" element={<AuthGuard><CreatePostModal /></AuthGuard>} />
           <Route path="/create-trip" element={<AuthGuard><CreateTripPage /></AuthGuard>} />
-          <Route path="/edit-post/:id" element={<AuthGuard><EditPostModal /></AuthGuard>} />
         </Routes>
       )}
     </>
@@ -93,11 +89,9 @@ function AppRouter() {
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <AuthProvider>
-      <NotificationProvider>
-        <BrowserRouter>
-          <AppRouter />
-        </BrowserRouter>
-      </NotificationProvider>
+      <BrowserRouter>
+        <AppRouter />
+      </BrowserRouter>
     </AuthProvider>
   </StrictMode>,
 );

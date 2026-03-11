@@ -2,164 +2,278 @@ import React, { useState } from 'react';
 import { register } from '../services/api';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import StatusBanner from '../components/StatusBanner';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
-const SignUpPage = () => {
+function SignUpPage() {
+  const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     email: '',
+    username: '',
     password1: '',
     password2: '',
-    username: '',
+    country: '',
+    bio: '',
+    travelStyle: '',
   });
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
+  
+  const [errors, setErrors] = useState([]);
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setErrors([]); // Clear errors when typing
   };
+
+  const validateStep1 = () => {
+    const newErrors = [];
+    if (!formData.email) newErrors.push("Email is required.");
+    if (!formData.username) newErrors.push("Username is required.");
+    if (!formData.password1) newErrors.push("Password is required.");
+    if (formData.password1 !== formData.password2) newErrors.push("Passwords do not match.");
+    // Basic password strength
+    if (formData.password1 && formData.password1.length < 8) newErrors.push("Password must be at least 8 characters.");
+    return newErrors;
+  };
+
+  const nextStep = () => {
+    let stepErrors = [];
+    if (step === 1) stepErrors = validateStep1();
+    
+    if (stepErrors.length > 0) {
+      setErrors(stepErrors);
+    } else {
+      setStep(s => s + 1);
+    }
+  };
+
+  const prevStep = () => setStep(s => s - 1);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (step < 3) return; // Prevent enter key submission on early steps
+
     setLoading(true);
-    setError(null);
-    setSuccess(null);
+    setErrors([]);
 
-    if (formData.password1 !== formData.password2) {
-      setError("Passwords do not match.");
-      setLoading(false);
-      return;
-    }
-
-    const { email, username, password1, password2 } = formData;
-    const finalFormData = { email, username, password1, password2 };
+    const { email, username, password1, password2, country, bio } = formData;
+    const finalFormData = { email, username, password1, password2 }; // Add country/bio to API if backend supports it
 
     try {
       const response = await register(finalFormData);
-      setSuccess("Account created successfully!");
       
-      // Auto-login if backend returns a token (key)
       if (response.data.key) {
-        setTimeout(() => {
-            login(response.data.key, { email, username });
-            navigate('/complete-profile');
-        }, 1500);
+        login(response.data.key, { email, username });
+        navigate('/app'); // Redirect to app directly since we collected profile info
       } else {
-        setTimeout(() => {
-            navigate('/signin'); 
-        }, 2000);
+        alert('Registration successful! You can now sign in.');
+        navigate('/signin'); 
       }
     } catch (err) {
-      console.error('Error during registration:', err.response ? err.response.data : err.message);
-      const backendError = err.response?.data?.email?.[0] || 
-                           err.response?.data?.username?.[0] ||
-                           err.response?.data?.password1?.[0] ||
-                           'Registration failed. Please check your details.';
-      setError(backendError);
+      console.error('Registration error:', err.response ? err.response.data : err.message);
+      
+      // Parse backend errors beautifully
+      if (err.response?.data) {
+        const backendErrors = [];
+        Object.entries(err.response.data).forEach(([key, messages]) => {
+           if (Array.isArray(messages)) {
+             backendErrors.push(`${key}: ${messages[0]}`);
+           } else {
+             backendErrors.push(messages);
+           }
+        });
+        setErrors(backendErrors);
+      } else {
+        setErrors([err.message]);
+      }
+      setStep(1); // Go back to step 1 to show account errors
     } finally {
       setLoading(false);
     }
   };
 
+  // Common countries for the dropdown
+  const countries = [
+    "United States", "United Kingdom", "Canada", "Australia", 
+    "Germany", "France", "Spain", "Italy", "Japan", "Brazil", 
+    "Ethiopia", "Kenya", "South Africa", "Other"
+  ];
+
   return (
-    <div className="flex items-center justify-center min-h-screen bg-[var(--color-linkler-bg)] px-4 py-12">
-      <StatusBanner message={error} type="error" onClose={() => setError(null)} />
-      <StatusBanner message={success} type="success" onClose={() => setSuccess(null)} />
+    <div className="flex items-center justify-center min-h-screen bg-[var(--color-linkler-bg)] p-4 sm:p-8">
+      <div className="flex w-full max-w-5xl mx-auto bg-white rounded-3xl shadow-xl overflow-hidden min-h-[650px]">
+        {/* Left Column (Branding/Illustration) - Hidden on mobile */}
+        <div className="hidden lg:flex flex-col justify-between w-1/2 p-12 bg-gradient-to-br from-indigo-700 to-purple-800 text-white relative overflow-hidden">
+          <div className="absolute top-[-20%] left-[-10%] w-80 h-80 bg-purple-400/20 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-[-10%] right-[-10%] w-64 h-64 bg-white/10 rounded-full blur-2xl"></div>
+          
+          <div className="relative z-10 space-y-4">
+            <h1 className="text-4xl font-extrabold tracking-tight">Join Linkler Today</h1>
+            <p className="text-purple-100 text-lg leading-relaxed">
+              Connect with travelers, book expert guides, and discover the world's best kept secrets.
+            </p>
+          </div>
 
-      <div className="flex w-full max-w-4xl mx-auto bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-gray-100">
-        {/* Left Column - Branding */}
-        <div className="hidden md:flex flex-col justify-center items-center w-5/12 bg-blue-600 text-white p-12">
-          <h1 className="text-5xl font-black mb-6 uppercase tracking-tighter italic">Linkler</h1>
-          <p className="text-center font-bold text-blue-100 leading-relaxed">
-            Connect with travelers and guides from around the world. Share your journey and discover new places.
-          </p>
-        </div>
-
-        {/* Right Column - Form */}
-        <div className="w-full md:w-7/12 p-8 md:p-12">
-          <div className="md:hidden text-3xl font-black text-center text-[#3b82f6] mb-8 uppercase tracking-tighter italic">
-            Linkler
+          <div className="relative z-10 w-full flex-grow flex items-center justify-center">
+             <div className="w-72 h-72 bg-white/5 backdrop-blur-md rounded-3xl border border-white/10 flex items-center justify-center shadow-2xl p-8 rotate-3 transition-transform hover:rotate-0 duration-500">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-full h-full text-white/90">
+                  <path fillRule="evenodd" d="M3.193 11.23a.75.75 0 011.082-.01l8.527 8.528A2.25 2.25 0 0016.63 19H20.25a.75.75 0 00.75-.75V14.63a2.25 2.25 0 00-.659-1.591L11.83 4.54a.75.75 0 00-1.06 0l-7.5 7.5a.75.75 0 00-.077 1.19z" clipRule="evenodd" />
+                  <path d="M15.42 2.162a.75.75 0 011.058.079l2.25 2.519a.75.75 0 01-1.116 1.002l-.99-.111v1.171a.75.75 0 01-1.5 0V3.22a.75.75 0 01.3-.058z" />
+                </svg>
+             </div>
           </div>
           
-          <form className="space-y-5" onSubmit={handleSubmit}>
-            <div className="mb-8">
-                <h2 className="text-3xl font-black text-gray-900 tracking-tight">Create Account</h2>
-                <p className="text-gray-400 font-bold text-xs uppercase tracking-widest mt-1">Start your journey today</p>
+          <div className="relative z-10 text-sm font-medium text-purple-200 flex items-center gap-4">
+             <div className="flex -space-x-2">
+               {[1,2,3].map(i => (
+                 <div key={i} className="w-8 h-8 rounded-full border-2 border-indigo-700 bg-white/20 flex items-center justify-center backdrop-blur-sm text-xs font-bold">
+                   UI
+                 </div>
+               ))}
+             </div>
+             <span>Join 10,000+ travelers</span>
+          </div>
+        </div>
+
+        {/* Right Column (Form Wizard) */}
+        <div className="w-full lg:w-1/2 p-8 sm:p-12 lg:p-16 flex flex-col justify-center bg-white relative">
+          
+          {/* Progress Indicator */}
+          <div className="absolute top-8 left-0 w-full px-8 sm:px-12 lg:px-16 flex justify-between items-center z-20">
+             <div className="flex gap-2 items-center w-full">
+               {[1, 2, 3].map((num) => (
+                 <div key={num} className="flex-1 h-1.5 rounded-full overflow-hidden bg-gray-100 relative">
+                   <div 
+                     className={`absolute top-0 left-0 h-full rounded-full transition-all duration-500 bg-indigo-600`}
+                     style={{ width: step >= num ? '100%' : '0%' }}
+                   />
+                 </div>
+               ))}
+             </div>
+          </div>
+
+          <div className="w-full max-w-sm mx-auto space-y-6 mt-8">
+            <div className="text-center lg:text-left">
+              <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
+                {step === 1 && "Create Account"}
+                {step === 2 && "Personal Details"}
+                {step === 3 && "Travel Preferences"}
+              </h2>
+              <p className="mt-2 text-sm text-gray-500">
+                {step === 1 && "Start your journey with us."}
+                {step === 2 && "Tell us a bit about yourself."}
+                {step === 3 && "Help us tailor your experience."}
+              </p>
             </div>
 
-            <div className="grid grid-cols-1 gap-4">
-              <div className="space-y-1">
-                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Username</label>
-                <input name="username" type="text" required className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all" placeholder="johndoe" value={formData.username} onChange={handleChange} />
+            {errors.length > 0 && (
+              <div className="p-4 text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl animate-in fade-in slide-in-from-top-2">
+                <div className="flex gap-2 items-center font-semibold mb-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                  Please fix the following:
+                </div>
+                <ul className="list-disc pl-6 space-y-1">
+                  {errors.map((err, i) => <li key={i}>{err}</li>)}
+                </ul>
               </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-5">
               
-              <div className="space-y-1">
-                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Email Address</label>
-                <input name="email" type="email" required className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all" placeholder="name@example.com" value={formData.email} onChange={handleChange} />
+              {/* STEP 1: ACCOUNT */}
+              <div className={`space-y-5 transition-all duration-300 ${step === 1 ? 'block animate-in slide-in-from-right-4' : 'hidden'}`}>
+                <div className="space-y-2">
+                  <Label>Email Address</Label>
+                  <Input name="email" type="email" value={formData.email} onChange={handleChange} required={step===1} placeholder="you@example.com" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Username</Label>
+                  <div className="relative">
+                    <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-muted-foreground font-medium">@</span>
+                    <Input name="username" type="text" value={formData.username} onChange={handleChange} required={step===1} placeholder="traveler123" className="pl-9" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Password</Label>
+                    <Input name="password1" type="password" value={formData.password1} onChange={handleChange} required={step===1} placeholder="••••••••" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Confirm</Label>
+                    <Input name="password2" type="password" value={formData.password2} onChange={handleChange} required={step===1} placeholder="••••••••" />
+                  </div>
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Password</label>
-                    <input name="password1" type="password" required className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all" placeholder="••••••••" value={formData.password1} onChange={handleChange} />
+              {/* STEP 2: PERSONAL */}
+              <div className={`space-y-5 transition-all duration-300 ${step === 2 ? 'block animate-in slide-in-from-right-4' : 'hidden'}`}>
+                <div className="space-y-2">
+                  <Label>Country of Residence</Label>
+                  <div className="relative">
+                    <select name="country" value={formData.country} onChange={handleChange} required={step===2} className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 appearance-none cursor-pointer">
+                      <option value="" disabled>Select your country</option>
+                      {countries.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                    <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-muted-foreground">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                  </div>
                 </div>
-                <div className="space-y-1">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Confirm</label>
-                    <input name="password2" type="password" required className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all" placeholder="••••••••" value={formData.password2} onChange={handleChange} />
+                <div className="space-y-2">
+                  <Label>Short Bio (Optional)</Label>
+                  <textarea name="bio" value={formData.bio} onChange={handleChange} placeholder="I love exploring historical sites and trying new foods..." rows={3} className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none" />
                 </div>
               </div>
+
+              {/* STEP 3: PREFERENCES */}
+              <div className={`space-y-6 transition-all duration-300 ${step === 3 ? 'block animate-in slide-in-from-right-4' : 'hidden'}`}>
+                <div className="space-y-3">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">What is your primary travel style?</label>
+                  {['Budget Backpacker', 'Luxury Explorer', 'Cultural Enthusiast', 'Thrill Seeker'].map((style) => (
+                    <label key={style} className={`flex items-center p-3 border rounded-xl cursor-pointer transition-colors ${formData.travelStyle === style ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 hover:bg-gray-50'}`}>
+                      <input type="radio" name="travelStyle" value={style} checked={formData.travelStyle === style} onChange={handleChange} className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500" />
+                      <span className="ml-3 text-sm font-medium text-gray-900">{style}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                {step > 1 && (
+                  <Button type="button" variant="outline" onClick={prevStep} className="w-1/3 text-lg py-5">
+                    Back
+                  </Button>
+                )}
+                {step < 3 ? (
+                  <Button type="button" onClick={nextStep} className={`${step > 1 ? 'w-2/3' : 'w-full'} text-lg py-5`}>
+                    Continue
+                  </Button>
+                ) : (
+                  <Button type="submit" disabled={loading || !formData.travelStyle} className={`${step > 1 ? 'w-2/3' : 'w-full'} text-lg py-5`}>
+                    {loading ? 'Creating...' : 'Complete Sign Up'}
+                  </Button>
+                )}
+              </div>
+            </form>
+
+            <div className="mt-8 text-center border-t border-gray-100 pt-6">
+              <p className="text-sm text-gray-600">
+                Already have an account?{' '}
+                <Link to="/signin" className="font-bold text-indigo-600 hover:text-indigo-500 transition-colors">
+                  Sign In
+                </Link>
+              </p>
             </div>
-
-            <button 
-                type="submit" 
-                disabled={loading}
-                className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white text-sm font-black uppercase tracking-widest rounded-2xl shadow-lg shadow-blue-600/20 active:scale-95 transition-all disabled:opacity-50 mt-4"
-            >
-              {loading ? 'Creating Account...' : 'Sign Up'}
-            </button>
-          </form>
-
-          <div className="relative mt-8">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-100" />
-            </div>
-            <div className="relative flex justify-center text-[10px] font-black uppercase tracking-widest">
-              <span className="px-4 text-gray-400 bg-white">Social Connect</span>
-            </div>
-          </div>
-
-          <div className="mt-6">
-            <a
-              href="http://127.0.0.1:8000/accounts/google/login/?process=login" 
-              className="flex justify-center items-center gap-3 w-full px-4 py-3 bg-white border border-gray-100 rounded-2xl shadow-sm hover:bg-gray-50 transition-all active:scale-95"
-            >
-              <svg className="w-5 h-5" viewBox="0 0 24 24">
-                <path fill="#EA4335" d="M5.266 9.765A7.077 7.077 0 0 1 12 4.909c1.69 0 3.218.6 4.418 1.582L19.91 3C17.782 1.145 15.055 0 12 0 7.27 0 3.198 2.698 1.24 6.65l4.026 3.115Z" />
-                <path fill="#34A853" d="M16.04 18.013c-1.09.593-2.325.915-3.64.915-3.563 0-6.596-2.496-7.634-5.854L.714 16.195C2.713 20.216 6.96 23 12 23c3.03 0 5.83-.98 8.02-2.64l-3.98-2.347Z" />
-                <path fill="#4285F4" d="M23.49 12.275c0-.796-.073-1.564-.208-2.308H12v4.36h6.44c-.278 1.464-1.08 2.705-2.32 3.54l3.98 2.347c2.327-2.145 3.67-5.298 3.67-8.94Z" />
-                <path fill="#FBBC05" d="M5.266 14.235A7.074 7.074 0 0 1 4.764 12c0-.79.173-1.54.482-2.215L1.24 6.65A11.934 11.934 0 0 0 0 12c0 1.92.445 3.73 1.237 5.335l4.029-3.1Z" />
-              </svg>
-              <span className="text-sm font-bold text-gray-700">Google</span>
-            </a>
-          </div>
-
-          <div className="mt-8 text-center">
-            <p className="text-xs font-bold text-gray-400">
-              Already have an account?{' '}
-              <Link to="/signin" className="text-blue-600 hover:text-blue-700 ml-1 underline underline-offset-4">
-                Sign In
-              </Link>
-            </p>
           </div>
         </div>
       </div>
     </div>
   );
-};
+}
 
 export default SignUpPage;

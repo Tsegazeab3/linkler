@@ -3,20 +3,20 @@ import { useOutletContext, useNavigate, useLocation } from 'react-router-dom';
 import { followUser, unfollowUser, createDM, toggleLike, toggleSave } from '../services/api';
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Heart, MessageCircle, Bookmark, Share2 } from "lucide-react";
-import { useAuth } from '../context/AuthContext';
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { Heart, MessageCircle, Send, Bookmark, Share2 } from "lucide-react";
+import CommentSection from './CommentSection';
 
 const PostCard = ({
   id,
   mediaType,
   mediaUrl,
   aspectRatio, // '1:1' or '4:5'
-  textAlignment = 'center',
   caption,
   timestamp,
-  likeCount: initialLikeCount,
-  commentsCount,
-  isLiked: initialIsLiked,
+  likeCount,
+  isLiked,
   isSaved,
   username,
   userId,
@@ -27,67 +27,81 @@ const PostCard = ({
   const [isCaptionExpanded, setIsCaptionExpanded] = useState(false);
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
   const [followLoading, setFollowLoading] = useState(false);
-  const [isLiked, setIsLiked] = useState(initialIsLiked || false);
-  const [likeCount, setLikeCount] = useState(initialLikeCount || 0);
-  const [likeLoading, setLikeLoading] = useState(false);
+
+  // Interaction State
+  const [liked, setLiked] = useState(isLiked);
+  const [saved, setSaved] = useState(isSaved);
+  const [likes, setLikes] = useState(likeCount);
   const [showComments, setShowComments] = useState(false);
 
   const { handleOpenChat } = useOutletContext();
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Determine aspect ratio class
-  const aspectRatioClass = aspectRatio === '4:5' ? 'aspect-[4/5]' : 'aspect-square';
-
-  const handleFollow = async (e) => {
-    e.stopPropagation();
+  const handleFollow = async () => {
     setFollowLoading(true);
     try {
       if (isFollowing) {
         await unfollowUser(userId);
         setIsFollowing(false);
+        toast.info(`Unfollowed ${username}`);
       } else {
         await followUser(userId);
         setIsFollowing(true);
+        toast.success(`Following ${username}`);
       }
     } catch (err) {
       console.error('Follow error:', err);
+      toast.error("Follow action failed");
     } finally {
       setFollowLoading(false);
     }
   };
 
-  const handleLike = async (e) => {
-    e.stopPropagation();
-    if (likeLoading) return;
-
-    // Optimistic UI update
-    const wasLiked = isLiked;
-    setIsLiked(!wasLiked);
-    setLikeCount(prev => wasLiked ? Math.max(0, prev - 1) : prev + 1);
-    setLikeLoading(true);
-
+  const handleChat = async () => {
     try {
-      const res = await toggleLike(id);
-      // Backend might return slightly different format, but we trust optimistic update
-      // and only correct if backend says otherwise.
-      if (res.data.status === 'liked' || res.data.is_liked === true) {
-        setIsLiked(true);
-      } else if (res.data.status === 'unliked' || res.data.is_liked === false) {
-        setIsLiked(false);
-      }
+      const res = await createDM(userId);
+      handleOpenChat(res.data, 'dm');
     } catch (err) {
-      console.error('Like error:', err);
-      // Revert optimistic update on error
-      setIsLiked(wasLiked);
-      setLikeCount(prev => wasLiked ? prev + 1 : Math.max(0, prev - 1));
-    } finally {
-      setLikeLoading(false);
+      console.error('Chat error:', err);
+      toast.error("Failed to start chat");
     }
   };
 
-  const handleOpenDetail = () => {
-    navigate(`/app/posts/${id}`, { state: { background: location } });
+  const handleLike = async () => {
+    // Optimistic Update
+    const previousLiked = liked;
+    const previousLikes = likes;
+
+    setLiked(!liked);
+    setLikes(liked ? likes - 1 : likes + 1);
+
+    try {
+      const res = await toggleLike(id);
+      setLiked(res.data.is_liked);
+      setLikes(res.data.likes_count);
+    } catch (err) {
+      console.error('Like error:', err);
+      // Rollback
+      setLiked(previousLiked);
+      setLikes(previousLikes);
+      toast.error("Failed to update like");
+    }
+  };
+
+  const handleSave = async () => {
+    const previousSaved = saved;
+    setSaved(!saved);
+
+    try {
+      const res = await toggleSave(id);
+      setSaved(res.data.is_saved);
+      toast.success(res.data.is_saved ? "Post saved" : "Post removed from saves");
+    } catch (err) {
+      console.error('Save error:', err);
+      setSaved(previousSaved);
+      toast.error("Failed to update save status");
+    }
   };
 
   const handleComment = () => {
@@ -110,7 +124,7 @@ const PostCard = ({
   const aspectRatioClass = aspectRatio === '4:5' ? 'aspect-[4/5]' : 'aspect-square';
 
   return (
-    <div className="bg-white border border-gray-300 rounded-lg w-full max-w-sm mx-auto my-4 overflow-hidden shadow-sm">
+    <Card className="w-full max-w-sm mx-auto my-4 overflow-hidden border-border/50 shadow-sm hover:shadow-md transition-shadow">
       {/* User Info Section */}
       <CardHeader className="flex flex-row items-center p-3 space-y-0">
         <Avatar className="w-10 h-10 mr-3 border border-border cursor-pointer" onClick={() => navigate(`/app/profile/${userId}`)}>
@@ -125,15 +139,26 @@ const PostCard = ({
             </p>
           )}
         </div>
-        {user?.id !== userId && (
-          <button 
-            onClick={handleFollow} 
+        <div className="flex items-center space-x-2 ml-2 flex-shrink-0">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleChat}
+            className="h-8 w-8 rounded-full text-muted-foreground hover:text-primary transition-colors"
+            title="Start Chat"
+          >
+            <MessageCircle className="h-5 w-5" />
+          </Button>
+          <Button
+            variant={isFollowing ? "secondary" : "default"}
+            size="sm"
+            onClick={handleFollow}
             disabled={followLoading}
-            className={`text-xs font-bold px-3 py-1 rounded-full transition-colors ${isFollowing ? 'bg-gray-100 text-gray-800' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
+            className="h-8 text-xs font-bold rounded-full px-4 transition-all"
           >
             {isFollowing ? 'Following' : 'Follow'}
-          </button>
-        )}
+          </Button>
+        </div>
       </CardHeader>
 
       {/* Media Renderer */}
@@ -203,22 +228,9 @@ const PostCard = ({
             className={`rounded-full -mr-2 transition-colors ${saved ? 'text-emerald-500 hover:text-emerald-600 hover:bg-emerald-50' : 'text-muted-foreground hover:text-emerald-500'}`}
             onClick={handleSave}
           >
-            <Heart className={`w-6 h-6 ${isLiked ? 'fill-current' : ''}`} />
-          </button>
-          <button 
-            onClick={() => setShowComments(!showComments)}
-            className="flex items-center text-gray-700 hover:text-blue-500 hover:scale-110 transition-transform"
-          >
-            <MessageCircle className="w-6 h-6" />
-          </button>
-          <button className="flex items-center text-gray-700 hover:text-purple-500 hover:scale-110 transition-transform">
-            <Share2 className="w-6 h-6" />
-          </button>
+            <Bookmark className={`w-6 h-6 ${saved ? 'fill-current' : ''}`} />
+          </Button>
         </div>
-        <button className="text-gray-700 hover:text-green-500 hover:scale-110 transition-transform">
-          <Bookmark className={`w-6 h-6 ${isSaved ? 'text-green-500 fill-current' : ''}`} />
-        </button>
-      </div>
 
         <div className="text-sm font-semibold text-foreground px-0.5">
           {likes} likes
@@ -240,14 +252,14 @@ const PostCard = ({
             )}
           </div>
         )}
-        <div className="text-[10px] text-gray-400 mt-1 uppercase tracking-tighter">
+
+        {showComments && <CommentSection postId={id} />}
+
+        <div className="text-[11px] text-muted-foreground mt-1 tracking-wide uppercase px-0.5">
           {timestamp}
         </div>
-      </div>
-      
-      {/* Comment Section Placeholder - Implementation of CommentSection.jsx is missing from codebase */}
-      {/* {showComments && <CommentSection postId={id} />} */}
-    </div>
+      </CardFooter>
+    </Card>
   );
 };
 

@@ -41,6 +41,7 @@ function SimpleHeader() {
         )}
       </div>
 
+      {/* Hamburger Icon for Mobile */}
       <nav id="hamburger-nav" className="md:hidden">
         <div className={`hamburger-menu ${isOpen ? 'open' : ''}`} onClick={toggleMenu}>
           <div className="relative z-30 flex flex-col gap-1.5 cursor-pointer">
@@ -52,13 +53,14 @@ function SimpleHeader() {
           <div className={`fixed inset-0 z-20 bg-white/95 backdrop-blur-xl flex flex-col items-center justify-center gap-6 transition-opacity duration-300 ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
             <h1 className="text-5xl font-bold text-blue-600 mb-8">Linkler</h1>
             <div className="flex flex-col gap-4 text-center pb-4 border-b border-gray-200">
-              <Link to="/signin" className="text-xl font-bold" onClick={toggleMenu}>Sign in</Link>
-              <Link to="/signup" className="text-xl font-bold" onClick={toggleMenu}>Sign up</Link>
+              <Link to="/signin" className="text-xl font-bold" onClick={toggleMenu}>Sign In</Link>
+              <Link to="/signup" className="text-xl font-bold" onClick={toggleMenu}>Sign Up</Link>
             </div>
           </div>
         </div>
       </nav>
 
+      {/* Desktop Navigation Buttons */}
       <div className="hidden md:flex flex-nowrap gap-4 mt-8 sm:mt-0 min-w-0">
         <Link to="/signin">
           <button className="flex items-center justify-center gap-2 bg-white px-3 md:px-6 py-2 rounded-full border-2 transition-all duration-300 ease-in-out hover:shadow-xl hover:bg-gray-200 hover:-translate-x-1 hover:-translate-y-1">

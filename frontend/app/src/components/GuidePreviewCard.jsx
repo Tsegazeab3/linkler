@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import StarRating from './StarRating';
 import { followUser, unfollowUser, createDM } from '../services/api';
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 const GuidePreviewCard = ({ guide }) => {
   const { id, name, country, rating, price, serviceDescription, picture, user_id, is_following: initialIsFollowing } = guide;
@@ -34,29 +36,33 @@ const GuidePreviewCard = ({ guide }) => {
   };
 
   return (
-    <div className="bg-white rounded-[20px] shadow-sm hover:shadow-xl overflow-hidden transform hover:-translate-y-1 transition-all duration-300 border border-gray-100 group">
-      <div className="relative h-48">
-        <img src={picture || 'https://images.unsplash.com/photo-1440778303588-435521a205bc?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80'} alt={name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+    <Card className="rounded-[20px] overflow-hidden group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border-border/50">
+      <div className="relative h-48 bg-muted">
+        <img src={picture || 'https://images.unsplash.com/photo-1440778303588-435521a205bc?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80'} alt={name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
         <div className="absolute top-3 right-3 flex flex-col space-y-2 translate-x-12 group-hover:translate-x-0 transition-transform duration-300">
-          <button 
+          <Button 
+            size="icon"
+            variant="secondary"
             onClick={handleChat}
-            className="p-2 bg-white/95 backdrop-blur-sm rounded-xl shadow-lg hover:bg-white text-blue-600 transition-all active:scale-95"
+            className="rounded-xl shadow-lg hover:bg-white text-blue-600 bg-white/95 backdrop-blur-sm"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
-          </button>
-          <button 
+          </Button>
+          <Button 
+            size="icon"
+            variant="secondary"
             onClick={handleFollow}
-            className={`p-2 bg-white/95 backdrop-blur-sm rounded-xl shadow-lg hover:bg-white transition-all active:scale-95 ${isFollowing ? 'text-gray-400' : 'text-blue-500'}`}
+            className={`rounded-xl shadow-lg transition-all bg-white/95 backdrop-blur-sm ${isFollowing ? 'text-muted-foreground hover:bg-destructive/10 hover:text-destructive' : 'text-blue-500 hover:bg-white'}`}
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
               <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7v1h1a1 1 0 110 2h-1v1a1 1 0 11-2 0v-1h-1a1 1 0 110-2h1V7a1 1 0 112 0z" />
             </svg>
-          </button>
+          </Button>
         </div>
       </div>
-      <div className="p-5">
+      <CardContent className="p-5">
         <div className="flex justify-between items-start mb-1">
           <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors uppercase tracking-tight">{name}</h3>
           <div className="flex items-center bg-blue-50 px-2 py-1 rounded-lg">
@@ -71,17 +77,17 @@ const GuidePreviewCard = ({ guide }) => {
             </svg>
             {country}
         </p>
-        <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-50">
-          <p className="text-xl font-black text-gray-900 leading-none">
+        <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
+          <p className="text-xl font-black text-foreground leading-none">
             ${price}
-            <span className="text-[10px] text-gray-400 font-medium ml-1">/hour</span>
+            <span className="text-[10px] text-muted-foreground font-medium ml-1">/hour</span>
           </p>
           <div className="text-[10px] text-blue-600 font-bold bg-blue-50 px-2 py-1 rounded-md uppercase tracking-wider">
             Available
           </div>
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 

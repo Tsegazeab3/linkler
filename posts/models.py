@@ -1,10 +1,5 @@
 from django.db import models
 from django.conf import settings
-from django.core.files.base import ContentFile
-import bleach
-import os
-from PIL import Image
-from io import BytesIO
 
 class Post(models.Model):
     """
@@ -42,12 +37,6 @@ class Post(models.Model):
         max_length=10,
         blank=True, null=True,
         help_text="Aspect ratio of the media (e.g., '1:1', '4:5')."
-    )
-    text_alignment = models.CharField(
-        max_length=10,
-        choices=[('left', 'Left'), ('center', 'Center'), ('right', 'Right')],
-        default='center',
-        help_text="Alignment of the text in text-only posts."
     )
     caption = models.TextField(
         blank=True,
@@ -96,130 +85,61 @@ class Post(models.Model):
     def __str__(self):
         return f"Post by {self.user.username} ({self.status}) - {self.created_at.strftime('%Y-%m-%d')}"
 
-    def save(self, *args, **kwargs):
-        """
-        Optimize media files before saving to reduce storage and bandwidth usage.
-        """
-        if self.media_file and self.media_type == 'image':
-            self.optimize_image()
-            
-        super().save(*args, **kwargs)
-
-    def optimize_image(self):
-        """
-        Resizes and compresses the image to a 'compiled' version.
-        Target: Max width 1200px, high quality JPEG compression.
-        """
-        try:
-            # Open the uploaded image
-            img = Image.open(self.media_file)
-            
-            # Convert RGBA to RGB if necessary (JPEGs don't support transparency)
-            if img.mode in ("RGBA", "P"):
-                img = img.convert("RGB")
-
-            # Resize if the image is too large
-            MAX_SIZE = (1200, 1200)
-            if img.width > 1200 or img.height > 1200:
-                img.thumbnail(MAX_SIZE, Image.Resampling.LANCZOS)
-
-            # Compress the image
-            output = BytesIO()
-            img.save(output, format='JPEG', quality=85, optimize=True)
-            output.seek(0)
-
-            # Update the media_file field with the optimized version
-            # Use the original filename but ensure it has a .jpg extension
-            name = os.path.splitext(self.media_file.name)[0] + ".jpg"
-            self.media_file = ContentFile(output.read(), name=name)
-            
-        except Exception as e:
-            print(f"Error optimizing image: {e}")
-            # If optimization fails, we save the original rather than crashing
-
-class Like(models.Model):
+class Trip(models.Model):
     """
-    Represents a 'like' given to a post by a user.
+    Represents a trip plan created by a user looking for fellow travelers.
     """
-    post = models.ForeignKey(
-        Post,
-        on_delete=models.CASCADE,
-        related_name='likes',
-        help_text="The post being liked."
-    )
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name='liked_posts',
-        help_text="The user who liked the post."
+        related_name='trips',
+        help_text="The user who created this trip plan."
     )
+    origin = models.CharField(max_length=100)
+    destination = models.CharField(max_length=100)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    message = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ['-created_at']
-        verbose_name = "Like"
-        verbose_name_plural = "Likes"
-        unique_together = ('post', 'user') # A user can only like a post once
+        verbose_name = "Trip"
+        verbose_name_plural = "Trips"
 
-    def __str__(self):
-        return f"{self.user.username} liked {self.post}"
-
-    def save(self, *args, **kwargs):
-        is_new = self.pk is None
-        super().save(*args, **kwargs)
-        if is_new:
-            self.post.likes_count += 1
-            self.post.save()
-
-    def delete(self, *args, **kwargs):
-        post = self.post
-        super().delete(*args, **kwargs)
-        post.likes_count = max(0, post.likes_count - 1)
-        post.save()
-
-class Trip(models.Model):
-    # ... (rest of Trip model)
     def __str__(self):
         return f"Trip from {self.origin} to {self.destination} by {self.user.username}"
 
-class Comment(models.Model):
-    """
-    Represents a comment made by a user on a post.
-    """
-    post = models.ForeignKey(
-        Post,
-        on_delete=models.CASCADE,
-        related_name='comments',
-        help_text="The post this comment belongs to."
-    )
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name='comments',
-        help_text="The user who wrote this comment."
-    )
-    text = models.TextField(help_text="The content of the comment.")
+class Like(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='post_likes')
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='post_likes')
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['created_at']
-        verbose_name = "Comment"
-        verbose_name_plural = "Comments"
+        unique_together = ('user', 'post')
 
     def __str__(self):
-        return f"Comment by {self.user.username} on {self.post}"
+        return f"{self.user.username} liked {self.post.id}"
 
-    def save(self, *args, **kwargs):
-        is_new = self.pk is None
-        super().save(*args, **kwargs)
-        if is_new:
-            # Increment the comments_count on the post
-            self.post.comments_count += 1
-            self.post.save()
+class Save(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='post_saves')
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='post_saves')
+    created_at = models.DateTimeField(auto_now_add=True)
 
-    def delete(self, *args, **kwargs):
-        post = self.post
-        super().delete(*args, **kwargs)
-        # Decrement the comments_count on the post
-        post.comments_count = max(0, post.comments_count - 1)
-        post.save()
+    class Meta:
+        unique_together = ('user', 'post')
+
+    def __str__(self):
+        return f"{self.user.username} saved {self.post.id}"
+
+class Comment(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='post_comments')
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='post_comments')
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.username} commented on {self.post.id}"

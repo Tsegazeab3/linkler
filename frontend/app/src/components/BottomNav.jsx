@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import SvgHome from './icons/Home.jsx';
 import SvgFellowTravelers from './icons/FellowTravelers.jsx';
 import SvgChats from './icons/Chats.jsx';

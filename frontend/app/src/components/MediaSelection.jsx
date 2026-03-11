@@ -1,4 +1,6 @@
 import React, { useRef } from 'react';
+import { Button } from "@/components/ui/button";
+import { Camera, Image as ImageIcon, UploadCloud } from "lucide-react";
 
 const MediaSelection = ({ onFileSelect, onTextOnly, isMobile }) => {
   const fileInputRef = useRef(null);
@@ -38,7 +40,7 @@ const MediaSelection = ({ onFileSelect, onTextOnly, isMobile }) => {
   };
 
   return (
-    <div className="max-w-md mx-auto">
+    <div className="max-w-md mx-auto space-y-6">
       <input
         type="file"
         accept="image/*,video/*"
@@ -49,43 +51,68 @@ const MediaSelection = ({ onFileSelect, onTextOnly, isMobile }) => {
 
       {isMobile ? (
         // Mobile UI
-        <div className="flex flex-col space-y-4">
-          <button onClick={handleCameraClick} className="w-full py-3 px-4 bg-[#3b82f6] text-white rounded-md text-lg font-semibold hover:bg-[#3b82f6]/90 transition duration-200 flex items-center justify-center space-x-2">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-            <span>Open Camera</span>
-          </button>
-          <button onClick={handleGalleryClick} className="w-full py-3 px-4 border-2 border-gray-400 text-gray-600 rounded-md text-lg font-semibold hover:bg-gray-50 transition duration-200 flex items-center justify-center space-x-2">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-            <span>Select from Gallery</span>
-          </button>
+        <div className="grid gap-4">
+          <Button
+            onClick={handleCameraClick}
+            size="lg"
+            className="h-14 text-lg font-semibold shadow-md active:scale-95 transition-all"
+          >
+            <Camera className="mr-2 h-6 w-6" />
+            Open Camera
+          </Button>
+          <Button
+            onClick={handleGalleryClick}
+            variant="outline"
+            size="lg"
+            className="h-14 text-lg font-semibold border-2 hover:bg-muted active:scale-95 transition-all"
+          >
+            <ImageIcon className="mr-2 h-6 w-6" />
+            Select from Gallery
+          </Button>
         </div>
       ) : (
         // Desktop UI
-        <div className="border-2 border-dashed border-gray-400 rounded-lg p-12 text-center cursor-pointer hover:border-[#3b82f6] transition duration-200 group" onDragOver={handleDragOver} onDrop={handleDrop} onClick={() => fileInputRef.current.click()}>
-          <div className="flex flex-col items-center justify-center text-gray-500 group-hover:text-[#3b82f6]">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1"><path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 0115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
-            <p className="mb-2 text-xl font-semibold">Drag & Drop photos or videos</p>
-            <p className="text-sm">or click to browse files</p>
+        <div
+          className="relative group cursor-pointer"
+          onDragOver={handleDragOver}
+          onDrop={handleDrop}
+          onClick={() => fileInputRef.current.click()}
+        >
+          <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
+          <div className="relative flex flex-col items-center justify-center border-2 border-dashed border-border/50 rounded-2xl p-16 bg-white hover:border-primary/50 transition duration-300">
+            <div className="p-4 rounded-full bg-primary/5 mb-6 group-hover:scale-110 transition-transform duration-300">
+              <UploadCloud className="h-12 w-12 text-primary" strokeWidth={1.5} />
+            </div>
+            <p className="mb-2 text-xl font-bold tracking-tight text-foreground">
+              Drag & Drop photos or videos
+            </p>
+            <p className="text-sm text-muted-foreground font-medium">
+              or click to browse your files
+            </p>
           </div>
         </div>
       )}
 
       {/* Separator and Text-Only Option */}
-      <div className="relative my-6">
+      <div className="relative">
         <div className="absolute inset-0 flex items-center" aria-hidden="true">
-          <div className="w-full border-t border-gray-300" />
+          <div className="w-full border-t border-border/50" />
         </div>
-        <div className="relative flex justify-center">
-          <span className="bg-white px-2 text-sm text-gray-500">OR</span>
+        <div className="relative flex justify-center text-xs uppercase font-bold tracking-widest text-muted-foreground/60">
+          <span className="bg-white px-4">OR</span>
         </div>
       </div>
 
-      <button
-        onClick={onTextOnly}
-        className="w-full text-center text-[#3b82f6] font-semibold hover:underline"
-      >
-        Write a text-only post
-      </button>
+      <div className="text-center">
+        <Button
+          variant="link"
+          onClick={onTextOnly}
+          className="text-primary font-bold text-lg  hover:text-primary/80 hover:underline transition-colors"
+
+        >
+          Continue with text only
+        </Button>
+      </div>
     </div>
   );
 };

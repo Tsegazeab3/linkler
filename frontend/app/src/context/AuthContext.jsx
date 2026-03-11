@@ -1,17 +1,16 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { getProfile } from '../services/api';
-import storage from '../utils/storage';
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(() => {
-    const savedToken = storage.getItem('token');
+    const savedToken = localStorage.getItem('token');
     return (savedToken && savedToken !== 'null' && savedToken !== 'undefined') ? savedToken : null;
   });
   
   const [user, setUser] = useState(() => {
-    const savedUser = storage.getItem('user');
+    const savedUser = localStorage.getItem('user');
     try {
       return (savedUser && savedUser !== 'null' && savedUser !== 'undefined') ? JSON.parse(savedUser) : null;
     } catch (e) {
@@ -29,7 +28,7 @@ export const AuthProvider = ({ children }) => {
       .then(response => {
         console.log('AuthContext: Profile fetch successful', response.data);
         setUser(response.data);
-        storage.setItem('user', JSON.stringify(response.data));
+        localStorage.setItem('user', JSON.stringify(response.data));
       })
       .catch(error => {
         console.error('AuthContext: Profile fetch failed', error.response ? error.response.data : error.message);
@@ -48,15 +47,15 @@ export const AuthProvider = ({ children }) => {
   }, [token]);
 
   const login = (newToken, userData) => {
-    storage.setItem('token', newToken);
-    storage.setItem('user', JSON.stringify(userData));
+    localStorage.setItem('token', newToken);
+    localStorage.setItem('user', JSON.stringify(userData));
     setToken(newToken);
     setUser(userData);
   };
 
   const logout = () => {
-    storage.removeItem('token');
-    storage.removeItem('user');
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
     setToken(null);
     setUser(null);
   };

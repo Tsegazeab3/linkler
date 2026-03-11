@@ -4,6 +4,7 @@ import RightArrowIcon from './RightArrowIcon.jsx';
 import HomeIcon from './HomeIcon.jsx';
 import useTypewriter from '../hooks/useTypewriter.js';
 import { smoothScrollTo } from '../utils/smoothScroll.js';
+import { Button } from "@/components/ui/button";
 
 function Header() {
   const [isOpen, setIsOpen] = useState(false);
@@ -48,10 +49,10 @@ function Header() {
       <nav id="desktop-nav" className="hidden lg:flex justify-center col-span-1">
         <ul className="flex items-center gap-2 lg:gap-4">
           {['Web', 'Support', 'Download', 'About', 'Contribute'].map((item) => (
-            <li key={item} className="btn-container">
-              <button className="flex justify-center gap-1 bg-[#ffda00] sm:gap-2 bg-px-3 py-1.5 sm:px-6 sm:py-2 rounded-full border-solid border-2 transition-all duration-300 ease-in-out hover:shadow-xl hover:bg-[#e6c300] hover:-translate-x-1 hover:-translate-y-1">
+            <li key={item}>
+              <Button variant="ghost" className="rounded-full px-6 text-sm font-semibold transition-all hover:bg-secondary/80">
                 {item}
-              </button>
+              </Button>
             </li>
           ))}
         </ul>
@@ -60,18 +61,24 @@ function Header() {
       {/* Column 2 (sm) / Column 3 (lg): Right side */}
       <div className="col-start-2 md:col-start-3 flex  justify-end items-center gap-4">
         <div id="signup-login" className="hidden min-[420px]:flex gap-2 items-center">
-          <Link to="/signup">
-            <button className="flex items-center justify-center gap-2 bg-white px-3 md:px-6 py-2 rounded-full border-2 transition-all duration-300 ease-in-out hover:shadow-xl hover:bg-gray-100 hover:-translate-x-1 hover:-translate-y-1">
+          <Button asChild variant="outline" className="rounded-full gap-2 px-6">
+            <Link to="/signup">
               <span className="font-bold text-sm whitespace-nowrap">Sign up</span>
-              <RightArrowIcon className="h-5 w-5" />
-            </button>
-          </Link>
-          <Link to="/signin">
-            <button className="flex items-center justify-center gap-2 bg-white px-6 py-2 rounded-full border-2 transition-all duration-300 ease-in-out hover:shadow-xl hover:bg-gray-100 hover:-translate-x-1 hover:-translate-y-1">
-              <span className="font-bold text-sm whitespace-nowrap">Sign in</span>
-              <RightArrowIcon className="h-5 w-5" />
-            </button>
-          </Link>
+              <RightArrowIcon className="h-4 w-4" />
+            </Link>
+          </Button>
+          <Button asChild variant="outline" className="rounded-full gap-2 px-6">
+            <Link to="/login">
+              <span className="font-bold text-sm whitespace-nowrap">Log in</span>
+              <RightArrowIcon className="h-4 w-4" />
+            </Link>
+          </Button>
+          <Button asChild className="rounded-full gap-2 px-6">
+            <Link to="/register-guide">
+              <span className="font-bold text-sm whitespace-nowrap">Register Guide</span>
+              <RightArrowIcon className="h-4 w-4" />
+            </Link>
+          </Button>
         </div>
 
         <nav id="hamburger-nav" className="md:hidden">
@@ -90,7 +97,8 @@ function Header() {
               {/* Mobile Only: Sign up / Log in (Hidden above 420px) */}
               <div className="flex flex-col gap-4 min-[420px]:hidden w-64 text-center pb-4 border-b border-gray-200">
                 <Link to="/signup" className="text-xl font-bold" onClick={toggleMenu}>Sign up</Link>
-                <Link to="/signin" className="text-xl font-bold" onClick={toggleMenu}>Sign in</Link>
+                <Link to="/login" className="text-xl font-bold" onClick={toggleMenu}>Log in</Link>
+                <Link to="/register-guide" className="text-xl font-bold text-blue-600" onClick={toggleMenu}>Register Guide</Link> {/* New button for Register Guide */}
               </div>
 
               {['Web', 'Support', 'Download', 'About', 'Contribute'].map((item) => (
