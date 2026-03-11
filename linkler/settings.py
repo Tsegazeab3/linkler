@@ -21,10 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # React integration
 FRONT_END_DIR = BASE_DIR/'frontend/'
-LANDING_PAGE_DIR = FRONT_END_DIR/'LandingPage'
-LANDING_PAGE_BUILD_DIR = LANDING_PAGE_DIR / 'dist'
-PROFILE_COMPLETION_PAGE_DIR = FRONT_END_DIR/'profile_completion_page'
-PROFILE_COMPLETION_PAGE_BUILD_DIR = PROFILE_COMPLETION_PAGE_DIR / 'dist'
+APP_BUILD_DIR = FRONT_END_DIR / 'app' / 'dist'
 
 
 # Quick-start development settings - unsuitable for production
@@ -220,8 +217,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [
-    LANDING_PAGE_BUILD_DIR,
-    PROFILE_COMPLETION_PAGE_BUILD_DIR,
+    APP_BUILD_DIR,
 ]
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'

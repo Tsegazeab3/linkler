@@ -20,6 +20,8 @@ import GuideDetailPage from './pages/GuideDetailPage.jsx';
 import PostDetailPage from './pages/PostDetailPage.jsx';
 import UserProfilePage from './pages/UserProfilePage.jsx';
 import CreateTripPage from './pages/CreateTripPage.jsx';
+import CreateExperiencePage from './pages/CreateExperiencePage.jsx';
+import CreatePromotionPage from './pages/CreatePromotionPage.jsx';
 import PromotionsPage from './pages/PromotionsPage.jsx';
 import PromotionDetailPage from './pages/PromotionDetailPage.jsx';
 import ChatPage from './pages/ChatPage.jsx';
@@ -81,6 +83,8 @@ function AppRouter() {
           <Route path="/app/posts/:postId" element={<AuthGuard><PostDetailPage /></AuthGuard>} />
           <Route path="/create" element={<AuthGuard><CreatePostModal /></AuthGuard>} />
           <Route path="/create-trip" element={<AuthGuard><CreateTripPage /></AuthGuard>} />
+          <Route path="/create-service" element={<AuthGuard><CreateExperiencePage /></AuthGuard>} />
+          <Route path="/create-promotion" element={<AuthGuard><CreatePromotionPage /></AuthGuard>} />
         </Routes>
       )}
     </>

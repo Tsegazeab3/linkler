@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Camera, User, Check, ChevronRight, ChevronLeft, Upload } from "lucide-react";
+import { Camera, User, Check, ChevronRight, ChevronLeft, Upload, Briefcase } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const ProfileCompletionPage = () => {
@@ -108,7 +108,7 @@ const ProfileCompletionPage = () => {
               <CardTitle className="text-2xl text-center">Choose Your Account Type</CardTitle>
               <CardDescription className="text-center">How do you want to use Linkler?</CardDescription>
             </CardHeader>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Button
                 type="button"
                 variant={formData.account_type === 'traveller' ? 'default' : 'outline'}
@@ -136,6 +136,20 @@ const ProfileCompletionPage = () => {
                    <Camera className="h-8 w-8" />
                 </div>
                 Guide
+              </Button>
+              <Button
+                type="button"
+                variant={formData.account_type === 'service' ? 'default' : 'outline'}
+                className="h-32 text-lg font-semibold flex flex-col items-center justify-center gap-3 border-2 transition-all hover:border-primary/50"
+                onClick={() => {
+                  setFormData({ ...formData, account_type: 'service' });
+                  setStep(2);
+                }}
+              >
+                <div className={`p-4 rounded-full ${formData.account_type === 'service' ? 'bg-primary-foreground/20' : 'bg-primary/5'}`}>
+                   <Briefcase className="h-8 w-8" />
+                </div>
+                Service
               </Button>
             </div>
           </div>

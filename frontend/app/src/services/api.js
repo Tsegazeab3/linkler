@@ -4,7 +4,7 @@ import axios from 'axios';
 // Django requires this for POST requests to protect against CSRF attacks
 function getCookie(name) {
   let cookieValue = null;
-  if (document.cookie && document.cookie !== '') {
+  if (typeof document !== 'undefined' && document.cookie && document.cookie !== '') {
     const cookies = document.cookie.split(';');
     for (let i = 0; i < cookies.length; i++) {
       const cookie = cookies[i].trim();
@@ -17,23 +17,26 @@ function getCookie(name) {
   return cookieValue;
 }
 
-const csrftoken = getCookie('csrftoken');
-
 // Create an axios instance with default settings
 export const api = axios.create({
   baseURL: '/api/', // Use the proxied URL
-  headers: {
-    'X-CSRFToken': csrftoken,
-  },
   withCredentials: true, // This is crucial for sending cookies (and session info)
 });
 
-// Add a request interceptor to include the auth token
+// Add a request interceptor to include the auth token and CSRF token dynamically
 api.interceptors.request.use((config) => {
+  // Add auth token
   const token = localStorage.getItem('token');
   if (token && token !== 'null' && token !== 'undefined') {
     config.headers.Authorization = `Token ${token}`;
   }
+
+  // Add CSRF token dynamically for all non-GET requests
+  const csrftoken = getCookie('csrftoken');
+  if (csrftoken && config.method !== 'get') {
+    config.headers['X-CSRFToken'] = csrftoken;
+  }
+  
   return config;
 });
 
@@ -43,7 +46,7 @@ api.interceptors.request.use((config) => {
  * @returns {Promise} The axios promise.
  */
 export const createPost = (postData) => {
-  return api.post('/posts/create/', postData, {
+  return api.post('posts/create/', postData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
@@ -51,23 +54,11 @@ export const createPost = (postData) => {
 };
 
 export const login = (email, password) => {
-  return axios.post('/api/auth/login/', { email, password }, {
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': csrftoken,
-    },
-    withCredentials: true,
-  });
+  return api.post('auth/login/', { email, password });
 };
 
 export const register = (userData) => {
-  return axios.post('/api/auth/registration/', userData, {
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': csrftoken,
-    },
-    withCredentials: true,
-  });
+  return api.post('auth/registration/', userData);
 };
 
 export const getProfile = () => {
@@ -98,8 +89,15 @@ export const getTrips = () => api.get('posts/trips/');
 export const createTrip = (tripData) => api.post('posts/trips/', tripData);
 
 // Guides & Promotions
-export const getGuides = () => api.get('accounts/guides/');
+export const getGuides = (type = 'guide') => api.get(`accounts/guides/?type=${type}`);
 export const getPromotions = () => api.get('promotions/');
+export const getExperiences = () => api.get('accounts/experiences/');
+export const createExperience = (data) => api.post('accounts/experiences/', data, {
+  headers: { 'Content-Type': 'multipart/form-data' }
+});
+export const createPromotion = (data) => api.post('promotions/', data, {
+  headers: { 'Content-Type': 'multipart/form-data' }
+});
 export const getUserDetail = (userId) => api.get(`accounts/${userId}/`);
 export const searchUsers = (query) => api.get(`accounts/search/?q=${encodeURIComponent(query)}`);
 export const getPromotionDetail = (id) => api.get(`promotions/${id}/`);

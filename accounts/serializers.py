@@ -1,6 +1,31 @@
 from rest_framework import serializers
 from dj_rest_auth.registration.serializers import RegisterSerializer
-from .models import CustomUser
+from .models import CustomUser, Experience, ExperienceImage
+
+class ExperienceImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ExperienceImage
+        fields = ('id', 'image')
+
+class ExperienceSerializer(serializers.ModelSerializer):
+    user_username = serializers.ReadOnlyField(source='user.username')
+    images = ExperienceImageSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Experience
+        fields = (
+            'id', 'user', 'user_username', 'title', 'description', 
+            'price', 'currency', 'location', 'duration', 'images', 
+            'category', 'created_at'
+        )
+        read_only_fields = ('user',)
+
+    def create(self, validated_data):
+        images_data = self.context['request'].FILES.getlist('images')
+        experience = Experience.objects.create(**validated_data)
+        for image_data in images_data:
+            ExperienceImage.objects.create(experience=experience, image=image_data)
+        return experience
 
 class UserSerializer(serializers.ModelSerializer):
     is_following = serializers.SerializerMethodField()
@@ -42,6 +67,19 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class CustomRegisterSerializer(RegisterSerializer):
+    account_type = serializers.ChoiceField(choices=CustomUser.ACCOUNT_TYPE_CHOICES, default='traveller')
+
+    def get_cleaned_data(self):
+        data = super().get_cleaned_data()
+        data['account_type'] = self.validated_data.get('account_type', 'traveller')
+        return data
+
+    def save(self, request):
+        user = super().save(request)
+        user.account_type = self.validated_data.get('account_type', 'traveller')
+        user.save()
+        return user
+
     def validate(self, attrs):
         print(f"DEBUG: Backend received registration attempt: {attrs}")
         return super().validate(attrs)

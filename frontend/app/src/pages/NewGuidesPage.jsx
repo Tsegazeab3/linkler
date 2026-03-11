@@ -2,35 +2,40 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import FilterComponent from '../components/FilterComponent';
 import GuidePreviewCard from '../components/GuidePreviewCard';
+import ExperiencePreviewCard from '../components/ExperiencePreviewCard';
 import LeftSidebarFilter from '../components/LeftSidebarFilter';
-import { getGuides } from '../services/api';
+import { getGuides, getExperiences } from '../services/api';
 
 const guideFilterOptions = ['Certified Guides', 'Local Experts', 'Family Friendly', 'Accessible', 'Budget Friendly', 'Walking Tours', 'Museums', 'Nightlife', 'Food Tasting', 'History'];
 
 const NewGuidesPage = () => {
-  const [guides, setGuides] = useState([]);
+  const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('guide'); // 'guide', 'service', 'experience'
 
   useEffect(() => {
-    getGuides()
+    setLoading(true);
+    const fetchData = activeTab === 'experience' 
+      ? getExperiences() 
+      : getGuides(activeTab);
+
+    fetchData
       .then(response => {
-        setGuides(response.data);
+        setItems(response.data);
       })
       .catch(err => {
-        console.error('Error fetching guides:', err);
+        console.error(`Error fetching ${activeTab}s:`, err);
       })
       .finally(() => {
         setLoading(false);
       });
-  }, []);
+  }, [activeTab]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#3b82f6]"></div>
-      </div>
-    );
-  }
+  const tabs = [
+    { id: 'guide', label: 'Guides', icon: '🗺️' },
+    { id: 'service', label: 'Services', icon: '🏢' },
+    { id: 'experience', label: 'Experiences', icon: '🎒' },
+  ];
 
   return (
     <div className="min-h-screen p-4 lg:p-8">
@@ -43,32 +48,60 @@ const NewGuidesPage = () => {
 
         {/* Main Content */}
         <div className="md:col-span-3">
-          <FilterComponent 
-            filterOptions={guideFilterOptions}
-            placeholder="Search for guides or services..."
-          />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
-            {guides.length > 0 ? (
-              guides.map(guide => (
-                <Link to={`/app/guides/${guide.id}`} key={guide.id}>
-                  <GuidePreviewCard guide={{
-                    id: guide.id,
-                    user_id: guide.id,
-                    is_following: guide.is_following,
-                    name: guide.username,
-                    location: `${guide.city}, ${guide.country}`,
-                    picture: guide.profile_picture || 'https://via.placeholder.com/300',
-                    avatarUrl: guide.profile_picture || 'https://via.placeholder.com/100',
-                    price: 25, // Mock price for now
-                    rating: 4.5,
-                    reviewsCount: 12,
-                    country: guide.country
-                  }} />
-                </Link>
-              ))
+          <div className="flex flex-col space-y-6">
+            <div className="flex bg-ui-bg-alt p-1 rounded-2xl w-fit border border-ui-border shadow-sm">
+              {tabs.map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${
+                    activeTab === tab.id 
+                      ? 'bg-ui-white text-brand shadow-md scale-[1.02]' 
+                      : 'text-ui-text-secondary hover:text-ui-text-main'
+                  }`}
+                >
+                  <span>{tab.icon}</span>
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            <FilterComponent 
+              filterOptions={guideFilterOptions}
+              placeholder={`Search for ${activeTab}s...`}
+            />
+
+            {loading ? (
+              <div className="min-h-[400px] flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand"></div>
+              </div>
             ) : (
-              <div className="col-span-full text-center py-10">
-                <p className="text-gray-500">No guides found in your area.</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {items.length > 0 ? (
+                  items.map(item => (
+                    activeTab === 'experience' ? (
+                      <ExperiencePreviewCard key={item.id} experience={item} />
+                    ) : (
+                      <Link to={`/app/guides/${item.id}`} key={item.id}>
+                        <GuidePreviewCard guide={{
+                          id: item.id,
+                          user_id: item.id,
+                          is_following: item.is_following,
+                          name: item.username,
+                          location: `${item.city || ''}, ${item.country || ''}`,
+                          picture: item.profile_picture,
+                          price: 25, // Mock price
+                          rating: 4.5,
+                          country: item.country
+                        }} />
+                      </Link>
+                    )
+                  ))
+                ) : (
+                  <div className="col-span-full text-center py-20 bg-ui-white rounded-3xl border-2 border-dashed border-ui-border">
+                    <p className="text-ui-text-secondary font-medium italic">No {activeTab}s found in this category.</p>
+                  </div>
+                )}
               </div>
             )}
           </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { getConversations } from '../services/api';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -81,7 +82,7 @@ const GroupChatPreview = ({ conversation, ...props }) => (
 const PreviewList = ({ items, renderItem, emptyMessage }) => (
   <div className="space-y-2">
     {items.length > 0 ? items.map(item => renderItem(item)) : (
-      <p className="text-gray-400 text-sm text-center py-4">{emptyMessage || 'Nothing here yet.'}</p>
+      <div className="text-gray-400 text-sm text-center py-4">{emptyMessage || 'Nothing here yet.'}</div>
     )}
   </div>
 );
@@ -104,12 +105,10 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
   useEffect(() => {
     if (isAuthenticated && (selectedNavItemId === 3 || selectedNavItemId === 4)) {
       setLoading(true);
-      import('../services/api').then(({ getConversations }) => {
-        getConversations()
-          .then(res => setConversations(res.data))
-          .catch(err => console.error('Chat error:', err))
-          .finally(() => setLoading(false));
-      });
+      getConversations()
+        .then(res => setConversations(res.data))
+        .catch(err => console.error('Chat error:', err))
+        .finally(() => setLoading(false));
     }
   }, [isAuthenticated, selectedNavItemId]);
   
@@ -414,7 +413,7 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
   return (
     <>
       {/* Desktop sidebar icon rail */}
-      <div className="hidden lg:flex fixed top-0 left-0 h-full bg-[var(--color-linkler-bg)] text-black flex-col z-50 w-20 border-r border-gray-100">
+      <div className="hidden lg:flex fixed top-0 left-0 h-full bg-ui-white text-ui-text-main flex-col z-50 w-20 border-r border-ui-border">
         <nav className="flex-grow flex flex-col items-center pt-6 overflow-y-auto no-scrollbar">
           <ul className="w-full space-y-0.5">
             {navItems.map((item) => (
@@ -429,7 +428,7 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
         <div className="mt-auto pb-4 flex flex-col items-center border-t border-ui-border pt-4 space-y-4">
           <button
             onClick={toggleTheme}
-            className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-brand-light text-ui-muted transition-colors"
+            className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-ui-bg-alt text-ui-text-secondary transition-colors"
             title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
           >
             {theme === 'light' ? (

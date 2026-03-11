@@ -2,8 +2,26 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.db.models import Q
-from .models import CustomUser, Follow
-from .serializers import UserSerializer
+from .models import CustomUser, Follow, Experience
+from .serializers import UserSerializer, ExperienceSerializer
+
+from rest_framework.parsers import MultiPartParser, FormParser
+
+class ExperienceListCreateView(generics.ListCreateAPIView):
+    """
+    View to list and create experiences.
+    """
+    queryset = Experience.objects.all()
+    serializer_class = ExperienceSerializer
+    parser_classes = (MultiPartParser, FormParser)
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsAuthenticated()]
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 class ProfileUpdateView(generics.RetrieveUpdateAPIView):
     """
@@ -17,11 +35,14 @@ class ProfileUpdateView(generics.RetrieveUpdateAPIView):
 
 class GuideListView(generics.ListAPIView):
     """
-    View to list all guides.
+    View to list all guides and services.
     """
-    queryset = CustomUser.objects.filter(account_type='guide')
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        account_type = self.request.query_params.get('type', 'guide')
+        return CustomUser.objects.filter(account_type=account_type)
 
 class FollowUserView(generics.CreateAPIView):
     permission_classes = [IsAuthenticated]
