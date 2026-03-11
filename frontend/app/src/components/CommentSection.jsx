@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Send, Loader2 } from "lucide-react";
+import { Send, Loader2, MessageCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const CommentSection = ({ postId }) => {
@@ -58,13 +58,13 @@ const CommentSection = ({ postId }) => {
 
   return (
     <div className="mt-2 pt-2 px-0.5 space-y-4 animate-in fade-in duration-500">
-      <div className="flex items-center gap-2 px-3 py-2 bg-muted/20 rounded-xl border border-border/50 shadow-sm focus-within:bg-muted/40 transition-colors">
+      <div className="flex items-center gap-2 px-3 py-2 bg-ui-bg-alt rounded-xl border border-ui-border shadow-sm focus-within:bg-ui-soft-bg transition-colors">
         <form onSubmit={handleAddComment} className="flex flex-grow items-center gap-2">
           <Input
             placeholder="Write a comment..."
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
-            className="flex-grow bg-transparent border-none shadow-none focus-visible:ring-0 h-8 text-sm placeholder:text-muted-foreground/60"
+            className="flex-grow bg-transparent border-none shadow-none focus-visible:ring-0 h-8 text-sm placeholder:text-ui-muted"
             disabled={isSubmitting}
           />
           <Button 
@@ -72,9 +72,9 @@ const CommentSection = ({ postId }) => {
             size="icon" 
             variant="ghost" 
             disabled={!newComment.trim() || isSubmitting}
-            className="h-8 w-8 text-primary hover:text-primary/80 hover:bg-transparent transition-all"
+            className="h-8 w-8 text-brand hover:text-brand-hover hover:bg-transparent transition-all"
           >
-            {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4 fill-primary/10" />}
+            {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4 fill-brand/10" />}
           </Button>
         </form>
       </div>
@@ -87,27 +87,27 @@ const CommentSection = ({ postId }) => {
               className="flex gap-3 text-sm animate-in fade-in slide-in-from-left-2 duration-300"
               style={{ animationDelay: `${index * 50}ms` }}
             >
-              <Avatar className="h-9 w-9 border border-border/30 shadow-sm">
+              <Avatar className="h-9 w-9 border border-ui-border shadow-sm">
                 <AvatarImage src={comment.author?.profile_picture} className="object-cover" />
-                <AvatarFallback className="text-[10px] bg-muted">{comment.author?.username?.charAt(0).toUpperCase()}</AvatarFallback>
+                <AvatarFallback className="text-[10px] bg-ui-bg-alt text-ui-muted">{comment.author?.username?.charAt(0).toUpperCase()}</AvatarFallback>
               </Avatar>
               <div className="flex-grow">
                 <div className="flex items-baseline gap-2">
-                  <span className="font-bold text-foreground text-[13px]">{comment.author?.username}</span>
-                  <span className="text-[9px] text-muted-foreground font-medium uppercase tracking-tighter opacity-70">
+                  <span className="font-bold text-ui-text-main text-[13px]">{comment.author?.username}</span>
+                  <span className="text-[9px] text-ui-muted font-medium uppercase tracking-tighter opacity-70">
                     {new Date(comment.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                   </span>
                 </div>
-                <p className="text-foreground/80 leading-relaxed text-[13px] mt-0.5">{comment.text}</p>
+                <p className="text-ui-text-secondary leading-relaxed text-[13px] mt-0.5">{comment.text}</p>
               </div>
             </div>
           ))
         ) : (
           <div className="py-6 text-center space-y-2 animate-in zoom-in-95 duration-500">
-            <div className="inline-flex p-3 rounded-full bg-muted/10 text-muted-foreground/30">
+            <div className="inline-flex p-3 rounded-full bg-ui-bg-alt text-ui-muted">
                 <MessageCircle className="h-6 w-6" />
             </div>
-            <p className="text-xs text-muted-foreground font-medium italic">No comments yet. Start the conversation!</p>
+            <p className="text-xs text-ui-muted font-medium italic">No comments yet. Start the conversation!</p>
           </div>
         )}
       </div>
