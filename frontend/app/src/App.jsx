@@ -21,6 +21,13 @@ function App() {
       return;
     }
 
+    // On mobile, 'Messages' (ID 3) should be a page navigation, not a panel overlay
+    if (window.innerWidth < 1024 && itemId === 3) {
+      navigate('/app/messages');
+      setShowSidePanel(false);
+      return;
+    }
+
     if (showSidePanel && selectedNavItemId === itemId) {
       setShowSidePanel(false);
     } else {
@@ -34,14 +41,16 @@ function App() {
   };
 
   const handleOpenChat = (chat, type) => {
-    // Check if we are on mobile (screen width < 1024px)
-    if (window.innerWidth < 1024) {
-      navigate(`/chat/${chat.id}`);
+    const preference = localStorage.getItem('chatViewPreference') || 'small';
+
+    // Check if we are on mobile (screen width < 1024px) OR preference is large
+    if (window.innerWidth < 1024 || preference === 'large') {
+      navigate(`/app/messages/${chat.id}`, { state: { chat } });
       setShowSidePanel(false);
       return;
     }
 
-    // Desktop: Floating windows
+    // Desktop Small preference: Floating windows
     const existingChat = openChats.find(c => c.id === chat.id && c.type === type);
     if (!existingChat) {
       // Limit to 3 open chats for sanity, remove the oldest if full
@@ -62,10 +71,19 @@ function App() {
     : 'ml-0 lg:ml-20';
 
   const isHome = location.pathname === '/app';
+  const isSpecificChat = location.pathname.startsWith('/app/messages/') && location.pathname !== '/app/messages';
+
+  React.useEffect(() => {
+    // On desktop, if we are in the messages section, ensure the side panel is open to 'Messages' (ID 3)
+    if (window.innerWidth >= 1024 && location.pathname.startsWith('/app/messages')) {
+      setSelectedNavItemId(3);
+      setShowSidePanel(true);
+    }
+  }, [location.pathname]);
 
   return (
     <div className="flex flex-col min-h-screen bg-[var(--color-linkler-bg)]">
-      <div className="flex flex-1">
+      <div className="flex flex-1 overflow-hidden">
         <SideNav
           onOpenChat={handleOpenChat}
           showSidePanel={showSidePanel}
@@ -84,23 +102,25 @@ function App() {
           />
         )}
 
-        <main className={`flex-1 transition-[margin] duration-300 ease-in-out ${mainContentMargin} pb-16 lg:pb-0 min-w-0 flex flex-col`}>
-          {/* Mobile Top Header (only visible on small screens) */}
-          <div className={`lg:hidden sticky top-0 z-[30] bg-ui-white/95 backdrop-blur-md border-b border-ui-border px-4 py-3 flex items-center ${isHome ? 'justify-between' : 'justify-end'}`}>
-            {isHome && (
-              <h1 className="text-xl font-bold bg-gradient-to-r from-brand to-accent-indigo bg-clip-text text-transparent italic font-display">
-                Linkler
-              </h1>
-            )}
-            <button
-              onClick={() => setIsSearchOpen(true)}
-              className="w-10 h-10 flex items-center justify-center rounded-full bg-ui-bg-alt text-ui-text-secondary active:scale-95 transition-transform"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-                <path fillRule="evenodd" d="M10.5 3.75a6.75 6.75 0 100 13.5 6.75 6.75 0 000-13.5zM2.25 10.5a8.25 8.25 0 1114.59 5.28l4.69 4.69a.75.75 0 11-1.06 1.06l-4.69-4.69A8.25 8.25 0 012.25 10.5z" clipRule="evenodd" />
-              </svg>
-            </button>
-          </div>
+        <main className={`flex-1 transition-[margin] duration-300 ease-in-out ${mainContentMargin} pb-16 lg:pb-0 min-w-0 flex flex-col relative`}>
+          {/* Mobile Top Header (only visible on small screens and NOT in specific chat) */}
+          {!isSpecificChat && (
+            <div className={`lg:hidden sticky top-0 z-[30] bg-ui-white/95 backdrop-blur-md border-b border-ui-border px-4 py-3 flex items-center ${isHome ? 'justify-between' : 'justify-end'}`}>
+              {isHome && (
+                <h1 className="text-xl font-bold bg-gradient-to-r from-brand to-accent-indigo bg-clip-text text-transparent italic font-display">
+                  Linkler
+                </h1>
+              )}
+              <button
+                onClick={() => setIsSearchOpen(true)}
+                className="w-10 h-10 flex items-center justify-center rounded-full bg-ui-bg-alt text-ui-text-secondary active:scale-95 transition-transform"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+                  <path fillRule="evenodd" d="M10.5 3.75a6.75 6.75 0 100 13.5 6.75 6.75 0 000-13.5zM2.25 10.5a8.25 8.25 0 1114.59 5.28l4.69 4.69a.75.75 0 11-1.06 1.06l-4.69-4.69A8.25 8.25 0 012.25 10.5z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
+          )}
 
           <div className="flex-1 overflow-y-auto w-full">
             <Outlet context={{ handleOpenChat }} />
@@ -112,12 +132,14 @@ function App() {
 
       <FloatingPlusButton />
 
-      {/* Mobile Navigation */}
-      <BottomNav
-        onPanelItemClick={handlePanelItemClick}
-        selectedNavItemId={selectedNavItemId}
-        showSidePanel={showSidePanel}
-      />
+      {/* Mobile Navigation - Hidden in specific chat to save space */}
+      {!isSpecificChat && (
+        <BottomNav
+          onPanelItemClick={handlePanelItemClick}
+          selectedNavItemId={selectedNavItemId}
+          showSidePanel={showSidePanel}
+        />
+      )}
 
       {/* Render Open Chat Windows */}
       <div className="fixed bottom-16 lg:bottom-0 right-0 z-[9998] flex flex-col lg:flex-row-reverse items-end gap-2">

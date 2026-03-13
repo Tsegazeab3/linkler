@@ -27,7 +27,14 @@ const SettingsPage = () => {
   const [previewImage, setPreviewImage] = useState(null);
   
   const [loading, setLoading] = useState(false);
+  const [chatViewPreference, setChatViewPreference] = useState(localStorage.getItem('chatViewPreference') || 'small');
   const [message, setMessage] = useState({ type: '', text: '' });
+
+  const handleChatViewChange = (val) => {
+    setChatViewPreference(val);
+    localStorage.setItem('chatViewPreference', val);
+    setMessage({ type: 'success', text: 'Chat preference updated!' });
+  };
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -135,8 +142,9 @@ const SettingsPage = () => {
       )}
 
       <Tabs defaultValue="account" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 max-w-[400px] mb-8">
+        <TabsList className="grid w-full grid-cols-3 max-w-[600px] mb-8">
           <TabsTrigger value="account">Profile Details</TabsTrigger>
+          <TabsTrigger value="preferences">Preferences</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
         </TabsList>
 
@@ -211,6 +219,50 @@ const SettingsPage = () => {
                   </Button>
                 </div>
               </form>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="preferences">
+          <Card>
+            <CardHeader>
+              <CardTitle>Chat Preferences</CardTitle>
+              <CardDescription>Choose how chats open by default on larger screens.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="flex flex-col gap-4">
+                <div 
+                  onClick={() => handleChatViewChange('small')}
+                  className={`p-4 rounded-xl border-2 cursor-pointer transition-all flex items-center justify-between ${chatViewPreference === 'small' ? 'border-brand bg-brand/5' : 'border-border hover:border-ui-muted'}`}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-lg bg-ui-bg-alt flex items-center justify-center text-ui-text-secondary">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                    </div>
+                    <div>
+                      <p className="font-bold text-sm">Small Floating Window</p>
+                      <p className="text-xs text-ui-muted">Multi-task while you chat (Desktop only)</p>
+                    </div>
+                  </div>
+                  {chatViewPreference === 'small' && <div className="w-5 h-5 rounded-full bg-brand flex items-center justify-center text-white"><svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg></div>}
+                </div>
+
+                <div 
+                  onClick={() => handleChatViewChange('large')}
+                  className={`p-4 rounded-xl border-2 cursor-pointer transition-all flex items-center justify-between ${chatViewPreference === 'large' ? 'border-brand bg-brand/5' : 'border-border hover:border-ui-muted'}`}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-lg bg-ui-bg-alt flex items-center justify-center text-ui-text-secondary">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" /></svg>
+                    </div>
+                    <div>
+                      <p className="font-bold text-sm">Full Messaging Pane</p>
+                      <p className="text-xs text-ui-muted">Focus on the conversation</p>
+                    </div>
+                  </div>
+                  {chatViewPreference === 'large' && <div className="w-5 h-5 rounded-full bg-brand flex items-center justify-center text-white"><svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg></div>}
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

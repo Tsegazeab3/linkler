@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { getMessages, sendMessage, getConversations, markChatAsRead } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -9,8 +9,9 @@ import useChatWebSocket from '../hooks/useChatWebSocket';
 const ChatPage = () => {
   const { conversationId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
-  const [chat, setChat] = useState(null);
+  const [chat, setChat] = useState(location.state?.chat || null);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
@@ -137,42 +138,34 @@ const ChatPage = () => {
     setNewMessage('');
   };
 
-  if (loading) return <div className="h-screen flex items-center justify-center text-ui-muted bg-ui-white">Loading chat...</div>;
+  const displayChat = chat || location.state?.chat;
 
-  if (!chat) {
-    return (
-      <div className="p-8 text-center h-screen flex flex-col items-center justify-center bg-ui-white">
-        <div className="w-16 h-16 bg-error-light text-error rounded-full flex items-center justify-center mb-4 text-2xl font-bold">✕</div>
-        <h1 className="text-2xl font-bold text-ui-text-main">Chat not found</h1>
-        <p className="text-ui-muted mb-6">This conversation doesn&apos;t exist or you don&apos;t have access.</p>
-        <button onClick={() => navigate(-1)} className="px-6 py-2 bg-brand text-white rounded-lg font-bold shadow-md active:scale-95 transition-transform">Go Back</button>
-      </div>
-    );
-  }
+  if (!displayChat && loading) return null;
 
   return (
-    <div className="flex flex-col h-screen h-[100dvh] bg-ui-bg relative overflow-hidden">
+    <div className="fixed inset-0 bottom-0 lg:bottom-0 lg:relative lg:inset-auto flex flex-col bg-ui-bg z-[100] lg:z-auto animate-in slide-in-from-right lg:slide-in-from-none duration-300 overflow-hidden shadow-2xl lg:shadow-none h-full">
       {/* Header */}
       <header className="flex items-center p-4 bg-ui-white border-b border-ui-border flex-shrink-0 shadow-sm z-10">
-        <button onClick={() => navigate(-1)} className="mr-4 lg:hidden text-ui-muted hover:text-ui-text-main">
+        <button onClick={() => navigate('/app/messages')} className="mr-4 lg:hidden text-ui-muted hover:text-ui-text-main">
            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
            </svg>
         </button>
         <Avatar className="w-10 h-10 border border-brand-light mr-4">
-          <AvatarImage src={chat.avatar} alt={chat.name} className="object-cover" />
-          <AvatarFallback className="bg-brand-light text-brand font-bold">{(chat.name || 'Chat').charAt(0).toUpperCase()}</AvatarFallback>
+          <AvatarImage src={displayChat?.avatar} alt={displayChat?.name} className="object-cover" />
+          <AvatarFallback className="bg-brand-light text-brand font-bold">{(displayChat?.name || 'Chat').charAt(0).toUpperCase()}</AvatarFallback>
         </Avatar>
         <div className="overflow-hidden">
-          <h2 className="text-sm font-bold text-ui-text-main truncate">{chat.name}</h2>
+          <h2 className="text-sm font-bold text-ui-text-main truncate">{displayChat?.name}</h2>
           <p className="text-[10px] text-success font-medium tracking-wide uppercase">Active now</p>
         </div>
       </header>
 
       {/* Message History */}
-      <main ref={scrollRef} className="flex-grow overflow-y-auto p-4 space-y-4 no-scrollbar pb-20">
+      <main ref={scrollRef} className="flex-grow overflow-y-auto p-4 space-y-4 no-scrollbar pb-20 relative">
         {messages.map((msg, index) => {
           const isMe = user && msg.sender_username === user.username;
+
           return (
             <div key={index} className={`flex flex-col ${!isMe ? 'items-start' : 'items-end'}`}>
               <div className={`p-3 rounded-2xl max-w-[85%] lg:max-w-lg shadow-sm relative group ${isMe ? 'bg-brand text-white rounded-br-none' : 'bg-ui-white text-ui-text-main rounded-bl-none'}`}>

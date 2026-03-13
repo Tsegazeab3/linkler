@@ -72,12 +72,12 @@ function AppRouter() {
           <Route path="profile/:userId" element={<UserProfilePage />} />
           <Route path="promotions" element={<PromotionsPage />} />
           <Route path="promotions/:id" element={<PromotionDetailPage />} />
-          <Route path="messages" element={<MessagesPage />} />
+          <Route path="messages" element={<MessagesPage />}>
+            <Route path=":conversationId" element={<ChatPage />} />
+          </Route>
           <Route path="settings" element={<SettingsPage />} />
         </Route>
 
-        <Route path="/chat/:conversationId" element={<AuthGuard><ChatPage /></AuthGuard>} />
-        
         <Route path="*" element={<NotFound />} />
       </Routes>
 

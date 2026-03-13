@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { getMessages, sendMessage, markChatAsRead } from '../services/api';
+import { useNavigate } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import useChatWebSocket from '../hooks/useChatWebSocket';
 
 const ChatWindow = ({ chat, type, onClose, index }) => {
+  const navigate = useNavigate();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [attachment, setAttachment] = useState(null);
@@ -21,6 +23,12 @@ const ChatWindow = ({ chat, type, onClose, index }) => {
   const rightPosition = 20 + (index * 340);
   
   const { isConnected, sendEvent, lastEvent } = useChatWebSocket(chat.id);
+
+  const handleExpand = (e) => {
+    e.stopPropagation();
+    navigate(`/app/messages/${chat.id}`, { state: { chat } });
+    onClose(chat.id, type);
+  };
 
   useEffect(() => {
     if (!lastEvent) return;
@@ -330,7 +338,12 @@ const ChatWindow = ({ chat, type, onClose, index }) => {
         </Avatar>
         <h3 className="text-sm font-bold truncate">{chat.name}</h3>
         <div className="flex-grow" />
-        <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); setIsMinimized(!isMinimized); }} className="h-7 w-7 rounded-full text-ui-muted hover:text-ui-text-main">
+        <Button variant="ghost" size="icon" onClick={handleExpand} title="Expand to full page" className="h-7 w-7 rounded-full text-ui-muted hover:text-ui-text-main hidden lg:flex">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+            </svg>
+        </Button>
+        <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); setIsMinimized(!isMinimized); }} className="h-7 w-7 rounded-full text-ui-muted hover:text-ui-text-main ml-1">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
             </svg>

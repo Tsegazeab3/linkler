@@ -118,7 +118,7 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
     { id: 1, icon: SvgHome, name: 'Home', type: 'link', href: '/app' },
     { id: 9, icon: SvgSearch, name: 'Search', type: 'button', onClick: onOpenSearch },
     { id: 2, icon: SvgSavedGuides, name: 'Saved Guides', type: 'panel' },
-    { id: 3, icon: SvgChats, name: 'Messages', type: 'link', href: '/app/messages' },
+    { id: 3, icon: SvgChats, name: 'Messages', type: 'panel' },
     { id: 4, icon: SvgGroups, name: 'Groups', type: 'panel' },
     { id: 5, icon: SvgFellowTravelers, name: 'Fellow Travelers', type: 'link', href: '/app/travelers' },
     { id: 6, icon: SvgNewGuides, name: 'New Guides', type: 'link', href: '/app/guides' },
@@ -277,7 +277,7 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
             <PreviewList 
               items={filteredGroups} 
               renderItem={conv => (
-                <Link to={`/chat/${conv.id}`} key={conv.id} onClick={onClosePanel}>
+                <Link to={`/app/messages/${conv.id}`} key={conv.id} onClick={onClosePanel}>
                   <GroupChatPreview conversation={conv} />
                 </Link>
               )} 
