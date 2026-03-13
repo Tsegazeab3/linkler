@@ -71,7 +71,6 @@ INSTALLED_APPS = [
 
     # Custom apps
     'accounts',
-    'temp_registration_form',
     'posts',
     'discovery',
     'chat',
