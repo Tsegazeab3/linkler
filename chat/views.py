@@ -35,20 +35,13 @@ class ConversationListCreateView(generics.ListCreateAPIView):
         if recipient_id:
             conversation.members.add(recipient_id)
 
-class MessageListCreateView(generics.ListCreateAPIView):
+class MessageListView(generics.ListAPIView):
     serializer_class = MessageSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         conversation_id = self.kwargs.get('conversation_id')
         return Message.objects.filter(conversation_id=conversation_id, conversation__members=self.request.user)
-
-    def perform_create(self, serializer):
-        conversation_id = self.kwargs.get('conversation_id')
-        conversation = Conversation.objects.get(id=conversation_id, members=self.request.user)
-        serializer.save(sender=self.request.user, conversation=conversation)
-        # Update conversation timestamp to float to top in list
-        conversation.save() 
 
 class MarkAsReadView(generics.UpdateAPIView):
     permission_classes = [permissions.IsAuthenticated]

@@ -48,6 +48,7 @@ if FLY_APP_NAME:
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -57,6 +58,7 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'cloudinary_storage',
     'cloudinary',
+    'channels',
 
     # Third-party apps
     'rest_framework',
@@ -165,6 +167,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'linkler.wsgi.application'
+ASGI_APPLICATION = 'linkler.asgi.application'
 
 
 # Database
@@ -280,6 +283,14 @@ CLOUDINARY_STORAGE = {
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+
+# Channels configuration
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    },
+}
 
 
 # Logging configuration to show errors in production

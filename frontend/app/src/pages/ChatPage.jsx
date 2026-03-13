@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { getMessages, sendMessage, getConversations, markChatAsRead } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import useChatWebSocket from '../hooks/useChatWebSocket';
 
 const ChatPage = () => {
   const { conversationId } = useParams();
@@ -14,6 +15,16 @@ const ChatPage = () => {
   const [loading, setLoading] = useState(true);
   const scrollRef = useRef();
   
+  const handleIncomingMessage = useCallback((message) => {
+    setMessages((prev) => {
+      const exists = prev.some(m => m.id === message.id);
+      if (exists) return prev;
+      return [...prev, message];
+    });
+  }, []);
+
+  const { isConnected, sendMessage: sendWSMessage } = useChatWebSocket(conversationId, handleIncomingMessage);
+
   const fetchData = async () => {
     try {
       // Find current conversation
@@ -38,8 +49,6 @@ const ChatPage = () => {
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 4000); // Polling every 4s
-    return () => clearInterval(interval);
   }, [conversationId]);
 
   useEffect(() => {
@@ -51,13 +60,10 @@ const ChatPage = () => {
   const handleSend = async (e) => {
     e.preventDefault();
     if (newMessage.trim() === '') return;
-    try {
-      const res = await sendMessage(conversationId, newMessage);
-      setMessages([...messages, res.data]);
-      setNewMessage('');
-    } catch (err) {
-      console.error('Send error:', err);
-    }
+    
+    // Use WebSocket for real-time sending
+    sendWSMessage(newMessage);
+    setNewMessage('');
   };
 
   if (loading) return <div className="h-screen flex items-center justify-center text-ui-muted bg-ui-white">Loading chat...</div>;

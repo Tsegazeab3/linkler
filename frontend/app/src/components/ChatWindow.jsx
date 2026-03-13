@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { getMessages, sendMessage, markChatAsRead } from '../services/api';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import useChatWebSocket from '../hooks/useChatWebSocket';
 
 const ChatWindow = ({ chat, type, onClose, index }) => {
   const [messages, setMessages] = useState([]);
@@ -14,6 +15,17 @@ const ChatWindow = ({ chat, type, onClose, index }) => {
   
   const rightPosition = 20 + (index * 340);
   
+  const handleIncomingMessage = useCallback((message) => {
+    setMessages((prev) => {
+      // Avoid duplicate messages if the message was already added by handleSend
+      const exists = prev.some(m => m.id === message.id);
+      if (exists) return prev;
+      return [...prev, message];
+    });
+  }, []);
+
+  const { isConnected, sendMessage: sendWSMessage } = useChatWebSocket(chat.id, handleIncomingMessage);
+
   const fetchMessages = () => {
     getMessages(chat.id)
       .then(res => {
@@ -27,8 +39,6 @@ const ChatWindow = ({ chat, type, onClose, index }) => {
 
   useEffect(() => {
     fetchMessages();
-    const interval = setInterval(fetchMessages, 3000); // Polling every 3s
-    return () => clearInterval(interval);
   }, [chat.id]);
 
   useEffect(() => {
@@ -40,21 +50,27 @@ const ChatWindow = ({ chat, type, onClose, index }) => {
   const handleSend = async (e) => {
     e.preventDefault();
     if (newMessage.trim() === '' && !attachment) return;
-    try {
-      let dataToSend = newMessage;
-      if (attachment) {
-        dataToSend = new FormData();
-        dataToSend.append('text', newMessage);
-        dataToSend.append('attachment', attachment);
+    
+    // Fallback to REST only for attachments (if not handled by WS)
+    if (attachment) {
+      try {
+        const formData = new FormData();
+        formData.append('text', newMessage);
+        formData.append('attachment', attachment);
+        const res = await sendMessage(chat.id, formData);
+        setMessages([...messages, res.data]);
+        setNewMessage('');
+        setAttachment(null);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+      } catch (err) {
+        console.error('Send error:', err);
       }
-      const res = await sendMessage(chat.id, dataToSend);
-      setMessages([...messages, res.data]);
-      setNewMessage('');
-      setAttachment(null);
-      if (fileInputRef.current) fileInputRef.current.value = '';
-    } catch (err) {
-      console.error('Send error:', err);
+      return;
     }
+
+    // Use WebSocket for text messages
+    sendWSMessage(newMessage);
+    setNewMessage('');
   };
 
   const handleFileChange = (e) => {
