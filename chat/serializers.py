@@ -4,11 +4,21 @@ from accounts.serializers import UserSerializer
 
 class MessageSerializer(serializers.ModelSerializer):
     sender_username = serializers.ReadOnlyField(source='sender.username')
+    parent_message_details = serializers.SerializerMethodField()
     
     class Meta:
         model = Message
-        fields = ['id', 'conversation', 'sender', 'sender_username', 'text', 'attachment', 'is_read', 'created_at']
-        read_only_fields = ['sender', 'conversation', 'created_at']
+        fields = ['id', 'conversation', 'sender', 'sender_username', 'text', 'attachment', 'is_read', 'parent_message', 'parent_message_details', 'is_edited', 'created_at', 'updated_at']
+        read_only_fields = ['sender', 'conversation', 'created_at', 'updated_at']
+
+    def get_parent_message_details(self, obj):
+        if obj.parent_message:
+            return {
+                'id': obj.parent_message.id,
+                'text': obj.parent_message.text,
+                'sender_username': obj.parent_message.sender.username,
+            }
+        return None
 
 class ConversationSerializer(serializers.ModelSerializer):
     members_details = UserSerializer(source='members', many=True, read_only=True)

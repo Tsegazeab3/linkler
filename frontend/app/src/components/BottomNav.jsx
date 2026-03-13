@@ -18,7 +18,7 @@ const BottomNav = ({ onPanelItemClick, selectedNavItemId, showSidePanel }) => {
   const navItems = [
     { id: 'home', icon: SvgHome, label: 'Home', path: '/app' },
     { id: 'travelers', icon: SvgFellowTravelers, label: 'Travelers', path: '/app/travelers' },
-    { id: 'messages', icon: SvgChats, label: 'Messages', panelId: 3 },
+    { id: 'messages', icon: SvgChats, label: 'Messages', path: '/app/messages' },
     { id: 'guides', icon: SvgNewGuides, label: 'Guides', path: '/app/guides' },
     { id: 'promotions', icon: SvgPromotions, label: 'Deals', path: '/app/promotions' },
     { id: 'settings', icon: SvgSettings, label: 'Settings', path: '/app/settings' },

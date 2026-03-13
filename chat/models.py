@@ -22,10 +22,16 @@ class Conversation(models.Model):
 class Message(models.Model):
     conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name='messages')
     sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='sent_messages')
-    text = models.TextField(blank=True) # Making text optional if they just send an attachment
+    text = models.TextField(blank=True)
     attachment = models.FileField(upload_to='chat_attachments/', blank=True, null=True)
     is_read = models.BooleanField(default=False)
+    
+    # Reply and Edit features
+    parent_message = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='replies')
+    is_edited = models.BooleanField(default=False)
+    
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ['created_at']

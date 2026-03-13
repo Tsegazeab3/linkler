@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import SideNav from './components/SideNav';
 import ChatWindow from './components/ChatWindow'; // Import the new component
 import FloatingPlusButton from './components/FloatingPlusButton';
@@ -8,6 +8,8 @@ import SearchModal from './components/SearchModal';
 import { Toaster } from "@/components/ui/sonner";
 
 function App() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [openChats, setOpenChats] = useState([]);
   const [showSidePanel, setShowSidePanel] = useState(false);
   const [selectedNavItemId, setSelectedNavItemId] = useState(null);
@@ -34,7 +36,7 @@ function App() {
   const handleOpenChat = (chat, type) => {
     // Check if we are on mobile (screen width < 1024px)
     if (window.innerWidth < 1024) {
-      navigate(`/app/chat/${chat.id}`);
+      navigate(`/chat/${chat.id}`);
       setShowSidePanel(false);
       return;
     }
@@ -59,6 +61,8 @@ function App() {
     ? 'lg:ml-[400px]'
     : 'ml-0 lg:ml-20';
 
+  const isHome = location.pathname === '/app';
+
   return (
     <div className="flex flex-col min-h-screen bg-[var(--color-linkler-bg)]">
       <div className="flex flex-1">
@@ -82,10 +86,12 @@ function App() {
 
         <main className={`flex-1 transition-[margin] duration-300 ease-in-out ${mainContentMargin} pb-16 lg:pb-0 min-w-0 flex flex-col`}>
           {/* Mobile Top Header (only visible on small screens) */}
-          <div className="lg:hidden sticky top-0 z-[30] bg-ui-white/95 backdrop-blur-md border-b border-ui-border px-4 py-3 flex items-center justify-between">
-            <h1 className="text-xl font-bold bg-gradient-to-r from-brand to-accent-indigo bg-clip-text text-transparent italic font-display">
-              Linkler
-            </h1>
+          <div className={`lg:hidden sticky top-0 z-[30] bg-ui-white/95 backdrop-blur-md border-b border-ui-border px-4 py-3 flex items-center ${isHome ? 'justify-between' : 'justify-end'}`}>
+            {isHome && (
+              <h1 className="text-xl font-bold bg-gradient-to-r from-brand to-accent-indigo bg-clip-text text-transparent italic font-display">
+                Linkler
+              </h1>
+            )}
             <button
               onClick={() => setIsSearchOpen(true)}
               className="w-10 h-10 flex items-center justify-center rounded-full bg-ui-bg-alt text-ui-text-secondary active:scale-95 transition-transform"

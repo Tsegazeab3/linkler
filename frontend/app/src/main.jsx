@@ -25,6 +25,7 @@ import CreatePromotionPage from './pages/CreatePromotionPage.jsx';
 import PromotionsPage from './pages/PromotionsPage.jsx';
 import PromotionDetailPage from './pages/PromotionDetailPage.jsx';
 import ChatPage from './pages/ChatPage.jsx';
+import MessagesPage from './pages/MessagesPage.jsx';
 import SettingsPage from './pages/SettingsPage.jsx';
 import CreatePostModal from './components/CreatePostModal.jsx';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -71,9 +72,11 @@ function AppRouter() {
           <Route path="profile/:userId" element={<UserProfilePage />} />
           <Route path="promotions" element={<PromotionsPage />} />
           <Route path="promotions/:id" element={<PromotionDetailPage />} />
-          <Route path="chat/:conversationId" element={<ChatPage />} />
+          <Route path="messages" element={<MessagesPage />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
+
+        <Route path="/chat/:conversationId" element={<AuthGuard><ChatPage /></AuthGuard>} />
         
         <Route path="*" element={<NotFound />} />
       </Routes>
