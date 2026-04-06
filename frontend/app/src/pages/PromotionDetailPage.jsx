@@ -48,29 +48,41 @@ const PromotionDetailPage = () => {
                         <div className="text-3xl font-black text-success">{promotion.off_percent}% OFF</div>
                         <p className="text-success-hover font-semibold">Limited time offer</p>
                     </div>
+                    <div className="text-right">
+                        <p className="text-sm text-ui-muted line-through font-bold">{promotion.currency} {promotion.original_price}</p>
+                        <p className="text-4xl font-black text-brand">{promotion.currency} {promotion.discounted_price}</p>
+                    </div>
                 </div>
                 <p className="text-lg text-ui-text-secondary mb-8">{promotion.description}</p>
                 
                 {/* Gallery */}
-                <h2 className="text-3xl font-bold mb-4 text-ui-text-main">Gallery</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-8">
-                    {promotion.gallery.map((img, i) => <img key={i} src={img} alt={`Gallery image ${i+1}`} className="w-full h-48 object-cover rounded-md shadow" />)}
-                </div>
+                {promotion.gallery && promotion.gallery.length > 0 && (
+                  <>
+                    <h2 className="text-3xl font-bold mb-4 text-ui-text-main">Gallery</h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+                        {promotion.gallery.map((img, i) => <img key={i} src={img} alt={`Gallery image ${i+1}`} className="w-full h-48 object-cover rounded-md shadow" />)}
+                    </div>
+                  </>
+                )}
 
                 {/* Reviews */}
-                <h2 className="text-3xl font-bold mb-4 text-ui-text-main">Reviews</h2>
-                <div className="space-y-4">
-                    {promotion.reviews.map(review => (
-                        <div key={review.id} className="bg-ui-white p-4 rounded-lg shadow flex items-start space-x-4">
-                            <img src={review.avatar} alt={review.reviewer} className="w-12 h-12 rounded-full border border-ui-border"/>
-                            <div>
-                                <h3 className="font-bold text-ui-text-main">{review.reviewer}</h3>
-                                <StarRating rating={review.rating} />
-                                <p className="mt-1 text-ui-text-secondary">{review.comment}</p>
+                {promotion.reviews && promotion.reviews.length > 0 && (
+                  <>
+                    <h2 className="text-3xl font-bold mb-4 text-ui-text-main">Reviews</h2>
+                    <div className="space-y-4">
+                        {promotion.reviews.map(review => (
+                            <div key={review.id} className="bg-ui-white p-4 rounded-lg shadow flex items-start space-x-4">
+                                <img src={review.avatar} alt={review.reviewer} className="w-12 h-12 rounded-full border border-ui-border"/>
+                                <div>
+                                    <h3 className="font-bold text-ui-text-main">{review.reviewer}</h3>
+                                    <StarRating rating={review.rating} />
+                                    <p className="mt-1 text-ui-text-secondary">{review.comment}</p>
+                                </div>
                             </div>
-                        </div>
-                    ))}
-                </div>
+                        ))}
+                    </div>
+                  </>
+                )}
             </div>
         </div>
     );

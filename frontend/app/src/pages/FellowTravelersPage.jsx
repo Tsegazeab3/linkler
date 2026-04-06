@@ -59,6 +59,7 @@ const FellowTravelersPage = () => {
     is_following: trip.author?.is_following,
     picture: trip.author?.profile_picture || 'https://via.placeholder.com/400',
     name: trip.author?.username || 'User',
+    username: trip.author?.username,
     bio: trip.author?.bio || '',
     from: trip.origin,
     to: trip.destination,

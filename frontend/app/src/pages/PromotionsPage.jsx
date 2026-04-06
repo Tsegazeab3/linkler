@@ -10,9 +10,12 @@ const promotionFilterOptions = ['Hotels', 'Restaurants', 'Bars', 'Travel', 'Acti
 const PromotionsPage = () => {
     const [promotions, setPromotions] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [activeCategory, setActiveCategory] = useState('');
 
     useEffect(() => {
-        getPromotions()
+        setLoading(true);
+        getPromotions(searchQuery, activeCategory)
             .then(response => {
                 setPromotions(response.data);
             })
@@ -22,15 +25,7 @@ const PromotionsPage = () => {
             .finally(() => {
                 setLoading(false);
             });
-    }, []);
-
-    if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#3b82f6]"></div>
-            </div>
-        );
-    }
+    }, [searchQuery, activeCategory]);
 
     return (
         <div className="p-4 lg:p-8">
@@ -38,7 +33,10 @@ const PromotionsPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                 {/* Left Sidebar for Filters */}
                 <div className="md:col-span-1">
-                    <PromotionFilter />
+                    <PromotionFilter 
+                        activeCategory={activeCategory} 
+                        onCategoryChange={setActiveCategory} 
+                    />
                 </div>
 
                 {/* Main Content */}
@@ -46,27 +44,41 @@ const PromotionsPage = () => {
                     <FilterComponent 
                         filterOptions={promotionFilterOptions}
                         placeholder="Search for promotions..."
+                        onSearchChange={setSearchQuery}
+                        onCategoryChange={setActiveCategory}
+                        activeCategory={activeCategory}
                     />
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-8">
-                        {promotions.length > 0 ? (
-                            promotions.map(promo => (
-                                <Link to={`/app/promotions/${promo.id}`} key={promo.id}>
-                                    <PromotionCard promotion={{
-                                        id: promo.id,
-                                        title: promo.title,
-                                        company: promo.company,
-                                        image: promo.image || 'https://images.unsplash.com/photo-1506012787146-f92b2d7d6d96?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60',
-                                        rating: promo.rating,
-                                        offer: `${promo.off_percent}% Off`
-                                    }} />
-                                </Link>
-                            ))
-                        ) : (
-                            <div className="col-span-full text-center py-10">
-                                <p className="text-gray-500">No active promotions at the moment. Check back soon!</p>
-                            </div>
-                        )}
-                    </div>
+                    
+                    {loading ? (
+                        <div className="min-h-[400px] flex items-center justify-center">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand"></div>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-8">
+                            {promotions.length > 0 ? (
+                                promotions.map(promo => (
+                                    <Link to={`/app/promotions/${promo.id}`} key={promo.id}>
+                                        <PromotionCard promotion={{
+                                            id: promo.id,
+                                            title: promo.title,
+                                            company: promo.company,
+                                            image: promo.image || 'https://images.unsplash.com/photo-1506012787146-f92b2d7d6d96?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60',
+                                            rating: promo.rating,
+                                            offer: `${promo.off_percent}% Off`,
+                                            original_price: promo.original_price,
+                                            discounted_price: promo.discounted_price,
+                                            currency: promo.currency
+                                        }} />
+                                    </Link>
+
+                                ))
+                            ) : (
+                                <div className="col-span-full text-center py-20 bg-ui-white rounded-3xl border-2 border-dashed border-ui-border">
+                                    <p className="text-ui-text-secondary font-medium italic">No active promotions found.</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

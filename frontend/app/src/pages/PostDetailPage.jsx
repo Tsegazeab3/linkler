@@ -325,8 +325,8 @@ const PostDetailPage = () => {
                 <AvatarFallback>{post.author?.username?.charAt(0).toUpperCase()}</AvatarFallback>
             </Avatar>
             <div className="flex-grow min-w-0">
-              <p className="font-bold text-sm text-ui-text-main truncate">{post.author?.username}</p>
-              <p className="text-xs text-ui-muted truncate line-clamp-1">{post.author?.bio || ''}</p>
+              <p className="font-bold text-sm text-ui-text-main truncate cursor-pointer" onClick={() => navigate(`/app/profile/${post.author?.username}`)}>{post.author?.username}</p>
+              <p className="text-xs text-ui-muted truncate line-clamp-1 cursor-pointer" onClick={() => navigate(`/app/profile/${post.author?.username}`)}>{post.author?.bio || ''}</p>
             </div>
             {user?.id !== post.author?.id && (
               <Button 
@@ -348,7 +348,7 @@ const PostDetailPage = () => {
                     <AvatarFallback>{post.author?.username?.charAt(0).toUpperCase()}</AvatarFallback>
                  </Avatar>
                  <div className="text-sm">
-                    <p><span className="font-bold mr-2 text-ui-text-main">{post.author?.username}</span><span className="text-ui-text-secondary">{post.caption}</span></p>
+                    <p><span className="font-bold mr-2 text-ui-text-main cursor-pointer" onClick={() => navigate(`/app/profile/${post.author?.username}`)}>{post.author?.username}</span><span className="text-ui-text-secondary">{post.caption}</span></p>
                     <p className="text-[10px] text-ui-muted mt-1 uppercase tracking-tighter">{new Date(post.created_at).toLocaleDateString()}</p>
                  </div>
                </div>
@@ -364,7 +364,7 @@ const PostDetailPage = () => {
                     <div className="flex-grow">
                         <div className="bg-ui-bg-alt/50 p-3 rounded-2xl rounded-tl-none border border-ui-border/50">
                             <p className="text-sm">
-                                <span className="font-bold mr-2 text-ui-text-main">{comment.author?.username}</span>
+                                <span className="font-bold mr-2 text-ui-text-main cursor-pointer" onClick={() => navigate(`/app/profile/${comment.author?.username}`)}>{comment.author?.username}</span>
                                 <span className="text-ui-text-secondary">{comment.text}</span>
                             </p>
                         </div>

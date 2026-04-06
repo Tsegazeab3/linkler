@@ -1,19 +1,23 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, useOutletContext } from 'react-router-dom';
 import { getMessages, sendMessage, getConversations, markChatAsRead } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import useChatWebSocket from '../hooks/useChatWebSocket';
+import { Paperclip, Send, X, Smile, MoreHorizontal, Reply, Edit2 } from "lucide-react";
 
 const ChatPage = () => {
   const { conversationId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  const { handleOpenChat } = useOutletContext() || {};
   const [chat, setChat] = useState(location.state?.chat || null);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
+  const [attachment, setAttachment] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
   const [otherUserTyping, setOtherUserTyping] = useState(false);
@@ -21,6 +25,7 @@ const ChatPage = () => {
   const [editingMessage, setEditingMessage] = useState(null);
   const typingTimeoutRef = useRef(null);
   const scrollRef = useRef();
+  const fileInputRef = useRef(null);
   
   const { isConnected, sendEvent, lastEvent } = useChatWebSocket(conversationId);
 
@@ -102,9 +107,15 @@ const ChatPage = () => {
     }, 2000);
   };
 
+  const handleFileChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setAttachment(e.target.files[0]);
+    }
+  };
+
   const handleSend = async (e) => {
     e.preventDefault();
-    if (newMessage.trim() === '') return;
+    if (newMessage.trim() === '' && !attachment) return;
     
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     setIsTyping(false);
@@ -114,6 +125,24 @@ const ChatPage = () => {
       sendEvent('edit_message', { message_id: editingMessage.id, message: newMessage });
       setEditingMessage(null);
       setNewMessage('');
+      return;
+    }
+
+    if (attachment) {
+      try {
+        const formData = new FormData();
+        formData.append('text', newMessage);
+        formData.append('attachment', attachment);
+        if (replyingTo) formData.append('parent_message', replyingTo.id);
+        const res = await sendMessage(conversationId, formData);
+        setMessages([...messages, res.data]);
+        setNewMessage('');
+        setAttachment(null);
+        setReplyingTo(null);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+      } catch (err) {
+        console.error('Send error:', err);
+      }
       return;
     }
 
@@ -151,24 +180,29 @@ const ChatPage = () => {
              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
            </svg>
         </button>
-        <Avatar className="w-10 h-10 border border-brand-light mr-4">
-          <AvatarImage src={displayChat?.avatar} alt={displayChat?.name} className="object-cover" />
-          <AvatarFallback className="bg-brand-light text-brand font-bold">{(displayChat?.name || 'Chat').charAt(0).toUpperCase()}</AvatarFallback>
-        </Avatar>
-        <div className="overflow-hidden">
-          <h2 className="text-sm font-bold text-ui-text-main truncate">{displayChat?.name}</h2>
-          <p className="text-[10px] text-success font-medium tracking-wide uppercase">Active now</p>
+        <div 
+          className="flex items-center cursor-pointer hover:opacity-80 transition-opacity overflow-hidden"
+          onClick={() => handleOpenChat && handleOpenChat(displayChat, displayChat?.type)}
+        >
+          <Avatar className="w-10 h-10 border border-brand-light mr-4">
+            <AvatarImage src={displayChat?.avatar} alt={displayChat?.name} className="object-cover" />
+            <AvatarFallback className="bg-brand-light text-brand font-bold">{(displayChat?.name || 'Chat').charAt(0).toUpperCase()}</AvatarFallback>
+          </Avatar>
+          <div className="overflow-hidden">
+            <h2 className="text-sm font-bold text-ui-text-main truncate">{displayChat?.name}</h2>
+            <p className="text-[10px] text-success font-medium tracking-wide uppercase">Active now</p>
+          </div>
         </div>
       </header>
 
       {/* Message History */}
-      <main ref={scrollRef} className="flex-grow overflow-y-auto p-4 space-y-4 no-scrollbar pb-20 relative">
+      <main ref={scrollRef} className="flex-grow overflow-y-auto p-4 space-y-4 no-scrollbar pb-20 relative bg-ui-bg">
         {messages.map((msg, index) => {
           const isMe = user && msg.sender_username === user.username;
 
           return (
             <div key={index} className={`flex flex-col ${!isMe ? 'items-start' : 'items-end'}`}>
-              <div className={`p-3 rounded-2xl max-w-[85%] lg:max-w-lg shadow-sm relative group ${isMe ? 'bg-brand text-white rounded-br-none' : 'bg-ui-white text-ui-text-main rounded-bl-none'}`}>
+              <div className={`p-3 rounded-2xl max-w-[85%] lg:max-w-lg shadow-sm relative group ${isMe ? 'bg-brand text-white rounded-br-none' : 'bg-ui-white text-ui-text-main rounded-bl-none border border-ui-border/50'}`}>
                 
                 {/* Reply Preview */}
                 {msg.parent_message_details && (
@@ -178,15 +212,27 @@ const ChatPage = () => {
                   </div>
                 )}
 
-                {chat.type === 'group' && !isMe && (
+                {displayChat?.type === 'group' && !isMe && (
                   <p className="text-[10px] font-bold text-brand mb-1">{msg.sender_username}</p>
                 )}
+
                 {msg.attachment && (
                   <div className="mb-2">
-                    <img src={msg.attachment} alt="attachment" className="rounded-md max-w-full h-auto max-h-48 object-cover" />
+                    {msg.attachment.match(/\.(jpeg|jpg|gif|png|webp)(\?|#|$)/i) != null ? (
+                      <img src={msg.attachment} alt="attachment" className="rounded-xl max-w-full h-auto max-h-64 object-cover" />
+                    ) : (
+                      <a href={msg.attachment} target="_blank" rel="noopener noreferrer" className={`flex items-center gap-2 p-3 rounded-xl overflow-hidden ${isMe ? 'bg-white/10' : 'bg-ui-bg-alt'}`}>
+                        <Paperclip className="h-5 w-5 flex-shrink-0" />
+                        <div className="overflow-hidden">
+                          <p className="text-xs font-bold truncate">{msg.attachment.split('/').pop()}</p>
+                          <p className="text-[10px] opacity-70">Click to view file</p>
+                        </div>
+                      </a>
+                    )}
                   </div>
                 )}
-                <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.text}</p>
+
+                {msg.text && <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.text}</p>}
                 
                 <div className="flex items-center justify-end gap-1 mt-1 opacity-70">
                   {msg.is_edited && <span className="text-[8px] italic mr-1">edited</span>}
@@ -211,24 +257,23 @@ const ChatPage = () => {
 
                 {/* Desktop Hover Actions */}
                 <div className={`absolute top-0 ${isMe ? '-left-12' : '-right-12'} opacity-0 group-hover:opacity-100 transition-opacity hidden lg:flex flex-col gap-1`}>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full bg-ui-white/80 shadow-sm" onClick={() => startReply(msg)}>
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full bg-ui-white shadow-md border border-ui-border" onClick={() => startReply(msg)}>
+                        <Reply className="h-4 w-4" />
                     </Button>
                     {isMe && (
-                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full bg-ui-white/80 shadow-sm" onClick={() => startEdit(msg)}>
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full bg-ui-white shadow-md border border-ui-border" onClick={() => startEdit(msg)}>
+                            <Edit2 className="h-4 w-4" />
                         </Button>
                     )}
                 </div>
-                {/* Mobile Long Press Placeholder / Simple tap could be added but usually a long press or swipe is used */}
               </div>
             </div>
           );
         })}
         {otherUserTyping && (
-          <div className="flex justify-start">
-            <div className="bg-ui-white text-ui-text-main p-2 rounded-2xl rounded-bl-none italic text-xs shadow-sm">
-              {chat.name} is typing...
+          <div className="flex justify-start animate-in slide-in-from-bottom-2">
+            <div className="bg-ui-white text-ui-text-main px-4 py-2 rounded-2xl rounded-bl-none italic text-xs shadow-sm border border-ui-border/50">
+              {displayChat?.name} is typing...
             </div>
           </div>
         )}
@@ -236,34 +281,78 @@ const ChatPage = () => {
 
       {/* Input Section */}
       <footer className="p-4 bg-ui-white border-t border-ui-border flex-shrink-0 z-20">
-        {(replyingTo || editingMessage) && (
-            <div className="max-w-4xl mx-auto mb-2 p-2 bg-ui-bg-alt rounded-xl flex items-center justify-between animate-in slide-in-from-bottom-2 duration-200">
-                <div className="flex items-center gap-2 overflow-hidden">
-                    <div className="w-1 h-8 bg-brand rounded-full flex-shrink-0" />
-                    <div className="overflow-hidden">
-                        <p className="text-[10px] font-bold text-brand">{replyingTo ? `Replying to ${replyingTo.sender_username}` : 'Editing message'}</p>
-                        <p className="text-xs text-ui-text-secondary truncate italic">{replyingTo ? replyingTo.text : editingMessage.text}</p>
-                    </div>
+        <div className="max-w-4xl mx-auto space-y-3">
+            {/* Attachment Preview */}
+            {attachment && (
+              <div className="flex items-center justify-between bg-brand/5 text-brand p-3 rounded-xl text-xs border border-brand/20 animate-in slide-in-from-bottom-2">
+                <div className="flex items-center gap-3 truncate">
+                  <div className="w-8 h-8 rounded-lg bg-brand/10 flex items-center justify-center">
+                    <Paperclip className="h-4 w-4" />
+                  </div>
+                  <div className="overflow-hidden">
+                    <p className="font-bold truncate">{attachment.name}</p>
+                    <p className="text-[10px] opacity-70">{(attachment.size / 1024).toFixed(1)} KB</p>
+                  </div>
                 </div>
-                <button onClick={() => { setReplyingTo(null); setEditingMessage(null); if (editingMessage) setNewMessage(''); }} className="text-ui-muted">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                <button type="button" onClick={() => { setAttachment(null); if (fileInputRef.current) fileInputRef.current.value = ''; }} className="w-8 h-8 rounded-full hover:bg-brand/10 flex items-center justify-center transition-colors">
+                   <X className="h-4 w-4" />
                 </button>
-            </div>
-        )}
-        <form onSubmit={handleSend} className="max-w-4xl mx-auto flex items-center gap-2">
-          <input
-            type="text"
-            value={newMessage}
-            onChange={handleTyping}
-            placeholder="Type a message..."
-            className="flex-grow p-3 bg-ui-bg-alt border border-ui-border/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand/20 text-sm"
-          />
-          <button type="submit" className="p-3 bg-brand text-white rounded-2xl hover:bg-brand-hover transition-all shadow-md active:scale-95">
-             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-               <path strokeLinecap="round" strokeLinejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-             </svg>
-          </button>
-        </form>
+              </div>
+            )}
+
+            {/* Reply/Edit Bar */}
+            {(replyingTo || editingMessage) && (
+                <div className="p-3 bg-ui-bg-alt/50 rounded-xl flex items-center justify-between animate-in slide-in-from-bottom-2 border border-ui-border/50">
+                    <div className="flex items-center gap-3 overflow-hidden">
+                        <div className="w-1 h-8 bg-brand rounded-full flex-shrink-0" />
+                        <div className="overflow-hidden">
+                            <p className="text-[10px] font-bold text-brand uppercase tracking-widest">{replyingTo ? `Replying to ${replyingTo.sender_username}` : 'Editing message'}</p>
+                            <p className="text-xs text-ui-text-secondary truncate italic">{replyingTo ? replyingTo.text : editingMessage.text}</p>
+                        </div>
+                    </div>
+                    <button onClick={() => { setReplyingTo(null); setEditingMessage(null); if (editingMessage) setNewMessage(''); }} className="w-8 h-8 rounded-full hover:bg-ui-bg-alt flex items-center justify-center">
+                        <X className="h-4 w-4 text-ui-muted" />
+                    </button>
+                </div>
+            )}
+
+            <form onSubmit={handleSend} className="flex items-center gap-2">
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleFileChange} 
+                className="hidden" 
+              />
+              <button 
+                type="button" 
+                onClick={() => fileInputRef.current?.click()}
+                className="p-3 text-ui-muted hover:text-brand hover:bg-brand/5 rounded-2xl transition-all"
+              >
+                <Paperclip className="h-5 w-5" />
+              </button>
+              
+              <div className="relative flex-grow">
+                <input
+                    type="text"
+                    value={newMessage}
+                    onChange={handleTyping}
+                    placeholder="Type a message..."
+                    className="w-full p-3.5 pr-12 bg-ui-bg-alt border border-ui-border/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand/20 text-sm transition-all"
+                />
+                <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-ui-muted hover:text-brand transition-colors">
+                    <Smile className="h-5 w-5" />
+                </button>
+              </div>
+
+              <button 
+                type="submit" 
+                disabled={!newMessage.trim() && !attachment}
+                className={`p-3.5 rounded-2xl transition-all shadow-md active:scale-95 ${(!newMessage.trim() && !attachment) ? 'bg-ui-bg-alt text-ui-muted cursor-not-allowed' : 'bg-brand text-white hover:bg-brand-hover'}`}
+              >
+                 <Send className="h-5 w-5" />
+              </button>
+            </form>
+        </div>
       </footer>
     </div>
   );

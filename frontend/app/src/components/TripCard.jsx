@@ -16,17 +16,17 @@ const CalendarIcon = () => (
 );
 
 const TripCard = ({ trip }) => {
-  const { picture, name, bio, from, to, dates, message, id, user_id, is_following: initialIsFollowing } = trip;
+  const { picture, name, username, bio, from, to, dates, message, id, user_id, is_following: initialIsFollowing } = trip;
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
   const { handleOpenChat } = useOutletContext();
 
   const handleFollow = async () => {
     try {
       if (isFollowing) {
-        await unfollowUser(user_id);
+        await unfollowUser(username);
         setIsFollowing(false);
       } else {
-        await followUser(user_id);
+        await followUser(username);
         setIsFollowing(true);
       }
     } catch (err) {
@@ -78,10 +78,12 @@ const TripCard = ({ trip }) => {
       </div>
       <div className="w-full md:w-1/2 p-6 flex flex-col justify-between">
         <div>
-          <Link to={`/app/profile/${id}`}>
+          <Link to={`/app/profile/${username}`}>
             <h2 className="text-2xl font-bold text-ui-text-main mb-2 hover:text-brand transition-colors">{name}</h2>
           </Link>
-          <p className="text-sm text-ui-text-secondary mb-4 h-20 overflow-y-auto no-scrollbar">{bio}</p>
+          <Link to={`/app/profile/${username}`}>
+            <p className="text-sm text-ui-text-secondary mb-4 h-20 overflow-y-auto no-scrollbar hover:text-brand transition-colors cursor-pointer">{bio}</p>
+          </Link>
         </div>
         <div className="border-t-2 border-ui-border pt-4">
           <h3 className="font-bold text-lg mb-3 text-ui-text-secondary">Trip Details</h3>

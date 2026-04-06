@@ -1,24 +1,48 @@
 import React from 'react';
 
-const PromotionFilter = () => {
+const PromotionFilter = ({ activeCategory, onCategoryChange }) => {
   const categories = ['Hotels', 'Restaurants', 'Bars', 'Travel', 'Activities'];
 
   return (
-    <div className="p-4 rounded-lg shadow-lg bg-ui-white">
-      <h3 className="text-lg font-bold mb-4 text-ui-text-main">Filter Promotions</h3>
+    <div className="p-4 rounded-3xl shadow-sm bg-ui-white border border-ui-border">
+      <h3 className="text-lg font-bold mb-4 text-ui-text-main">Categories</h3>
       
-      {/* Category Filter */}
-      <div className="mb-4">
-        <h4 className="font-semibold mb-2 text-ui-text-main">Category</h4>
+      <div className="space-y-1">
+        <button
+          onClick={() => onCategoryChange('')}
+          className={`w-full text-left px-4 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+            activeCategory === '' 
+              ? 'bg-brand/10 text-brand' 
+              : 'text-ui-text-secondary hover:bg-ui-bg-alt'
+          }`}
+        >
+          All Deals
+        </button>
         {categories.map(category => (
-          <div key={category} className="flex items-center">
-            <input type="checkbox" id={category} name={category} className="h-4 w-4 text-accent-indigo border-ui-border rounded" />
-            <label htmlFor={category} className="ml-2 block text-sm text-ui-text-main">{category}</label>
-          </div>
+          <button
+            key={category}
+            onClick={() => onCategoryChange(category)}
+            className={`w-full text-left px-4 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+              activeCategory === category 
+                ? 'bg-brand/10 text-brand' 
+                : 'text-ui-text-secondary hover:bg-ui-bg-alt'
+            }`}
+          >
+            {category}
+          </button>
         ))}
       </div>
       
-      {/* I can add more filters here later, like location or price range */}
+      <div className="mt-8 pt-6 border-t border-ui-border">
+        <h4 className="font-bold text-xs uppercase tracking-widest text-ui-muted mb-4">Price Range</h4>
+        <div className="px-2">
+            <input type="range" className="w-full accent-brand" min="0" max="100" />
+            <div className="flex justify-between mt-2 text-[10px] font-bold text-ui-muted">
+                <span>$0</span>
+                <span>$500+</span>
+            </div>
+        </div>
+      </div>
     </div>
   );
 };

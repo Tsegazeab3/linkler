@@ -82,6 +82,14 @@ export const changePassword = (oldPassword, newPassword) => {
   });
 };
 
+export const requestPasswordReset = (email) => {
+  return api.post('accounts/password-reset/', { email });
+};
+
+export const confirmPasswordReset = (token, newPassword) => {
+  return api.post('accounts/password-reset/confirm/', { token, new_password: newPassword });
+};
+
 // Posts & Trips
 export const getPosts = () => api.get('posts/');
 export const getPost = (postId) => api.get(`posts/${postId}/`);
@@ -89,8 +97,12 @@ export const getTrips = () => api.get('posts/trips/');
 export const createTrip = (tripData) => api.post('posts/trips/', tripData);
 
 // Guides & Promotions
-export const getGuides = (type = 'guide') => api.get(`accounts/guides/?type=${type}`);
-export const getPromotions = () => api.get('promotions/');
+export const getGuides = (type = 'guide', search = '', category = '') => {
+  return api.get(`accounts/guides/?type=${type}&search=${encodeURIComponent(search)}&category=${encodeURIComponent(category)}`);
+};
+export const getPromotions = (search = '', category = '') => {
+  return api.get(`promotions/?search=${encodeURIComponent(search)}&category=${encodeURIComponent(category)}`);
+};
 export const getExperiences = () => api.get('accounts/experiences/');
 export const createExperience = (data) => api.post('accounts/experiences/', data, {
   headers: { 'Content-Type': 'multipart/form-data' }
@@ -98,7 +110,7 @@ export const createExperience = (data) => api.post('accounts/experiences/', data
 export const createPromotion = (data) => api.post('promotions/', data, {
   headers: { 'Content-Type': 'multipart/form-data' }
 });
-export const getUserDetail = (userId) => api.get(`accounts/${userId}/`);
+export const getUserDetail = (username) => api.get(`accounts/${username}/`);
 export const searchUsers = (query) => api.get(`accounts/search/?q=${encodeURIComponent(query)}`);
 export const getPromotionDetail = (id) => api.get(`promotions/${id}/`);
 
@@ -118,10 +130,11 @@ export const sendMessage = (conversationId, data) => {
 };
 export const markChatAsRead = (conversationId) => api.patch(`chat/conversations/${conversationId}/read/`);
 export const createDM = (recipientId) => api.post('chat/conversations/', { type: 'dm', recipient_id: recipientId });
+export const createGroup = (name, memberIds) => api.post('chat/conversations/', { type: 'group', name, member_ids: memberIds });
 
 // Social
-export const followUser = (userId) => api.post(`accounts/${userId}/follow/`);
-export const unfollowUser = (userId) => api.delete(`accounts/${userId}/unfollow/`);
+export const followUser = (username) => api.post(`accounts/${username}/follow/`);
+export const unfollowUser = (username) => api.delete(`accounts/${username}/unfollow/`);
 
 // Post Interactions
 export const toggleLike = (postId) => api.post(`posts/${postId}/like/`);

@@ -21,6 +21,16 @@ function SignInPage() {
   const handleSubmit = (event) => {
     event.preventDefault();
     setError(null);
+
+    if (!email.trim() || !password.trim()) {
+      const msg = "Please enter both email and password.";
+      setError(msg);
+      toast.error("Required Fields", {
+        description: msg,
+      });
+      return;
+    }
+
     setLoading(true);
 
     apiLogin(email, password)
@@ -105,9 +115,9 @@ function SignInPage() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password" className="text-ui-text-main">Password</Label>
-                  <a href="#" className="text-sm font-medium text-brand hover:underline">
+                  <Link to="/forgot-password" title="Forgot password?" className="text-sm font-medium text-brand hover:underline">
                     Forgot password?
-                  </a>
+                  </Link>
                 </div>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">

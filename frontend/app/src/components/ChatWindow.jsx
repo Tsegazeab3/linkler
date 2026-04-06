@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import useChatWebSocket from '../hooks/useChatWebSocket';
 
-const ChatWindow = ({ chat, type, onClose, index }) => {
+const ChatWindow = ({ chat, type, onClose, index, onOpenChat }) => {
   const navigate = useNavigate();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
@@ -177,13 +177,13 @@ const ChatWindow = ({ chat, type, onClose, index }) => {
               {msg.attachment && (
                 <div className="mb-2">
                   {msg.attachment.match(/\.(jpeg|jpg|gif|png|webp)(\?|#|$)/i) != null ? (
-                    <img src={msg.attachment} alt="attachment" className="rounded-md max-w-full h-auto max-h-48 object-cover" />
+                    <img src={msg.attachment} alt="attachment" className="rounded-lg max-w-full h-auto max-h-48 object-cover shadow-sm" />
                   ) : (
-                    <a href={msg.attachment} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 p-2 bg-ui-text-main/10 rounded overflow-hidden">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <a href={msg.attachment} target="_blank" rel="noopener noreferrer" className={`flex items-center gap-2 p-2 rounded-lg overflow-hidden ${msg.sender_username !== chat.name ? 'bg-white/10' : 'bg-ui-bg/50'}`}>
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
                       </svg>
-                      <span className="text-xs truncate block max-w-[150px]">{msg.attachment.split('/').pop()}</span>
+                      <span className="text-[10px] font-bold truncate block max-w-[120px]">{msg.attachment.split('/').pop()}</span>
                     </a>
                   )}
                 </div>
@@ -330,7 +330,7 @@ const ChatWindow = ({ chat, type, onClose, index }) => {
     >
       <div 
         className="flex items-center p-2 border-b border-ui-border cursor-pointer flex-shrink-0 hover:bg-ui-bg transition-colors"
-        onClick={() => setIsMinimized(!isMinimized)}
+        onClick={() => onOpenChat && onOpenChat(chat, type)}
       >
         <Avatar className="w-8 h-8 mr-3 border border-ui-border">
           <AvatarImage src={chat.avatarUrl} alt={chat.name} className="object-cover" />

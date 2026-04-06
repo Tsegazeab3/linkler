@@ -91,3 +91,10 @@ class CustomLoginSerializer(LoginSerializer):
     def validate(self, attrs):
         print(f"DEBUG: Backend received login attempt: {attrs}")
         return super().validate(attrs)
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    token = serializers.CharField()
+    new_password = serializers.CharField(min_length=8)

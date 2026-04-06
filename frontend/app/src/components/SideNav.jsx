@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { getConversations } from '../services/api';
+import { useData } from '../context/DataContext';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -88,12 +88,12 @@ const PreviewList = ({ items, renderItem, emptyMessage }) => (
 );
 
 
-const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClick, onClosePanel, onOpenSearch }) => {
+const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClick, onClosePanel, onOpenSearch, selectedUser }) => {
   const { user, logout, isAuthenticated } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { conversations, loadingConversations } = useData();
   const location = useLocation();
-  const [conversations, setConversations] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [pushEnabled, setPushEnabled] = useState(true);
 
@@ -102,17 +102,7 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
     setSearchQuery('');
   }, [selectedNavItemId]);
 
-  useEffect(() => {
-    if (isAuthenticated && (selectedNavItemId === 3 || selectedNavItemId === 4)) {
-      setLoading(true);
-      getConversations()
-        .then(res => setConversations(res.data))
-        .catch(err => console.error('Chat error:', err))
-        .finally(() => setLoading(false));
-    }
-  }, [isAuthenticated, selectedNavItemId]);
-  
-  const totalUnread = conversations.reduce((acc, conv) => acc + (conv.unread_count || 0), 0);
+  const totalUnread = Array.isArray(conversations) ? conversations.reduce((acc, conv) => acc + (conv.unread_count || 0), 0) : 0;
   
   const navItems = [
     { id: 1, icon: SvgHome, name: 'Home', type: 'link', href: '/app' },
@@ -129,7 +119,38 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
   const selectedNavItem = navItems.find(item => item.id === selectedNavItemId);
 
   const renderPanelContent = () => {
-    if (!selectedNavItem && selectedNavItemId !== 'user_profile') return null;
+    if (!selectedNavItem && selectedNavItemId !== 'user_profile' && selectedNavItemId !== 'peer_profile') return null;
+
+    if (selectedNavItemId === 'peer_profile' && selectedUser) {
+      return (
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <div className="p-5 bg-gradient-to-br from-brand-light to-accent-indigo/10 rounded-2xl border border-brand/20 shadow-sm">
+            <div className="space-y-5">
+              <div className="flex items-center space-x-4">
+                <Avatar className="w-16 h-16 border-2 border-ui-white shadow-sm text-2xl font-bold text-brand bg-ui-white">
+                  <AvatarImage src={selectedUser.profile_picture || selectedUser.avatar} alt={selectedUser.username || selectedUser.name} className="object-cover" />
+                  <AvatarFallback>{(selectedUser.username || selectedUser.name || 'U').charAt(0).toUpperCase()}</AvatarFallback>
+                </Avatar>
+                <div className="overflow-hidden">
+                  <h4 className="text-ui-text-main font-bold text-lg truncate">{selectedUser.username || selectedUser.name}</h4>
+                  <p className="text-ui-text-secondary text-sm truncate">{selectedUser.account_type || 'Traveler'}</p>
+                </div>
+              </div>
+              
+              <div className="pt-2">
+                <p className="text-sm text-ui-text-secondary italic">"{selectedUser.bio || 'No bio yet.'}"</p>
+              </div>
+
+              <div className="grid grid-cols-1 gap-2 pt-2">
+                <Link to={`/app/profile/${selectedUser.username || selectedUser.name}`} onClick={onClosePanel} className="text-center py-2.5 bg-brand text-white rounded-xl font-bold shadow-md hover:bg-brand-hover transition-colors text-sm">
+                  View Full Profile
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
 
     if (selectedNavItemId === 'user_profile') {
       return (
@@ -149,7 +170,7 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
                 </div>
                 
                 <div className="grid grid-cols-2 gap-2 pt-2">
-                  <Link to={`/app/profile/${user.id}`} onClick={onClosePanel} className="text-center py-2 bg-ui-white text-ui-text-secondary rounded-xl font-semibold shadow-sm border border-ui-border hover:bg-ui-bg-alt transition-colors text-sm">
+                  <Link to={`/app/profile/${user.username}`} onClick={onClosePanel} className="text-center py-2 bg-ui-white text-ui-text-secondary rounded-xl font-semibold shadow-sm border border-ui-border hover:bg-ui-bg-alt transition-colors text-sm">
                     View Profile
                   </Link>
                   <Link to="/app/settings" onClick={onClosePanel} className="text-center py-2 bg-ui-white text-ui-text-secondary rounded-xl font-semibold shadow-sm border border-ui-border hover:bg-ui-bg-alt transition-colors text-sm">
@@ -185,7 +206,7 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
       );
     }
 
-    if (loading) {
+    if (loadingConversations) {
       return (
         <div className="space-y-3 animate-pulse">
           {[1,2,3,4].map(i => (
@@ -201,8 +222,8 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
       );
     }
 
-    const filteredDMs = conversations.filter(c => c.type === 'dm' && (c.name?.toLowerCase().includes(searchQuery.toLowerCase()) || !searchQuery));
-    const filteredGroups = conversations.filter(c => c.type === 'group' && (c.name?.toLowerCase().includes(searchQuery.toLowerCase()) || !searchQuery));
+    const filteredDMs = Array.isArray(conversations) ? conversations.filter(c => c.type === 'dm' && (c.name?.toLowerCase().includes(searchQuery.toLowerCase()) || !searchQuery)) : [];
+    const filteredGroups = Array.isArray(conversations) ? conversations.filter(c => c.type === 'group' && (c.name?.toLowerCase().includes(searchQuery.toLowerCase()) || !searchQuery)) : [];
 
     const EmptyState = ({ icon, title, desc, action }) => (
       <div className="text-center py-10 px-4 animate-in fade-in duration-500">
@@ -215,8 +236,8 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
       </div>
     );
 
-    const SearchBar = ({ placeholder }) => (
-      <div className="mb-4 relative">
+    const SearchBar = ({ placeholder, className = "" }) => (
+      <div className={`relative ${className}`}>
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
           <svg className="h-4 w-4 text-ui-muted" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
@@ -236,7 +257,7 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
       case 'Messages':
         return (
           <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <SearchBar placeholder="Search messages..." />
+            <SearchBar placeholder="Search messages..." className="mb-4" />
             <PreviewList 
               items={filteredDMs} 
               renderItem={conv => <ChatPreview key={conv.id} conversation={conv} onSelect={() => onOpenChat(conv, 'dm')} />} 
@@ -246,7 +267,7 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
                   title="No messages yet"
                   desc="Start a conversation with fellow travelers."
                   action={
-                    <Button>
+                    <Button onClick={() => onPanelItemClick(5)}>
                       Find Travelers
                     </Button>
                   }
@@ -273,7 +294,7 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
       case 'Groups':
         return (
           <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <SearchBar placeholder="Search groups..." />
+            <SearchBar placeholder="Search groups..." className="mb-4" />
             <PreviewList 
               items={filteredGroups} 
               renderItem={conv => (
@@ -287,8 +308,8 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
                   title="No Groups Joined"
                   desc="Join a group to connect with travelers going to similar destinations."
                   action={
-                    <Button>
-                      Discover Groups
+                    <Button asChild>
+                        <Link to="/app" onClick={onClosePanel}>Go to Home to Create Group</Link>
                     </Button>
                   }
                 />
@@ -302,7 +323,7 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
             <div className="bg-ui-bg-alt/50 p-4 rounded-2xl space-y-3 border border-ui-border">
               <h4 className="text-ui-muted font-bold text-xs uppercase tracking-wider mb-2">Account</h4>
               
-              <button className="w-full text-left bg-ui-white px-4 py-3 rounded-xl border border-ui-border text-ui-text-secondary hover:text-ui-text-main flex justify-between items-center shadow-sm hover:shadow transition-all group">
+              <button onClick={() => navigate('/app/settings')} className="w-full text-left bg-ui-white px-4 py-3 rounded-xl border border-ui-border text-ui-text-secondary hover:text-ui-text-main flex justify-between items-center shadow-sm hover:shadow transition-all group">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-brand-light flex items-center justify-center text-brand">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
@@ -424,24 +445,8 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
           </ul>
         </nav>
 
-        {/* Theme Toggle & User Profile Section */}
+        {/* User Profile Section */}
         <div className="mt-auto pb-4 flex flex-col items-center border-t border-ui-border pt-4 space-y-4">
-          <button
-            onClick={toggleTheme}
-            className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-ui-bg-alt text-ui-text-secondary transition-colors"
-            title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-          >
-            {theme === 'light' ? (
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-              </svg>
-            ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4-9H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-              </svg>
-            )}
-          </button>
-
           {isAuthenticated ? (
             user ? (
               <div

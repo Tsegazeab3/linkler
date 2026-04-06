@@ -6,30 +6,42 @@ import ExperiencePreviewCard from '../components/ExperiencePreviewCard';
 import LeftSidebarFilter from '../components/LeftSidebarFilter';
 import { getGuides, getExperiences } from '../services/api';
 
-const guideFilterOptions = ['Certified Guides', 'Local Experts', 'Family Friendly', 'Accessible', 'Budget Friendly', 'Walking Tours', 'Museums', 'Nightlife', 'Food Tasting', 'History'];
+const guideFilterOptions = ['USA', 'UK', 'France', 'Germany', 'Italy', 'Spain', 'Japan', 'China', 'Canada', 'Australia'];
 
 const NewGuidesPage = () => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('guide'); // 'guide', 'service', 'experience'
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeCategory, setActiveCategory] = useState('');
 
   useEffect(() => {
     setLoading(true);
-    const fetchData = activeTab === 'experience' 
-      ? getExperiences() 
-      : getGuides(activeTab);
-
-    fetchData
-      .then(response => {
-        setItems(response.data);
-      })
-      .catch(err => {
-        console.error(`Error fetching ${activeTab}s:`, err);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, [activeTab]);
+    
+    if (activeTab === 'experience') {
+        getExperiences()
+          .then(response => {
+            setItems(response.data);
+          })
+          .catch(err => {
+            console.error(`Error fetching experiences:`, err);
+          })
+          .finally(() => {
+            setLoading(false);
+          });
+    } else {
+        getGuides(activeTab, searchQuery, activeCategory)
+          .then(response => {
+            setItems(response.data);
+          })
+          .catch(err => {
+            console.error(`Error fetching ${activeTab}s:`, err);
+          })
+          .finally(() => {
+            setLoading(false);
+          });
+    }
+  }, [activeTab, searchQuery, activeCategory]);
 
   const tabs = [
     { id: 'guide', label: 'Guides', icon: '🗺️' },
@@ -53,7 +65,11 @@ const NewGuidesPage = () => {
               {tabs.map(tab => (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => {
+                    setActiveTab(tab.id);
+                    setSearchQuery('');
+                    setActiveCategory('');
+                  }}
                   className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${
                     activeTab === tab.id 
                       ? 'bg-ui-white text-brand shadow-md scale-[1.02]' 
@@ -69,6 +85,9 @@ const NewGuidesPage = () => {
             <FilterComponent 
               filterOptions={guideFilterOptions}
               placeholder={`Search for ${activeTab}s...`}
+              onSearchChange={setSearchQuery}
+              onCategoryChange={setActiveCategory}
+              activeCategory={activeCategory}
             />
 
             {loading ? (
@@ -82,10 +101,11 @@ const NewGuidesPage = () => {
                     activeTab === 'experience' ? (
                       <ExperiencePreviewCard key={item.id} experience={item} />
                     ) : (
-                      <Link to={`/app/guides/${item.id}`} key={item.id}>
+                      <Link to={`/app/guides/${item.username}`} key={item.id}>
                         <GuidePreviewCard guide={{
                           id: item.id,
                           user_id: item.id,
+                          username: item.username,
                           is_following: item.is_following,
                           name: item.username,
                           location: `${item.city || ''}, ${item.country || ''}`,
@@ -99,7 +119,7 @@ const NewGuidesPage = () => {
                   ))
                 ) : (
                   <div className="col-span-full text-center py-20 bg-ui-white rounded-3xl border-2 border-dashed border-ui-border">
-                    <p className="text-ui-text-secondary font-medium italic">No {activeTab}s found in this category.</p>
+                    <p className="text-ui-text-secondary font-medium italic">No {activeTab}s found.</p>
                   </div>
                 )}
               </div>
@@ -113,4 +133,3 @@ const NewGuidesPage = () => {
 };
 
 export default NewGuidesPage;
-

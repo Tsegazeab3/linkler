@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 
 function SignUpPage() {
   const [step, setStep] = useState(1);
@@ -46,6 +47,9 @@ function SignUpPage() {
     
     if (stepErrors.length > 0) {
       setErrors(stepErrors);
+      toast.error("Account Details Required", {
+        description: stepErrors[0],
+      });
     } else {
       setStep(s => s + 1);
     }

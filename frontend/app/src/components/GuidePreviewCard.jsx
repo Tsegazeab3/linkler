@@ -14,10 +14,10 @@ const GuidePreviewCard = ({ guide }) => {
     e.preventDefault(); e.stopPropagation();
     try {
       if (isFollowing) {
-        await unfollowUser(user_id);
+        await unfollowUser(name); // name is username here
         setIsFollowing(false);
       } else {
-        await followUser(user_id);
+        await followUser(name);
         setIsFollowing(true);
       }
     } catch (err) {

@@ -16,6 +16,10 @@ const SettingsPage = () => {
   const [profileData, setProfileData] = useState({
     username: '',
     bio: '',
+    phone_no: '',
+    city: '',
+    country: '',
+    nationality: '',
   });
   const [passwordData, setPasswordData] = useState({
     oldPassword: '',
@@ -42,6 +46,10 @@ const SettingsPage = () => {
       setProfileData({
         username: user.username || '',
         bio: user.bio || '',
+        phone_no: user.phone_no || '',
+        city: user.city || '',
+        country: user.country || '',
+        nationality: user.nationality || '',
       });
       setPreviewImage(user.profile_picture || null);
     }
@@ -73,16 +81,16 @@ const SettingsPage = () => {
     setMessage({ type: '', text: '' });
 
     try {
-      let dataToSend;
+      let dataToSend = new FormData();
+      dataToSend.append('username', profileData.username);
+      dataToSend.append('bio', profileData.bio);
+      dataToSend.append('phone_no', profileData.phone_no);
+      dataToSend.append('city', profileData.city);
+      dataToSend.append('country', profileData.country);
+      dataToSend.append('nationality', profileData.nationality);
       
-      // Use FormData if there's an image, else JSON
       if (profileImage) {
-        dataToSend = new FormData();
-        dataToSend.append('username', profileData.username);
-        dataToSend.append('bio', profileData.bio);
         dataToSend.append('profile_picture', profileImage);
-      } else {
-        dataToSend = profileData;
       }
 
       const res = await updateProfile(dataToSend);
@@ -152,7 +160,7 @@ const SettingsPage = () => {
           <Card>
             <CardHeader>
               <CardTitle>Profile Details</CardTitle>
-              <CardDescription>Update your public profile information.</CardDescription>
+              <CardDescription>Update your public profile and business information.</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={submitProfileUpdate} className="space-y-6 mt-4">
@@ -200,14 +208,54 @@ const SettingsPage = () => {
                       onChange={handleProfileChange}
                     />
                   </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>City</Label>
+                      <Input
+                        name="city"
+                        value={profileData.city}
+                        onChange={handleProfileChange}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Country</Label>
+                      <Input
+                        name="country"
+                        value={profileData.country}
+                        onChange={handleProfileChange}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Phone Number</Label>
+                      <Input
+                        name="phone_no"
+                        value={profileData.phone_no}
+                        onChange={handleProfileChange}
+                        placeholder="+1 234 567 890"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Nationality</Label>
+                      <Input
+                        name="nationality"
+                        value={profileData.nationality}
+                        onChange={handleProfileChange}
+                      />
+                    </div>
+                  </div>
+
                   <div className="space-y-2">
-                    <Label>Bio</Label>
+                    <Label>Bio / Business Description</Label>
                     <textarea
                       name="bio"
                       rows="4"
                       value={profileData.bio}
                       onChange={handleProfileChange}
-                      placeholder="Tell other travelers about yourself..."
+                      placeholder="Tell other travelers about yourself or your business..."
                       className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
                     ></textarea>
                   </div>

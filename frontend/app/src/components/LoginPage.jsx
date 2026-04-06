@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import RightArrowIcon from './RightArrowIcon';
 
 function LoginPage() {
@@ -53,9 +54,9 @@ function LoginPage() {
             </div>
 
             <div className="text-sm">
-              <a href="#" className="font-medium text-accent-indigo hover:text-accent-indigo/80">
+              <Link to="/forgot-password" title="Forgot your password?" className="font-medium text-accent-indigo hover:text-accent-indigo/80">
                 Forgot your password?
-              </a>
+              </Link>
             </div>
           </div>
 

@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const GuideDetailPage = () => {
-    const { id } = useParams();
+    const { username } = useParams();
     const [guide, setGuide] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -17,7 +17,7 @@ const GuideDetailPage = () => {
 
     useEffect(() => {
         setLoading(true);
-        getUserDetail(id)
+        getUserDetail(username)
             .then(res => {
                 setGuide(res.data);
                 setIsFollowing(res.data.is_following);
@@ -29,7 +29,7 @@ const GuideDetailPage = () => {
             .finally(() => {
                 setLoading(false);
             });
-    }, [id]);
+    }, [username]);
 
     const handleChat = async () => {
         try {
@@ -43,10 +43,10 @@ const GuideDetailPage = () => {
     const handleFollow = async () => {
         try {
             if (isFollowing) {
-                await unfollowUser(guide.id);
+                await unfollowUser(guide.username);
                 setIsFollowing(false);
             } else {
-                await followUser(guide.id);
+                await followUser(guide.username);
                 setIsFollowing(true);
             }
         } catch (err) {

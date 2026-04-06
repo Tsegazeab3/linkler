@@ -1,30 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import PostCard from '../components/PostCard';
-import { getPosts } from '../services/api';
+import { useData } from '../context/DataContext';
 import { Skeleton } from "@/components/ui/skeleton";
-import { toast } from "sonner";
 
 const IndexPage = () => {
-  const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { posts, loadingPosts } = useData();
 
-  useEffect(() => {
-    getPosts()
-      .then(response => {
-        setPosts(response.data);
-      })
-      .catch(err => {
-        console.error('Error fetching posts:', err);
-        toast.error("Failed to load posts", {
-          description: "Please check your connection and try again."
-        });
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, []);
-
-  if (loading) {
+  if (loadingPosts && posts.length === 0) {
     return (
       <div className="flex-grow p-4 space-y-6 max-w-sm mx-auto">
         {[1, 2, 3].map((i) => (
@@ -49,10 +31,9 @@ const IndexPage = () => {
 
   return (
     <div className="flex-grow p-2 lg:p-4 overflow-x-hidden">
-      {posts.length > 0 ? (
-        posts.map(post => {
-          // Map backend fields to PostCard props
-          return (
+      <div className="max-w-sm mx-auto space-y-4">
+        {posts.length > 0 ? (
+          posts.map(post => (
             <PostCard
               key={post.id}
               id={post.id}
@@ -70,13 +51,13 @@ const IndexPage = () => {
               isFollowing={post.author?.is_following}
               userBio={post.author?.bio || ''}
             />
-          );
-        })
-      ) : (
-        <div className="text-center py-10">
-          <p className="text-gray-500">No posts yet. Follow people or create one!</p>
-        </div>
-      )}
+          ))
+        ) : (
+          <div className="text-center py-10">
+            <p className="text-gray-500">No posts yet. Follow people or create one!</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

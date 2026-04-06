@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import SideNav from './components/SideNav';
 import ChatWindow from './components/ChatWindow'; // Import the new component
 import FloatingPlusButton from './components/FloatingPlusButton';
 import BottomNav from './components/BottomNav';
 import SearchModal from './components/SearchModal';
+import CreateGroupModal from './components/CreateGroupModal';
 import { Toaster } from "@/components/ui/sonner";
+import { DataProvider } from './context/DataContext';
 
 function App() {
   const navigate = useNavigate();
@@ -13,9 +15,17 @@ function App() {
   const [openChats, setOpenChats] = useState([]);
   const [showSidePanel, setShowSidePanel] = useState(false);
   const [selectedNavItemId, setSelectedNavItemId] = useState(null);
+  const [selectedPeer, setSelectedPeer] = useState(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
 
-  const handlePanelItemClick = (itemId) => {
+  useEffect(() => {
+    const handleOpenGroupModal = () => setIsGroupModalOpen(true);
+    window.addEventListener('open-create-group-modal', handleOpenGroupModal);
+    return () => window.removeEventListener('open-create-group-modal', handleOpenGroupModal);
+  }, []);
+
+  const handlePanelItemClick = (itemId, peerData = null) => {
     if (itemId === null) {
       setShowSidePanel(false);
       return;
@@ -28,7 +38,14 @@ function App() {
       return;
     }
 
-    if (showSidePanel && selectedNavItemId === itemId) {
+    if (itemId === 'peer_profile') {
+        setSelectedPeer(peerData);
+        setSelectedNavItemId('peer_profile');
+        setShowSidePanel(true);
+        return;
+    }
+
+    if (showSidePanel && selectedNavItemId === itemId && itemId !== 'peer_profile') {
       setShowSidePanel(false);
     } else {
       setSelectedNavItemId(itemId);
@@ -65,6 +82,10 @@ function App() {
     setOpenChats(prev => prev.filter(c => !(c.id === id && c.type === type)));
   };
 
+  const handleGroupCreated = (newGroup) => {
+    handleOpenChat(newGroup, 'group');
+  };
+
   // No left margin on mobile, 80px (w-20) on desktop, 400px when side panel is open on desktop
   const mainContentMargin = showSidePanel
     ? 'lg:ml-[400px]'
@@ -73,7 +94,7 @@ function App() {
   const isHome = location.pathname === '/app';
   const isSpecificChat = location.pathname.startsWith('/app/messages/') && location.pathname !== '/app/messages';
 
-  React.useEffect(() => {
+  useEffect(() => {
     // On desktop, if we are in the messages section, ensure the side panel is open to 'Messages' (ID 3)
     if (window.innerWidth >= 1024 && location.pathname.startsWith('/app/messages')) {
       setSelectedNavItemId(3);
@@ -91,6 +112,7 @@ function App() {
           onPanelItemClick={handlePanelItemClick}
           onClosePanel={handleClosePanel}
           onOpenSearch={() => setIsSearchOpen(true)}
+          selectedUser={selectedPeer}
         />
 
         {/* Mobile backdrop overlay when side panel is open */}
@@ -103,11 +125,14 @@ function App() {
         )}
 
         <main className={`flex-1 transition-[margin] duration-300 ease-in-out ${mainContentMargin} pb-16 lg:pb-0 min-w-0 flex flex-col relative`}>
-          {/* Mobile Top Header (only visible on small screens and NOT in specific chat) */}
+          {/* Mobile Top Header */}
           {!isSpecificChat && (
             <div className={`lg:hidden sticky top-0 z-[30] bg-ui-white/95 backdrop-blur-md border-b border-ui-border px-4 py-3 flex items-center ${isHome ? 'justify-between' : 'justify-end'}`}>
               {isHome && (
-                <h1 className="text-xl font-bold bg-gradient-to-r from-brand to-accent-indigo bg-clip-text text-transparent italic font-display">
+                <h1 
+                  onClick={() => handlePanelItemClick('user_profile')}
+                  className="text-xl font-bold bg-gradient-to-r from-brand to-accent-indigo bg-clip-text text-transparent italic font-display cursor-pointer active:scale-95 transition-transform"
+                >
                   Linkler
                 </h1>
               )}
@@ -123,16 +148,24 @@ function App() {
           )}
 
           <div className="flex-1 overflow-y-auto w-full">
-            <Outlet context={{ handleOpenChat }} />
+            <Outlet context={{ 
+                handleOpenChat, 
+                handleOpenPeerProfile: (userData) => handlePanelItemClick('peer_profile', userData) 
+            }} />
           </div>
         </main>
       </div>
 
       <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+      
+      <CreateGroupModal 
+        isOpen={isGroupModalOpen} 
+        onClose={() => setIsGroupModalOpen(false)} 
+        onSuccess={handleGroupCreated}
+      />
 
-      <FloatingPlusButton />
+      {isHome && <FloatingPlusButton />}
 
-      {/* Mobile Navigation - Hidden in specific chat to save space */}
       {!isSpecificChat && (
         <BottomNav
           onPanelItemClick={handlePanelItemClick}
@@ -150,6 +183,7 @@ function App() {
             type={chat.type}
             onClose={handleCloseChat}
             index={index}
+            onOpenChat={(chatData, chatType) => handlePanelItemClick('peer_profile', chatData)}
           />
         ))}
       </div>

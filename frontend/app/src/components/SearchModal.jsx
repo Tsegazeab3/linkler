@@ -60,10 +60,10 @@ function SearchModal({ isOpen, onClose }) {
   const handleFollowToggle = async (targetUser) => {
     try {
       if (targetUser.is_following) {
-        await unfollowUser(targetUser.id);
+        await unfollowUser(targetUser.username);
         setResults(prev => prev.map(u => u.id === targetUser.id ? { ...u, is_following: false, followers_count: u.followers_count - 1 } : u));
       } else {
-        await followUser(targetUser.id);
+        await followUser(targetUser.username);
         setResults(prev => prev.map(u => u.id === targetUser.id ? { ...u, is_following: true, followers_count: u.followers_count + 1 } : u));
       }
     } catch (err) {
@@ -71,9 +71,9 @@ function SearchModal({ isOpen, onClose }) {
     }
   };
 
-  const navigateToProfile = (userId) => {
+  const navigateToProfile = (username) => {
     onClose();
-    navigate(`/user/${userId}`);
+    navigate(`/app/profile/${username}`);
   };
 
   return (
@@ -154,7 +154,7 @@ function SearchModal({ isOpen, onClose }) {
                 <div 
                   key={resultUser.id}
                   className="flex items-center justify-between p-3 rounded-2xl hover:bg-ui-white hover:shadow-sm border border-transparent hover:border-ui-border transition-all cursor-pointer group"
-                  onClick={() => navigateToProfile(resultUser.id)}
+                  onClick={() => navigateToProfile(resultUser.username)}
                 >
                   <div className="flex items-center gap-4 min-w-0">
                     <Avatar className="w-12 h-12 border border-ui-border">

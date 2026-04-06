@@ -24,7 +24,6 @@ class ConversationSerializer(serializers.ModelSerializer):
     members_details = UserSerializer(source='members', many=True, read_only=True)
     last_message = serializers.SerializerMethodField()
     unread_count = serializers.SerializerMethodField()
-    name = serializers.SerializerMethodField()
     current_user_id = serializers.SerializerMethodField()
 
     class Meta:
@@ -35,12 +34,14 @@ class ConversationSerializer(serializers.ModelSerializer):
             'name': {'required': False},
         }
 
-    def get_name(self, obj):
-        if obj.type == 'dm':
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        if instance.type == 'dm':
             user = self.context.get('request').user
-            other_member = obj.members.exclude(id=user.id).first()
-            return other_member.username if other_member else "Unknown"
-        return obj.name
+            if user.is_authenticated:
+                other_member = instance.members.exclude(id=user.id).first()
+                ret['name'] = other_member.username if other_member else "Unknown"
+        return ret
 
     def get_current_user_id(self, obj):
         user = self.context.get('request').user

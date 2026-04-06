@@ -42,11 +42,11 @@ const PostCard = ({
     setFollowLoading(true);
     try {
       if (isFollowing) {
-        await unfollowUser(userId);
+        await unfollowUser(username);
         setIsFollowing(false);
         toast.info(`Unfollowed ${username}`);
       } else {
-        await followUser(userId);
+        await followUser(username);
         setIsFollowing(true);
         toast.success(`Following ${username}`);
       }
@@ -127,14 +127,14 @@ const PostCard = ({
     <Card className="w-full max-w-sm mx-auto my-4 overflow-hidden border-border/50 shadow-sm hover:shadow-md transition-shadow">
       {/* User Info Section */}
       <CardHeader className="flex flex-row items-center p-3 space-y-0">
-        <Avatar className="w-10 h-10 mr-3 border border-border cursor-pointer" onClick={() => navigate(`/app/profile/${userId}`)}>
+        <Avatar className="w-10 h-10 mr-3 border border-border cursor-pointer" onClick={() => navigate(`/app/profile/${username}`)}>
           <AvatarImage src={userProfilePic} alt={`${username}'s profile`} className="object-cover" />
           <AvatarFallback>{username?.charAt(0).toUpperCase()}</AvatarFallback>
         </Avatar>
-        <div className="flex-grow min-w-0">
-          <div className="font-semibold text-sm md:text-base truncate leading-tight cursor-pointer" onClick={() => navigate(`/app/profile/${userId}`)}>{username}</div>
+          <div className="flex-grow min-w-0">
+          <div className="font-semibold text-sm md:text-base truncate leading-tight cursor-pointer" onClick={() => navigate(`/app/profile/${username}`)}>{username}</div>
           {userBio && (
-            <p className="text-muted-foreground truncate text-xs mt-0.5">
+            <p className="text-muted-foreground truncate text-xs mt-0.5 cursor-pointer" onClick={() => navigate(`/app/profile/${username}`)}>
               {userBio}
             </p>
           )}
@@ -239,7 +239,7 @@ const PostCard = ({
         {(caption && mediaUrl) && (
           <div className="text-sm text-foreground/90 w-full px-0.5 mb-1">
             <p className={isCaptionExpanded ? '' : 'line-clamp-2'}>
-              <span className="font-bold mr-1.5 hover:underline cursor-pointer" onClick={() => navigate(`/app/profile/${userId}`)}>{username}</span>
+              <span className="font-bold mr-1.5 hover:underline cursor-pointer" onClick={() => navigate(`/app/profile/${username}`)}>{username}</span>
               {caption}
             </p>
             {caption.length > 80 && (

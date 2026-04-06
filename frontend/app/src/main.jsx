@@ -27,9 +27,12 @@ import PromotionDetailPage from './pages/PromotionDetailPage.jsx';
 import ChatPage from './pages/ChatPage.jsx';
 import MessagesPage from './pages/MessagesPage.jsx';
 import SettingsPage from './pages/SettingsPage.jsx';
+import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx';
+import ResetPasswordPage from './pages/ResetPasswordPage.jsx';
 import CreatePostModal from './components/CreatePostModal.jsx';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { DataProvider } from './context/DataContext';
 import AuthGuard from './components/AuthGuard';
 
 function NotFound() {
@@ -60,6 +63,8 @@ function AppRouter() {
         <Route path="/" element={<HomeRedirect />} />
         <Route path="/signin" element={<SignInPage />} />
         <Route path="/signup" element={<SignUpPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/complete-profile" element={<AuthGuard><ProfileCompletionPage /></AuthGuard>} />
         
         {/* Protected App Routes */}
@@ -67,9 +72,9 @@ function AppRouter() {
           <Route index element={<IndexPage />} />
           <Route path="travelers" element={<FellowTravelersPage />} />
           <Route path="guides" element={<NewGuidesPage />} />
-          <Route path="guides/:id" element={<GuideDetailPage />} />
+          <Route path="guides/:username" element={<GuideDetailPage />} />
           <Route path="posts/:postId" element={<PostDetailPage />} />
-          <Route path="profile/:userId" element={<UserProfilePage />} />
+          <Route path="profile/:username" element={<UserProfilePage />} />
           <Route path="promotions" element={<PromotionsPage />} />
           <Route path="promotions/:id" element={<PromotionDetailPage />} />
           <Route path="messages" element={<MessagesPage />}>
@@ -98,9 +103,11 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ThemeProvider>
       <AuthProvider>
-        <BrowserRouter>
-          <AppRouter />
-        </BrowserRouter>
+        <DataProvider>
+          <BrowserRouter>
+            <AppRouter />
+          </BrowserRouter>
+        </DataProvider>
       </AuthProvider>
     </ThemeProvider>
   </StrictMode>,
