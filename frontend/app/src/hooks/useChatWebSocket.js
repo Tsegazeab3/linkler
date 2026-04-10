@@ -11,6 +11,10 @@ const useChatWebSocket = (conversationId) => {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const host = window.location.host;
     const token = localStorage.getItem('token');
+    if (!token || token === 'null' || token === 'undefined') {
+      console.warn('No valid token found, skipping WebSocket connection');
+      return;
+    }
     const socketUrl = `${protocol}//${host}/ws/chat/${conversationId}/?token=${token}`;
 
     const socket = new WebSocket(socketUrl);

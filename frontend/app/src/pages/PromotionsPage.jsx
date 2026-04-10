@@ -17,7 +17,8 @@ const PromotionsPage = () => {
         setLoading(true);
         getPromotions(searchQuery, activeCategory)
             .then(response => {
-                setPromotions(response.data);
+                const data = Array.isArray(response.data) ? response.data : (response.data.results || []);
+                setPromotions(data);
             })
             .catch(err => {
                 console.error('Error fetching promotions:', err);

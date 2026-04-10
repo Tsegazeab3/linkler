@@ -30,7 +30,7 @@ const ChatPage = () => {
   const { isConnected, sendEvent, lastEvent } = useChatWebSocket(conversationId);
 
   useEffect(() => {
-    if (!lastEvent) return;
+    if (!lastEvent || !user) return;
 
     if (lastEvent.type === 'chat_message') {
       const message = lastEvent.message;
@@ -40,7 +40,7 @@ const ChatPage = () => {
         return [...prev, message];
       });
       // Send read receipt if this page is active and message is from others
-      if (message.sender_username !== user?.username) {
+      if (message.sender_username !== user.username) {
         sendEvent('mark_read', { message_id: message.id });
       }
     } else if (lastEvent.type === 'typing') {
@@ -54,12 +54,24 @@ const ChatPage = () => {
         m.id === lastEvent.message.id ? { ...m, text: lastEvent.message.text, is_edited: true } : m
       ));
     }
-  }, [lastEvent, user?.username, sendEvent]);
+  }, [lastEvent, user, sendEvent]);
+
+  // Handle marking existing unread messages as read when connected
+  useEffect(() => {
+    if (isConnected && messages.length > 0 && user) {
+      const unreadFromOthers = messages.filter(m => !m.is_read && m.sender_username !== user.username);
+      if (unreadFromOthers.length > 0) {
+        unreadFromOthers.forEach(m => sendEvent('mark_read', { message_id: m.id }));
+      }
+    }
+  }, [isConnected, messages.length, user, sendEvent]);
 
   const fetchData = async () => {
     try {
       const convs = await getConversations();
-      const currentChat = convs.data.find(c => c.id === parseInt(conversationId));
+      // Handle potential pagination (results key) or direct array
+      const conversations = Array.isArray(convs.data) ? convs.data : (convs.data.results || []);
+      const currentChat = conversations.find(c => c.id === parseInt(conversationId));
       if (currentChat) {
         setChat(currentChat);
         if (currentChat.unread_count > 0) {
@@ -68,12 +80,9 @@ const ChatPage = () => {
       }
 
       const msgRes = await getMessages(conversationId);
-      setMessages(msgRes.data);
-      
-      // Also notify server that we've read everything
-      const unreadFromOthers = msgRes.data.filter(m => !m.is_read && m.sender_username !== user?.username);
-      unreadFromOthers.forEach(m => sendEvent('mark_read', { message_id: m.id }));
-
+      // Messages might also be paginated
+      const messagesData = Array.isArray(msgRes.data) ? msgRes.data : (msgRes.data.results || []);
+      setMessages(messagesData);
     } catch (err) {
       console.error('Chat error:', err);
     } finally {

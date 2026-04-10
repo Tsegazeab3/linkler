@@ -25,10 +25,11 @@ class ConversationSerializer(serializers.ModelSerializer):
     last_message = serializers.SerializerMethodField()
     unread_count = serializers.SerializerMethodField()
     current_user_id = serializers.SerializerMethodField()
+    current_user_username = serializers.SerializerMethodField()
 
     class Meta:
         model = Conversation
-        fields = ['id', 'type', 'name', 'avatar', 'members', 'members_details', 'last_message', 'unread_count', 'created_at', 'updated_at', 'current_user_id']
+        fields = ['id', 'type', 'name', 'avatar', 'members', 'members_details', 'last_message', 'unread_count', 'created_at', 'updated_at', 'current_user_id', 'current_user_username']
         extra_kwargs = {
             'members': {'required': False},
             'name': {'required': False},
@@ -46,6 +47,10 @@ class ConversationSerializer(serializers.ModelSerializer):
     def get_current_user_id(self, obj):
         user = self.context.get('request').user
         return user.id if user.is_authenticated else None
+
+    def get_current_user_username(self, obj):
+        user = self.context.get('request').user
+        return user.username if user.is_authenticated else None
 
     def get_last_message(self, obj):
         last_msg = obj.messages.last()

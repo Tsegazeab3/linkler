@@ -11,7 +11,8 @@ const FellowTravelersPage = () => {
   useEffect(() => {
     getTrips()
       .then(response => {
-        setTrips(response.data);
+        const data = Array.isArray(response.data) ? response.data : (response.data.results || []);
+        setTrips(data);
       })
       .catch(err => {
         console.error('Error fetching trips:', err);

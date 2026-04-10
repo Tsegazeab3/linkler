@@ -31,7 +31,7 @@ const ChatWindow = ({ chat, type, onClose, index, onOpenChat }) => {
   };
 
   useEffect(() => {
-    if (!lastEvent) return;
+    if (!lastEvent || !chat) return;
 
     if (lastEvent.type === 'chat_message') {
       const message = lastEvent.message;
@@ -40,7 +40,8 @@ const ChatWindow = ({ chat, type, onClose, index, onOpenChat }) => {
         if (exists) return prev;
         return [...prev, message];
       });
-      if (!isMinimized && message.sender_username === chat.name) {
+      // Correctly mark as read if message is from someone else
+      if (!isMinimized && message.sender_username !== (chat.current_user_username || '')) {
         sendEvent('mark_read', { message_id: message.id });
       }
     } else if (lastEvent.type === 'typing') {
@@ -54,24 +55,31 @@ const ChatWindow = ({ chat, type, onClose, index, onOpenChat }) => {
         m.id === lastEvent.message.id ? { ...m, text: lastEvent.message.text, is_edited: true } : m
       ));
     }
-  }, [lastEvent, isMinimized, chat.name, sendEvent]);
+  }, [lastEvent, isMinimized, chat, sendEvent]);
 
-  const fetchMessages = () => {
+  const fetchMessages = useCallback(() => {
+    if (!chat?.id) return;
     getMessages(chat.id)
       .then(res => {
-        setMessages(res.data);
-        const unreadMessages = res.data.filter(m => !m.is_read && m.sender_username === chat.name);
-        if (unreadMessages.length > 0) {
+        const data = Array.isArray(res.data) ? res.data : (res.data.results || []);
+        setMessages(data);
+        const unreadFromOthers = data.filter(m => !m.is_read && m.sender_username !== (chat.current_user_username || ''));
+        if (unreadFromOthers.length > 0) {
            markChatAsRead(chat.id);
-           unreadMessages.forEach(m => sendEvent('mark_read', { message_id: m.id }));
+           // Only send one mark_read for the last one if server handles it, 
+           // but here we send for each if that's how backend works. 
+           // Better to just notify about the latest or use the API.
+           if (isConnected) {
+             unreadFromOthers.forEach(m => sendEvent('mark_read', { message_id: m.id }));
+           }
         }
       })
       .catch(err => console.error('Error fetching messages:', err));
-  };
+  }, [chat?.id, chat?.current_user_username, isConnected, sendEvent]);
 
   useEffect(() => {
     fetchMessages();
-  }, [chat.id]);
+  }, [fetchMessages]);
 
   useEffect(() => {
     if (scrollRef.current) {

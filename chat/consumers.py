@@ -11,6 +11,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.conversation_id = self.scope['url_route']['kwargs']['conversation_id']
         self.room_group_name = f'chat_{self.conversation_id}'
+        self.user = self.scope.get('user')
+
+        if not self.user or not self.user.is_authenticated:
+            await self.close()
+            return
+
+        # Check if user is a member of the conversation
+        if not await self.is_member(self.user, self.conversation_id):
+            await self.close()
+            return
 
         # Join room group
         await self.channel_layer.group_add(
@@ -22,16 +32,25 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def disconnect(self, close_code):
         # Leave room group
-        await self.channel_layer.group_discard(
-            self.room_group_name,
-            self.channel_name
-        )
+        if hasattr(self, 'room_group_name'):
+            await self.channel_layer.group_discard(
+                self.room_group_name,
+                self.channel_name
+            )
 
     # Receive message from WebSocket
     async def receive(self, text_data):
-        text_data_json = json.loads(text_data)
+        try:
+            text_data_json = json.loads(text_data)
+        except json.JSONDecodeError:
+            return
+
         message_type = text_data_json.get('type', 'chat_message')
-        sender_id = self.scope['user'].id
+        
+        if not self.user or not self.user.is_authenticated:
+            return
+        
+        sender_id = self.user.id
 
         if message_type == 'chat_message':
             message_text = text_data_json.get('message')
@@ -42,14 +61,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
             # Save and serialize in one sync block to avoid SynchronousOnlyOperation
             message_data = await self.save_and_serialize_message(sender_id, self.conversation_id, message_text, parent_id)
             
-            # Send message to room group
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    'type': 'chat_message_group',
-                    'message': message_data
-                }
-            )
+            if message_data:
+                # Send message to room group
+                await self.channel_layer.group_send(
+                    self.room_group_name,
+                    {
+                        'type': 'chat_message_group',
+                        'message': message_data
+                    }
+                )
         
         elif message_type == 'edit_message':
             message_id = text_data_json.get('message_id')
@@ -100,7 +120,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def chat_typing(self, event):
         # Send typing status to WebSocket
-        if event['sender_id'] != self.scope['user'].id:
+        if event['sender_id'] != self.user.id:
             await self.send(text_data=json.dumps({
                 'type': 'typing',
                 'sender_id': event['sender_id'],
@@ -123,28 +143,39 @@ class ChatConsumer(AsyncWebsocketConsumer):
         }))
 
     @database_sync_to_async
-    def save_and_serialize_message(self, sender_id, conversation_id, text, parent_id=None):
-        sender = User.objects.get(id=sender_id)
-        conversation = Conversation.objects.get(id=conversation_id)
-        
-        parent_message = None
-        if parent_id:
-            try:
-                parent_message = Message.objects.get(id=parent_id)
-            except Message.DoesNotExist:
-                pass
+    def is_member(self, user, conversation_id):
+        try:
+            return Conversation.objects.filter(id=conversation_id, members=user).exists()
+        except:
+            return False
 
-        message = Message.objects.create(
-            sender=sender,
-            conversation=conversation,
-            text=text,
-            parent_message=parent_message
-        )
-        conversation.save()
-        
-        # Serialize while still in sync context
-        serializer = MessageSerializer(message)
-        return serializer.data
+    @database_sync_to_async
+    def save_and_serialize_message(self, sender_id, conversation_id, text, parent_id=None):
+        try:
+            sender = User.objects.get(id=sender_id)
+            conversation = Conversation.objects.get(id=conversation_id)
+            
+            parent_message = None
+            if parent_id:
+                try:
+                    parent_message = Message.objects.get(id=parent_id)
+                except Message.DoesNotExist:
+                    pass
+
+            message = Message.objects.create(
+                sender=sender,
+                conversation=conversation,
+                text=text,
+                parent_message=parent_message
+            )
+            conversation.save()
+            
+            # Serialize while still in sync context
+            serializer = MessageSerializer(message)
+            return serializer.data
+        except Exception as e:
+            print(f"Error saving message: {e}")
+            return None
 
     @database_sync_to_async
     def update_and_serialize_message(self, message_id, text, sender_id):

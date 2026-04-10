@@ -21,7 +21,8 @@ const NewGuidesPage = () => {
     if (activeTab === 'experience') {
         getExperiences()
           .then(response => {
-            setItems(response.data);
+            const data = Array.isArray(response.data) ? response.data : (response.data.results || []);
+            setItems(data);
           })
           .catch(err => {
             console.error(`Error fetching experiences:`, err);
@@ -32,7 +33,8 @@ const NewGuidesPage = () => {
     } else {
         getGuides(activeTab, searchQuery, activeCategory)
           .then(response => {
-            setItems(response.data);
+            const data = Array.isArray(response.data) ? response.data : (response.data.results || []);
+            setItems(data);
           })
           .catch(err => {
             console.error(`Error fetching ${activeTab}s:`, err);
