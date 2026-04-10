@@ -244,6 +244,8 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
           </svg>
         </div>
         <Input
+          id={`search-${placeholder.replace(/\s+/g, '-').toLowerCase()}`}
+          name="search"
           type="text"
           className="pl-9 bg-ui-bg"
           placeholder={placeholder}

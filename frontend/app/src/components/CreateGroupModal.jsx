@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { searchUsers, createGroup } from '../services/api';
-import { Dialog, DialogContent, DialogTitle, DialogFooter, DialogHeader } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogFooter, DialogHeader, DialogDescription } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,7 +39,8 @@ const CreateGroupModal = ({ isOpen, onClose, onSuccess }) => {
     debounceTimeout.current = setTimeout(() => {
       searchUsers(searchQuery)
         .then(res => {
-          setSearchResults(res.data);
+          const data = Array.isArray(res.data) ? res.data : (res.data.results || []);
+          setSearchResults(data);
         })
         .catch(err => console.error(err))
         .finally(() => setLoading(false));
@@ -88,6 +89,9 @@ const CreateGroupModal = ({ isOpen, onClose, onSuccess }) => {
           <DialogTitle className="text-2xl font-black text-ui-text-main italic">
             {step === 1 ? 'New Group' : 'Group Details'}
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            Create a new group by selecting members and setting a group name.
+          </DialogDescription>
           <p className="text-xs text-ui-muted font-medium uppercase tracking-widest mt-1">
             {step === 1 ? `Select Members (${selectedMembers.length})` : 'Set name and icon'}
           </p>

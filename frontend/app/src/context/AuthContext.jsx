@@ -26,7 +26,6 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       getProfile()
       .then(response => {
-        console.log('AuthContext: Profile fetch successful', response.data);
         setUser(response.data);
         localStorage.setItem('user', JSON.stringify(response.data));
       })

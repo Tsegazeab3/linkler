@@ -35,6 +35,7 @@ class PostSerializer(serializers.ModelSerializer):
     likes_count = serializers.SerializerMethodField()
     comments_count = serializers.SerializerMethodField()
     saves_count = serializers.SerializerMethodField()
+    post_comments = CommentSerializer(many=True, read_only=True)
     
     class Meta:
         model = Post
@@ -54,6 +55,7 @@ class PostSerializer(serializers.ModelSerializer):
             'saves_count',
             'is_liked',
             'is_saved',
+            'post_comments',
             'created_at',
         ]
         # 'user' should be read-only because it will be set automatically

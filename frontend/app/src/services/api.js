@@ -91,7 +91,7 @@ export const confirmPasswordReset = (token, newPassword) => {
 };
 
 // Posts & Trips
-export const getPosts = () => api.get('posts/');
+export const getPosts = (url = 'posts/') => api.get(url);
 export const getPost = (postId) => api.get(`posts/${postId}/`);
 export const getTrips = () => api.get('posts/trips/');
 export const createTrip = (tripData) => api.post('posts/trips/', tripData);
@@ -103,7 +103,9 @@ export const getGuides = (type = 'guide', search = '', category = '') => {
 export const getPromotions = (search = '', category = '') => {
   return api.get(`promotions/?search=${encodeURIComponent(search)}&category=${encodeURIComponent(category)}`);
 };
-export const getExperiences = () => api.get('accounts/experiences/');
+export const getExperiences = (search = '', category = '') => {
+  return api.get(`accounts/experiences/?search=${encodeURIComponent(search)}&category=${encodeURIComponent(category)}`);
+};
 export const createExperience = (data) => api.post('accounts/experiences/', data, {
   headers: { 'Content-Type': 'multipart/form-data' }
 });

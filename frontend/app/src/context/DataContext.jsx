@@ -9,8 +9,10 @@ export const useData = () => useContext(DataContext);
 export const DataProvider = ({ children }) => {
   const { isAuthenticated } = useAuth();
   const [posts, setPosts] = useState([]);
-  const [conversations, setConversations] = useState([]);
+  const [nextPageUrl, setNextPageUrl] = useState(null);
   const [loadingPosts, setLoadingPosts] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [conversations, setConversations] = useState([]);
   const [loadingConversations, setLoadingConversations] = useState(false);
   
   // Track if we've already done the initial fetch to prevent loops
@@ -22,13 +24,39 @@ export const DataProvider = ({ children }) => {
       const res = await getPosts();
       const data = res.data.results || res.data;
       setPosts(Array.isArray(data) ? data : []);
+      // Store the next page URL for pagination
+      if (res.data.next) {
+        // Strip the baseURL 'api/' if it's already in the instance, 
+        // or just use it as is if it's absolute
+        setNextPageUrl(res.data.next);
+      } else {
+        setNextPageUrl(null);
+      }
     } catch (err) {
       console.error('Failed to fetch posts:', err);
       setPosts([]);
+      setNextPageUrl(null);
     } finally {
       setLoadingPosts(false);
     }
   }, []);
+
+  const loadMorePosts = useCallback(async () => {
+    if (!nextPageUrl || loadingMore) return;
+    
+    setLoadingMore(true);
+    try {
+      // Use the absolute URL provided by DRF
+      const res = await getPosts(nextPageUrl);
+      const newPosts = res.data.results || [];
+      setPosts(prev => [...prev, ...newPosts]);
+      setNextPageUrl(res.data.next || null);
+    } catch (err) {
+      console.error('Failed to fetch more posts:', err);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [nextPageUrl, loadingMore]);
 
   const fetchConversations = useCallback(async () => {
     setLoadingConversations(true);
@@ -61,8 +89,10 @@ export const DataProvider = ({ children }) => {
       posts,
       conversations,
       loadingPosts,
+      loadingMore,
       loadingConversations,
       refreshPosts: fetchPosts,
+      loadMorePosts,
       refreshConversations: fetchConversations,
       setPosts,
       setConversations

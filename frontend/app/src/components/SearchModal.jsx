@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { searchUsers, followUser, unfollowUser } from '../services/api';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,7 +44,8 @@ function SearchModal({ isOpen, onClose }) {
     debounceTimeout.current = setTimeout(() => {
       searchUsers(query)
         .then(response => {
-          setResults(response.data);
+          const data = Array.isArray(response.data) ? response.data : (response.data.results || []);
+          setResults(data);
           setLoading(false);
         })
         .catch(err => {
@@ -79,7 +80,10 @@ function SearchModal({ isOpen, onClose }) {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-2xl p-0 gap-0 overflow-hidden bg-ui-white/95 backdrop-blur-md border-ui-border shadow-2xl [&>button]:hidden">
-        <VisuallyHidden.Root><DialogTitle>Search Travelers</DialogTitle></VisuallyHidden.Root>
+        <VisuallyHidden.Root>
+          <DialogTitle>Search Travelers</DialogTitle>
+          <DialogDescription>Search for travelers, guides, and other members of the community.</DialogDescription>
+        </VisuallyHidden.Root>
         
         {/* Search Input Area */}
         <div className="flex items-center p-2 border-b border-ui-border">

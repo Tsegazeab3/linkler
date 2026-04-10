@@ -19,7 +19,7 @@ const NewGuidesPage = () => {
     setLoading(true);
     
     if (activeTab === 'experience') {
-        getExperiences()
+        getExperiences(searchQuery, activeCategory)
           .then(response => {
             const data = Array.isArray(response.data) ? response.data : (response.data.results || []);
             setItems(data);
@@ -53,11 +53,16 @@ const NewGuidesPage = () => {
 
   return (
     <div className="min-h-screen p-4 lg:p-8">
+      <h1 className="text-4xl font-bold mb-8 italic">Guides & Services</h1>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
         
         {/* Left Sidebar */}
         <div className="md:col-span-1">
-          <LeftSidebarFilter />
+          <LeftSidebarFilter 
+            categories={activeTab === 'experience' ? ['Cultural', 'Adventure', 'Food', 'Nature'] : ['USA', 'UK', 'France', 'Germany', 'Italy', 'Spain', 'Japan', 'China', 'Canada', 'Australia']} 
+            activeCategory={activeCategory} 
+            onCategoryChange={setActiveCategory} 
+          />
         </div>
 
         {/* Main Content */}
