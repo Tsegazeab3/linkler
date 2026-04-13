@@ -33,6 +33,7 @@ const FilterComponent = ({
     };
 
     const isCountryFilter = filterOptions.length > 0 && (filterOptions.includes('USA') || filterOptions.includes('UK'));
+    const isRegionFilter = placeholder.toLowerCase().includes('country');
 
     return (
         <div className="w-full max-w-full mx-auto my-4 space-y-4">
@@ -73,7 +74,7 @@ const FilterComponent = ({
                         <div className="flex flex-col gap-6">
                             <div className="flex items-center justify-between px-2">
                                 <h4 className="text-sm font-black uppercase tracking-[0.2em] text-ui-text-main italic">
-                                    Select {isCountryFilter ? 'Destination' : 'Category'}
+                                    Select {isRegionFilter ? 'Region' : (isCountryFilter ? 'Destination' : 'Category')}
                                 </h4>
                                 <div className="w-12 h-1 bg-ui-border rounded-full mx-auto" />
                             </div>
@@ -83,7 +84,7 @@ const FilterComponent = ({
                                     onClick={() => onCategoryChange && onCategoryChange('')}
                                     className={`px-6 py-3 rounded-2xl text-xs font-bold whitespace-nowrap transition-all border ${activeCategory === '' ? 'bg-brand text-white border-brand shadow-md' : 'bg-ui-bg-alt text-ui-text-secondary border-transparent hover:border-ui-border'}`}
                                 >
-                                    All {isCountryFilter ? 'Countries' : 'Items'}
+                                    All {isRegionFilter ? 'Regions' : (isCountryFilter ? 'Countries' : 'Items')}
                                 </button>
                                 {filterOptions.map(option => (
                                     <button

@@ -16,7 +16,7 @@ const CalendarIcon = () => (
 );
 
 const TripCard = ({ trip }) => {
-  const { picture, name, username, bio, from, to, dates, message, id, user_id, is_following: initialIsFollowing } = trip;
+  const { picture, name, username, bio, from, to, country, region, dates, message, id, user_id, is_following: initialIsFollowing } = trip;
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
   const { handleOpenChat } = useOutletContext();
 
@@ -86,7 +86,12 @@ const TripCard = ({ trip }) => {
           </Link>
         </div>
         <div className="border-t-2 border-ui-border pt-4">
-          <h3 className="font-bold text-lg mb-3 text-ui-text-secondary">Trip Details</h3>
+          <div className="flex justify-between items-center mb-2">
+            <h3 className="font-bold text-lg text-ui-text-secondary">Trip Details</h3>
+            <span className="text-[10px] font-black uppercase tracking-widest bg-brand/10 text-brand px-2 py-1 rounded">
+              {region} • {country}
+            </span>
+          </div>
           <div className="flex justify-between items-center text-center mb-3">
             <div className="flex items-center">
               <LocationPinIcon />

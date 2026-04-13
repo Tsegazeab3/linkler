@@ -89,6 +89,24 @@ class Trip(models.Model):
     """
     Represents a trip plan created by a user looking for fellow travelers.
     """
+    TRIP_CATEGORIES = (
+        ('Adventure', 'Adventure'),
+        ('Relaxing', 'Relaxing'),
+        ('Cultural', 'Cultural'),
+        ('Food', 'Food'),
+        ('Nature', 'Nature'),
+        ('Business', 'Business'),
+        ('Other', 'Other'),
+    )
+    REGION_CHOICES = (
+        ('Africa', 'Africa'),
+        ('Asia', 'Asia'),
+        ('Europe', 'Europe'),
+        ('North America', 'North America'),
+        ('South America', 'South America'),
+        ('Oceania', 'Oceania'),
+        ('Middle East', 'Middle East'),
+    )
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -97,6 +115,9 @@ class Trip(models.Model):
     )
     origin = models.CharField(max_length=100)
     destination = models.CharField(max_length=100)
+    destination_country = models.CharField(max_length=100, blank=True)
+    region = models.CharField(max_length=50, choices=REGION_CHOICES, default='Europe')
+    category = models.CharField(max_length=50, choices=TRIP_CATEGORIES, default='Adventure')
     start_date = models.DateField()
     end_date = models.DateField()
     message = models.TextField()

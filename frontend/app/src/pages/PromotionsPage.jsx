@@ -5,17 +5,26 @@ import PromotionFilter from '../components/PromotionFilter';
 import FilterComponent from '../components/FilterComponent';
 import { getPromotions } from '../services/api';
 
-const promotionFilterOptions = ['Hotels', 'Restaurants', 'Bars', 'Travel', 'Activities'];
-
 const PromotionsPage = () => {
     const [promotions, setPromotions] = useState([]);
+    const [categories, setCategories] = useState([]);
+    const [regions, setRegions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [activeCategory, setActiveCategory] = useState('');
+    const [activeRegion, setActiveRegion] = useState('');
+    const [activeCountry, setActiveCountry] = useState('');
+
+    useEffect(() => {
+        import('../services/api').then(({ getPromotionCategories, getPromotionRegions }) => {
+            getPromotionCategories().then(res => setCategories(res.data));
+            getPromotionRegions().then(res => setRegions(res.data));
+        });
+    }, []);
 
     useEffect(() => {
         setLoading(true);
-        getPromotions(searchQuery, activeCategory)
+        getPromotions(searchQuery, activeCategory, activeRegion, activeCountry)
             .then(response => {
                 const data = Array.isArray(response.data) ? response.data : (response.data.results || []);
                 setPromotions(data);
@@ -26,7 +35,7 @@ const PromotionsPage = () => {
             .finally(() => {
                 setLoading(false);
             });
-    }, [searchQuery, activeCategory]);
+    }, [searchQuery, activeCategory, activeRegion, activeCountry]);
 
     return (
         <div className="p-4 lg:p-8">
@@ -35,6 +44,7 @@ const PromotionsPage = () => {
                 {/* Left Sidebar for Filters */}
                 <div className="md:col-span-1">
                     <PromotionFilter 
+                        categories={categories}
                         activeCategory={activeCategory} 
                         onCategoryChange={setActiveCategory} 
                     />
@@ -42,13 +52,22 @@ const PromotionsPage = () => {
 
                 {/* Main Content */}
                 <div className="md:col-span-3">
-                    <FilterComponent 
-                        filterOptions={promotionFilterOptions}
-                        placeholder="Search for promotions..."
-                        onSearchChange={setSearchQuery}
-                        onCategoryChange={setActiveCategory}
-                        activeCategory={activeCategory}
-                    />
+                    <div className="space-y-2 mb-8">
+                        <FilterComponent 
+                            filterOptions={categories}
+                            placeholder="Search for promotions..."
+                            onSearchChange={setSearchQuery}
+                            onCategoryChange={setActiveCategory}
+                            activeCategory={activeCategory}
+                        />
+                        <FilterComponent 
+                            filterOptions={regions}
+                            placeholder="Search by country..."
+                            onSearchChange={setActiveCountry}
+                            onCategoryChange={setActiveRegion}
+                            activeCategory={activeRegion}
+                        />
+                    </div>
                     
                     {loading ? (
                         <div className="min-h-[400px] flex items-center justify-center">
@@ -63,6 +82,8 @@ const PromotionsPage = () => {
                                             id: promo.id,
                                             title: promo.title,
                                             company: promo.company,
+                                            region: promo.region,
+                                            country: promo.country,
                                             image: promo.image || 'https://images.unsplash.com/photo-1506012787146-f92b2d7d6d96?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60',
                                             rating: promo.rating,
                                             offer: `${promo.off_percent}% Off`,

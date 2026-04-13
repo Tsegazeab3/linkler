@@ -8,9 +8,9 @@ class PromotionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Promotion
         fields = [
-            'id', 'user', 'creator_username', 'category', 'title', 'company', 
-            'image', 'original_price', 'currency', 'off_percent', 
-            'discounted_price', 'description', 'rating', 'created_at'
+            'id', 'user', 'creator_username', 'category', 'region', 'country', 
+            'title', 'company', 'image', 'original_price', 'currency', 
+            'off_percent', 'discounted_price', 'description', 'rating', 'created_at'
         ]
         read_only_fields = ('user',)
 

@@ -43,8 +43,29 @@ class PostDetailView(generics.RetrieveAPIView):
     lookup_url_kwarg = 'post_id'
 
 class TripListCreateView(generics.ListCreateAPIView):
-    queryset = Trip.objects.all()
     serializer_class = TripSerializer
+
+    def get_queryset(self):
+        queryset = Trip.objects.all()
+        category = self.request.query_params.get('category', '')
+        region = self.request.query_params.get('region', '')
+        destination_country = self.request.query_params.get('destination_country', '')
+        search = self.request.query_params.get('search', '')
+
+        if category:
+            queryset = queryset.filter(category=category)
+        if region:
+            queryset = queryset.filter(region=region)
+        if destination_country:
+            queryset = queryset.filter(destination_country__icontains=destination_country)
+        if search:
+            queryset = queryset.filter(
+                models.Q(origin__icontains=search) |
+                models.Q(destination__icontains=search) |
+                models.Q(message__icontains=search) |
+                models.Q(destination_country__icontains=search)
+            )
+        return queryset
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
@@ -53,6 +74,18 @@ class TripListCreateView(generics.ListCreateAPIView):
         if self.request.method == 'GET':
             return [AllowAny()]
         return [IsAuthenticated()]
+
+class TripCategoryListView(APIView):
+    permission_classes = [AllowAny]
+    def get(self, request):
+        categories = [cat[0] for cat in Trip.TRIP_CATEGORIES]
+        return Response(categories)
+
+class TripRegionListView(APIView):
+    permission_classes = [AllowAny]
+    def get(self, request):
+        regions = [reg[0] for reg in Trip.REGION_CHOICES]
+        return Response(regions)
 
 class LikeToggleView(APIView):
     permission_classes = [IsAuthenticated]

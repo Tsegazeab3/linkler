@@ -49,6 +49,18 @@ class Command(BaseCommand):
         num_trips = options['trips']
         num_promotions = options['promotions']
 
+        # Helper for regions and countries
+        region_countries = {
+            'Africa': ['Senegal', 'Nigeria', 'Kenya', 'South Africa', 'Egypt', 'Morocco'],
+            'Asia': ['Japan', 'China', 'India', 'Thailand', 'Vietnam', 'Indonesia'],
+            'Europe': ['France', 'UK', 'Italy', 'Germany', 'Spain', 'Greece'],
+            'North America': ['USA', 'Canada', 'Mexico'],
+            'South America': ['Brazil', 'Argentina', 'Colombia', 'Peru', 'Chile'],
+            'Oceania': ['Australia', 'New Zealand', 'Fiji'],
+            'Middle East': ['UAE', 'Saudi Arabia', 'Jordan', 'Qatar', 'Oman'],
+        }
+        regions_list = list(region_countries.keys())
+
         # 1. Create Users
         users = []
         account_types = ['traveller', 'guide', 'service']
@@ -66,14 +78,17 @@ class Command(BaseCommand):
             if User.objects.filter(username=username).exists():
                 continue
             
+            selected_region = random.choice(regions_list)
+            selected_country = random.choice(region_countries[selected_region])
+            
             user = User.objects.create_user(
                 username=username,
                 email=fake.email(),
                 password='password123',
                 age=random.randint(18, 60),
-                nationality=fake.country(),
+                nationality=selected_country,
                 city=fake.city(),
-                country=fake.country(),
+                country=selected_country,
                 account_type=random.choice(account_types),
                 bio=fake.text(max_nb_chars=80),
                 phone_no=fake.phone_number()
@@ -95,25 +110,32 @@ class Command(BaseCommand):
         if guides_and_services:
             for i in range(num_users):
                 guide = random.choice(guides_and_services)
+                selected_region = random.choice(regions_list)
+                selected_country = random.choice(region_countries[selected_region])
+                
                 exp = Experience.objects.create(
                     user=guide,
                     title=fake.sentence(nb_words=4),
                     description=fake.paragraph(),
                     price=random.randint(10, 500),
                     currency='USD',
-                    location=f"{fake.city()}, {fake.country()}",
+                    location=fake.city(),
+                    country=selected_country,
+                    region=selected_region,
                     duration=f"{random.randint(1, 8)} hours",
-                    category=random.choice(['Tours', 'Food', 'Nature', 'Culture'])
+                    category=random.choice(['Cultural', 'Adventure', 'Food', 'Nature', 'Other'])
                 )
                 
                 # Add reviews
                 travellers = [u for u in users if u != guide]
                 for traveller in random.sample(travellers, min(len(travellers), random.randint(1, 3))):
-                    ExperienceReview.objects.create(
+                    ExperienceReview.objects.get_or_create(
                         experience=exp,
                         user=traveller,
-                        rating=random.randint(3, 5),
-                        comment=fake.sentence()
+                        defaults={
+                            'rating': random.randint(3, 5),
+                            'comment': fake.sentence()
+                        }
                     )
             self.stdout.write(f'Created {num_users} experiences with reviews.')
 
@@ -152,10 +174,16 @@ class Command(BaseCommand):
         # 5. Create Trips
         for i in range(num_trips):
             user = random.choice(users)
+            selected_region = random.choice(regions_list)
+            selected_country = random.choice(region_countries[selected_region])
+            
             Trip.objects.create(
                 user=user,
                 origin=fake.city(),
                 destination=fake.city(),
+                destination_country=selected_country,
+                region=selected_region,
+                category=random.choice(['Adventure', 'Relaxing', 'Cultural', 'Food', 'Nature', 'Business', 'Other']),
                 start_date=timezone.now().date() + timezone.timedelta(days=random.randint(1, 30)),
                 end_date=timezone.now().date() + timezone.timedelta(days=random.randint(31, 60)),
                 message=fake.sentence()
@@ -164,10 +192,16 @@ class Command(BaseCommand):
 
         # 6. Create Promotions
         for i in range(num_promotions):
+            selected_region = random.choice(regions_list)
+            selected_country = random.choice(region_countries[selected_region])
+            
             Promotion.objects.create(
                 title=fake.sentence(nb_words=3),
                 company=fake.company(),
                 off_percent=random.randint(10, 50),
+                category=random.choice(['Hotels', 'Restaurants', 'Bars', 'Travel', 'Activities']),
+                region=selected_region,
+                country=selected_country,
                 description=fake.text(),
                 rating=round(random.uniform(3.5, 5.0), 1)
             )

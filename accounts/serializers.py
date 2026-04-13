@@ -15,8 +15,8 @@ class ExperienceSerializer(serializers.ModelSerializer):
         model = Experience
         fields = (
             'id', 'user', 'user_username', 'title', 'description', 
-            'price', 'currency', 'location', 'duration', 'images', 
-            'category', 'created_at'
+            'price', 'currency', 'location', 'country', 'region', 
+            'duration', 'images', 'category', 'created_at'
         )
         read_only_fields = ('user',)
 

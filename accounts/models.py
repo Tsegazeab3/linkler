@@ -41,6 +41,22 @@ class Experience(models.Model):
     """
     Represents an experience (tour, service, activity) offered by a Guide or Service Provider.
     """
+    EXPERIENCE_CATEGORIES = (
+        ('Cultural', 'Cultural'),
+        ('Adventure', 'Adventure'),
+        ('Food', 'Food'),
+        ('Nature', 'Nature'),
+        ('Other', 'Other'),
+    )
+    REGION_CHOICES = (
+        ('Africa', 'Africa'),
+        ('Asia', 'Asia'),
+        ('Europe', 'Europe'),
+        ('North America', 'North America'),
+        ('South America', 'South America'),
+        ('Oceania', 'Oceania'),
+        ('Middle East', 'Middle East'),
+    )
     user = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
@@ -52,8 +68,10 @@ class Experience(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     currency = models.CharField(max_length=10, default='USD')
     location = models.CharField(max_length=255)
+    country = models.CharField(max_length=100, blank=True)
+    region = models.CharField(max_length=50, choices=REGION_CHOICES, default='Europe')
     duration = models.CharField(max_length=100, help_text="e.g. 3 hours, 2 days")
-    category = models.CharField(max_length=100, blank=True)
+    category = models.CharField(max_length=100, choices=EXPERIENCE_CATEGORIES, default='Cultural')
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

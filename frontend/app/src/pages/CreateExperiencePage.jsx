@@ -8,6 +8,8 @@ const CreateExperiencePage = () => {
   const navigate = useNavigate();
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const [regions, setRegions] = useState([]);
   const [error, setError] = useState('');
   
   const { values, handleChange, resetForm } = useForm({
@@ -16,13 +18,19 @@ const CreateExperiencePage = () => {
     price: '',
     currency: 'USD',
     location: '',
+    country: '',
+    region: 'Europe',
     duration: '',
-    category: '',
+    category: 'Cultural',
   });
   
   const [images, setImages] = useState([]);
 
   useEffect(() => {
+    import('../services/api').then(({ getExperienceCategories, getExperienceRegions }) => {
+      getExperienceCategories().then(res => setCategories(res.data));
+      getExperienceRegions().then(res => setRegions(res.data));
+    });
     document.body.style.overflow = 'hidden';
     setShow(true);
 
@@ -196,15 +204,49 @@ const CreateExperiencePage = () => {
 
           <div>
             <label htmlFor="category" className="block text-sm font-medium text-ui-text-secondary">Category</label>
-            <input
-              type="text"
+            <select
               name="category"
               id="category"
               value={values.category}
               onChange={handleChange}
-              placeholder="e.g. Culture, Adventure, Food"
               className="mt-1 block w-full border border-ui-border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-ui-bg-alt text-ui-text-main"
-            />
+              required
+            >
+              {categories.map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="country" className="block text-sm font-medium text-ui-text-secondary">Country</label>
+              <input
+                type="text"
+                name="country"
+                id="country"
+                value={values.country}
+                onChange={handleChange}
+                placeholder="e.g. France"
+                className="mt-1 block w-full border border-ui-border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-ui-bg-alt text-ui-text-main"
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="region" className="block text-sm font-medium text-ui-text-secondary">Region</label>
+              <select
+                name="region"
+                id="region"
+                value={values.region}
+                onChange={handleChange}
+                className="mt-1 block w-full border border-ui-border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-ui-bg-alt text-ui-text-main"
+                required
+              >
+                {regions.map(reg => (
+                  <option key={reg} value={reg}>{reg}</option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <div>

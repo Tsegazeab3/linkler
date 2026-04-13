@@ -13,11 +13,19 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write('Seeding promotions...')
         
-        # Clear existing promotions first for a fresh start (optional, but good for demo)
-        # Promotion.objects.all().delete()
-        
         categories = ['Hotels', 'Restaurants', 'Bars', 'Travel', 'Activities']
         
+        region_countries = {
+            'Africa': ['Senegal', 'Nigeria', 'Kenya', 'South Africa', 'Egypt', 'Morocco'],
+            'Asia': ['Japan', 'China', 'India', 'Thailand', 'Vietnam', 'Indonesia'],
+            'Europe': ['France', 'UK', 'Italy', 'Germany', 'Spain', 'Greece'],
+            'North America': ['USA', 'Canada', 'Mexico'],
+            'South America': ['Brazil', 'Argentina', 'Colombia', 'Peru', 'Chile'],
+            'Oceania': ['Australia', 'New Zealand', 'Fiji'],
+            'Middle East': ['UAE', 'Saudi Arabia', 'Jordan', 'Qatar', 'Oman'],
+        }
+        regions_list = list(region_countries.keys())
+
         deals_data = {
             'Hotels': [
                 {'title': 'Luxury Beach Resort', 'company': 'Grand Sands', 'off': 25, 'desc': 'Experience paradise with our exclusive beachfront suites and world-class spa.'},
@@ -57,16 +65,20 @@ class Command(BaseCommand):
 
         for category, deals in deals_data.items():
             for deal in deals:
-                # To get different images, we use a random seed or ID in the Unsplash source
                 random_id = random.randint(1, 1000)
                 image_url = f"https://source.unsplash.com/featured/800x600?{image_keywords[category]}&sig={random_id}"
                 
+                selected_region = random.choice(regions_list)
+                selected_country = random.choice(region_countries[selected_region])
+
                 promotion = Promotion(
                     category=category,
                     title=deal['title'],
                     company=deal['company'],
                     off_percent=deal['off'],
                     description=deal['desc'],
+                    region=selected_region,
+                    country=selected_country,
                     rating=round(random.uniform(3.8, 5.0), 1)
                 )
 
@@ -81,6 +93,6 @@ class Command(BaseCommand):
                     self.stdout.write(self.style.WARNING(f"  Could not download image for {deal['title']}: {e}"))
                 
                 promotion.save()
-                self.stdout.write(self.style.SUCCESS(f"  Created promotion: {deal['title']} in {category}"))
+                self.stdout.write(self.style.SUCCESS(f"  Created promotion: {deal['title']} in {category} ({selected_country})"))
 
         self.stdout.write(self.style.SUCCESS('Successfully seeded promotions!'))

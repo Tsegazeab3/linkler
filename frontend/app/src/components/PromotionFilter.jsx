@@ -1,8 +1,6 @@
 import React from 'react';
 
-const PromotionFilter = ({ activeCategory, onCategoryChange }) => {
-  const categories = ['Hotels', 'Restaurants', 'Bars', 'Travel', 'Activities'];
-
+const PromotionFilter = ({ activeCategory, onCategoryChange, categories = [] }) => {
   return (
     <div className="p-4 rounded-3xl shadow-sm bg-ui-white border border-ui-border">
       <h3 className="text-lg font-bold mb-4 text-ui-text-main">Categories</h3>

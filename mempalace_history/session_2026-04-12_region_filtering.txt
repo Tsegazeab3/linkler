@@ -1,0 +1,5 @@
+# Session 2026-04-12 - Region and Country Filtering
+- Added region and country fields to Trip, Experience, and Promotion models.
+- Implemented REGION_CHOICES for consistency.
+- Updated migrations, serializers, and views for filtering.
+- Refactored frontend creation forms and main pages to include dynamic region and country filters.

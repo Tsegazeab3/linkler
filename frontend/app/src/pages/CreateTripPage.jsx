@@ -7,16 +7,25 @@ const CreateTripPage = () => {
   const navigate = useNavigate();
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const [regions, setRegions] = useState([]);
   const [error, setError] = useState('');
   const [tripData, setTripData] = useState({
     origin: '',
     destination: '',
+    destination_country: '',
+    region: 'Europe',
+    category: 'Adventure',
     start_date: '',
     end_date: '',
     message: '',
   });
 
   useEffect(() => {
+    import('../services/api').then(({ getTripCategories, getTripRegions }) => {
+      getTripCategories().then(res => setCategories(res.data));
+      getTripRegions().then(res => setRegions(res.data));
+    });
     document.body.style.overflow = 'hidden';
     setShow(true);
 
@@ -102,7 +111,7 @@ const CreateTripPage = () => {
                 value={tripData.origin}
                 onChange={handleChange}
                 placeholder="e.g. Dubai"
-                className="mt-1 block w-full border border-ui-border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-brand focus:border-brand"
+                className="mt-1 block w-full border border-ui-border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-brand focus:border-brand bg-ui-bg-alt text-ui-text-main"
                 required
               />
             </div>
@@ -115,9 +124,56 @@ const CreateTripPage = () => {
                 value={tripData.destination}
                 onChange={handleChange}
                 placeholder="e.g. Muscat"
-                className="mt-1 block w-full border border-ui-border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-brand focus:border-brand"
+                className="mt-1 block w-full border border-ui-border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-brand focus:border-brand bg-ui-bg-alt text-ui-text-main"
                 required
               />
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="category" className="block text-sm font-medium text-ui-text-secondary">Trip Category</label>
+            <select
+              name="category"
+              id="category"
+              value={tripData.category}
+              onChange={handleChange}
+              className="mt-1 block w-full border border-ui-border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-brand focus:border-brand bg-ui-bg-alt text-ui-text-main"
+              required
+            >
+              {categories.map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="destination_country" className="block text-sm font-medium text-ui-text-secondary">Country</label>
+              <input
+                type="text"
+                name="destination_country"
+                id="destination_country"
+                value={tripData.destination_country}
+                onChange={handleChange}
+                placeholder="e.g. UAE"
+                className="mt-1 block w-full border border-ui-border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-brand focus:border-brand bg-ui-bg-alt text-ui-text-main"
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="region" className="block text-sm font-medium text-ui-text-secondary">Region</label>
+              <select
+                name="region"
+                id="region"
+                value={tripData.region}
+                onChange={handleChange}
+                className="mt-1 block w-full border border-ui-border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-brand focus:border-brand bg-ui-bg-alt text-ui-text-main"
+                required
+              >
+                {regions.map(reg => (
+                  <option key={reg} value={reg}>{reg}</option>
+                ))}
+              </select>
             </div>
           </div>
 

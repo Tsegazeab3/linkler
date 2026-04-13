@@ -8,7 +8,18 @@ class Promotion(models.Model):
         ('Travel', 'Travel'),
         ('Activities', 'Activities'),
     )
+    REGION_CHOICES = (
+        ('Africa', 'Africa'),
+        ('Asia', 'Asia'),
+        ('Europe', 'Europe'),
+        ('North America', 'North America'),
+        ('South America', 'South America'),
+        ('Oceania', 'Oceania'),
+        ('Middle East', 'Middle East'),
+    )
     category = models.CharField(max_length=50, choices=PROMOTION_CATEGORIES, default='Travel')
+    country = models.CharField(max_length=100, blank=True)
+    region = models.CharField(max_length=50, choices=REGION_CHOICES, default='Europe')
     user = models.ForeignKey(
         'accounts.CustomUser', 
         on_delete=models.CASCADE, 

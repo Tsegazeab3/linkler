@@ -93,19 +93,28 @@ export const confirmPasswordReset = (token, newPassword) => {
 // Posts & Trips
 export const getPosts = (url = 'posts/') => api.get(url);
 export const getPost = (postId) => api.get(`posts/${postId}/`);
-export const getTrips = () => api.get('posts/trips/');
+export const getTrips = (category = '', region = '', destination_country = '', search = '') => {
+  return api.get(`posts/trips/?category=${encodeURIComponent(category)}&region=${encodeURIComponent(region)}&destination_country=${encodeURIComponent(destination_country)}&search=${encodeURIComponent(search)}`);
+};
+export const getTripCategories = () => api.get('posts/trips/categories/');
+export const getTripRegions = () => api.get('posts/trips/regions/');
 export const createTrip = (tripData) => api.post('posts/trips/', tripData);
 
 // Guides & Promotions
 export const getGuides = (type = 'guide', search = '', category = '') => {
   return api.get(`accounts/guides/?type=${type}&search=${encodeURIComponent(search)}&category=${encodeURIComponent(category)}`);
 };
-export const getPromotions = (search = '', category = '') => {
-  return api.get(`promotions/?search=${encodeURIComponent(search)}&category=${encodeURIComponent(category)}`);
+export const getGuideCountries = (type = 'guide') => api.get(`accounts/guides/countries/?type=${type}`);
+export const getPromotions = (search = '', category = '', region = '', country = '') => {
+  return api.get(`promotions/?search=${encodeURIComponent(search)}&category=${encodeURIComponent(category)}&region=${encodeURIComponent(region)}&country=${encodeURIComponent(country)}`);
 };
-export const getExperiences = (search = '', category = '') => {
-  return api.get(`accounts/experiences/?search=${encodeURIComponent(search)}&category=${encodeURIComponent(category)}`);
+export const getPromotionCategories = () => api.get('promotions/categories/');
+export const getPromotionRegions = () => api.get('promotions/regions/');
+export const getExperiences = (search = '', category = '', region = '', country = '') => {
+  return api.get(`accounts/experiences/?search=${encodeURIComponent(search)}&category=${encodeURIComponent(category)}&region=${encodeURIComponent(region)}&country=${encodeURIComponent(country)}`);
 };
+export const getExperienceCategories = () => api.get('accounts/experiences/categories/');
+export const getExperienceRegions = () => api.get('accounts/experiences/regions/');
 export const createExperience = (data) => api.post('accounts/experiences/', data, {
   headers: { 'Content-Type': 'multipart/form-data' }
 });

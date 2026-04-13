@@ -14,9 +14,30 @@ class ExperienceListCreateView(generics.ListCreateAPIView):
     """
     View to list and create experiences.
     """
-    queryset = Experience.objects.all()
     serializer_class = ExperienceSerializer
     parser_classes = (MultiPartParser, FormParser)
+
+    def get_queryset(self):
+        queryset = Experience.objects.all()
+        category = self.request.query_params.get('category', '')
+        region = self.request.query_params.get('region', '')
+        country = self.request.query_params.get('country', '')
+        search = self.request.query_params.get('search', '')
+
+        if category:
+            queryset = queryset.filter(category=category)
+        if region:
+            queryset = queryset.filter(region=region)
+        if country:
+            queryset = queryset.filter(country__icontains=country)
+        if search:
+            queryset = queryset.filter(
+                Q(title__icontains=search) |
+                Q(description__icontains=search) |
+                Q(location__icontains=search) |
+                Q(country__icontains=search)
+            )
+        return queryset
 
     def get_permissions(self):
         if self.request.method == 'GET':
@@ -25,6 +46,26 @@ class ExperienceListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+class ExperienceCategoryListView(generics.GenericAPIView):
+    permission_classes = [AllowAny]
+    def get(self, request):
+        categories = [cat[0] for cat in Experience.EXPERIENCE_CATEGORIES]
+        return Response(categories)
+
+class ExperienceRegionListView(generics.GenericAPIView):
+    permission_classes = [AllowAny]
+    def get(self, request):
+        regions = [reg[0] for reg in Experience.REGION_CHOICES]
+        return Response(regions)
+
+class GuideCountryListView(generics.GenericAPIView):
+    permission_classes = [AllowAny]
+    def get(self, request):
+        account_type = self.request.query_params.get('type', 'guide')
+        countries = CustomUser.objects.filter(account_type=account_type).values_list('country', flat=True).distinct()
+        countries = [c for c in countries if c]
+        return Response(sorted(countries))
 
 class ProfileUpdateView(generics.RetrieveUpdateAPIView):
     """

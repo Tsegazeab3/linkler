@@ -6,20 +6,36 @@ import ExperiencePreviewCard from '../components/ExperiencePreviewCard';
 import LeftSidebarFilter from '../components/LeftSidebarFilter';
 import { getGuides, getExperiences } from '../services/api';
 
-const guideFilterOptions = ['USA', 'UK', 'France', 'Germany', 'Italy', 'Spain', 'Japan', 'China', 'Canada', 'Australia'];
-
 const NewGuidesPage = () => {
   const [items, setItems] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [regions, setRegions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('guide'); // 'guide', 'service', 'experience'
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('');
+  const [activeRegion, setActiveRegion] = useState('');
+  const [activeCountry, setActiveCountry] = useState('');
+
+  useEffect(() => {
+    const api = import('../services/api');
+    if (activeTab === 'experience') {
+        api.then(({ getExperienceCategories, getExperienceRegions }) => {
+            getExperienceCategories().then(res => setCategories(res.data));
+            getExperienceRegions().then(res => setRegions(res.data));
+        });
+    } else {
+        api.then(({ getGuideCountries }) => {
+            getGuideCountries(activeTab).then(res => setCategories(res.data));
+        });
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     setLoading(true);
     
     if (activeTab === 'experience') {
-        getExperiences(searchQuery, activeCategory)
+        getExperiences(searchQuery, activeCategory, activeRegion, activeCountry)
           .then(response => {
             const data = Array.isArray(response.data) ? response.data : (response.data.results || []);
             setItems(data);
@@ -43,7 +59,7 @@ const NewGuidesPage = () => {
             setLoading(false);
           });
     }
-  }, [activeTab, searchQuery, activeCategory]);
+  }, [activeTab, searchQuery, activeCategory, activeRegion, activeCountry]);
 
   const tabs = [
     { id: 'guide', label: 'Guides', icon: '🗺️' },
@@ -59,7 +75,7 @@ const NewGuidesPage = () => {
         {/* Left Sidebar */}
         <div className="md:col-span-1">
           <LeftSidebarFilter 
-            categories={activeTab === 'experience' ? ['Cultural', 'Adventure', 'Food', 'Nature'] : ['USA', 'UK', 'France', 'Germany', 'Italy', 'Spain', 'Japan', 'China', 'Canada', 'Australia']} 
+            categories={categories} 
             activeCategory={activeCategory} 
             onCategoryChange={setActiveCategory} 
           />
@@ -89,13 +105,24 @@ const NewGuidesPage = () => {
               ))}
             </div>
 
-            <FilterComponent 
-              filterOptions={guideFilterOptions}
-              placeholder={`Search for ${activeTab}s...`}
-              onSearchChange={setSearchQuery}
-              onCategoryChange={setActiveCategory}
-              activeCategory={activeCategory}
-            />
+            <div className="space-y-2">
+              <FilterComponent 
+                filterOptions={categories}
+                placeholder={`Search for ${activeTab}s...`}
+                onSearchChange={setSearchQuery}
+                onCategoryChange={setActiveCategory}
+                activeCategory={activeCategory}
+              />
+              {activeTab === 'experience' && (
+                <FilterComponent 
+                  filterOptions={regions}
+                  placeholder="Search by country..."
+                  onSearchChange={setActiveCountry}
+                  onCategoryChange={setActiveRegion}
+                  activeCategory={activeRegion}
+                />
+              )}
+            </div>
 
             {loading ? (
               <div className="min-h-[400px] flex items-center justify-center">

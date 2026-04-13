@@ -7,16 +7,25 @@ const CreatePromotionPage = () => {
   const navigate = useNavigate();
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const [regions, setRegions] = useState([]);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     title: '',
     company: '',
+    category: 'Hotels',
+    region: 'Europe',
+    country: '',
     off_percent: '',
     description: '',
   });
   const [image, setImage] = useState(null);
 
   useEffect(() => {
+    import('../services/api').then(({ getPromotionCategories, getPromotionRegions }) => {
+      getPromotionCategories().then(res => setCategories(res.data));
+      getPromotionRegions().then(res => setRegions(res.data));
+    });
     document.body.style.overflow = 'hidden';
     setShow(true);
 
@@ -116,6 +125,53 @@ const CreatePromotionPage = () => {
               className="mt-1 block w-full border border-ui-border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 bg-ui-bg-alt text-ui-text-main"
               required
             />
+          </div>
+
+          <div>
+            <label htmlFor="category" className="block text-sm font-medium text-ui-text-secondary">Category</label>
+            <select
+              name="category"
+              id="category"
+              value={formData.category}
+              onChange={handleChange}
+              className="mt-1 block w-full border border-ui-border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 bg-ui-bg-alt text-ui-text-main"
+              required
+            >
+              {categories.map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="country" className="block text-sm font-medium text-ui-text-secondary">Country</label>
+              <input
+                type="text"
+                name="country"
+                id="country"
+                value={formData.country}
+                onChange={handleChange}
+                placeholder="e.g. France"
+                className="mt-1 block w-full border border-ui-border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 bg-ui-bg-alt text-ui-text-main"
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="region" className="block text-sm font-medium text-ui-text-secondary">Region</label>
+              <select
+                name="region"
+                id="region"
+                value={formData.region}
+                onChange={handleChange}
+                className="mt-1 block w-full border border-ui-border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 bg-ui-bg-alt text-ui-text-main"
+                required
+              >
+                {regions.map(reg => (
+                  <option key={reg} value={reg}>{reg}</option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <div>

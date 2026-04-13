@@ -1,0 +1,4 @@
+# Session 2026-04-12 - Data Seeding Fix
+- Updated seed_data.py and seed_promotions.py to include regions and countries.
+- Re-seeded database to ensure 'fake' posts have regional data for testing filters.
+- Verified that Senegal and other countries are now present in the database.

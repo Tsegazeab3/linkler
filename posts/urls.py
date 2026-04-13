@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import (
     PostCreateView, PostListView, PostDetailView, TripListCreateView,
-    LikeToggleView, SaveToggleView, CommentListCreateView
+    TripCategoryListView, TripRegionListView, LikeToggleView, SaveToggleView, CommentListCreateView
 )
 
 urlpatterns = [
@@ -12,4 +12,6 @@ urlpatterns = [
     path('<int:post_id>/save/', SaveToggleView.as_view(), name='post-save'),
     path('<int:post_id>/comments/', CommentListCreateView.as_view(), name='post-comments'),
     path('trips/', TripListCreateView.as_view(), name='trip-list-create'),
+    path('trips/categories/', TripCategoryListView.as_view(), name='trip-categories'),
+    path('trips/regions/', TripRegionListView.as_view(), name='trip-regions'),
 ]
