@@ -15,6 +15,7 @@ const PostDetailPage = () => {
   const { user } = useAuth();
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [newComment, setNewComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
@@ -74,6 +75,12 @@ const PostDetailPage = () => {
   const handleClose = () => {
     setShow(false);
     setTimeout(() => navigate(-1), 200);
+  };
+
+  const getMediaUrl = (url) => {
+    if (!url) return null;
+    if (url.startsWith('http')) return url;
+    return `http://localhost:8000${url}`;
   };
 
   useEffect(() => {
@@ -157,6 +164,22 @@ const PostDetailPage = () => {
 
   const handleMouseUp = () => {
     setIsDragging(false);
+  };
+
+  const nextImage = (e) => {
+    e.stopPropagation();
+    if (!post?.images || post.images.length === 0) return;
+    setActiveImageIndex((prev) => (prev + 1) % post.images.length);
+    setScale(1);
+    setOffset({ x: 0, y: 0 });
+  };
+
+  const prevImage = (e) => {
+    e.stopPropagation();
+    if (!post?.images || post.images.length === 0) return;
+    setActiveImageIndex((prev) => (prev - 1 + post.images.length) % post.images.length);
+    setScale(1);
+    setOffset({ x: 0, y: 0 });
   };
 
   const handleMediaClick = (e) => {
@@ -280,7 +303,7 @@ const PostDetailPage = () => {
             onClick={handleMediaClick}
             onDoubleClick={handleDoubleClick}
         >
-          {post.media_file ? (
+          {post.media_file || (post.images && post.images.length > 0) ? (
             <div 
                 className="w-full h-full flex items-center justify-center min-w-full min-h-full"
                 onTouchStart={handleTouchStart}
@@ -293,18 +316,42 @@ const PostDetailPage = () => {
                 onMouseLeave={handleMouseUp}
             >
                 {post.media_type === 'video' ? (
-                    <video src={post.media_file} controls className="max-h-full w-full object-contain" />
+                    <video src={getMediaUrl(post.media_file)} controls className="max-h-full w-full object-contain" />
                 ) : (
-                    <img 
-                        src={post.media_file} 
-                        alt="Post" 
-                        style={{ 
-                            transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})`,
-                            transition: isDragging ? 'none' : 'transform 0.1s ease-out'
-                        }}
-                        className="max-h-full max-w-full object-contain mx-auto my-auto" 
-                        draggable="false"
-                    />
+                    <>
+                        <img 
+                            src={post.images && post.images.length > 0 ? getMediaUrl(post.images[activeImageIndex].image) : getMediaUrl(post.media_file)} 
+                            alt="Post" 
+                            style={{ 
+                                transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})`,
+                                transition: isDragging ? 'none' : 'transform 0.1s ease-out'
+                            }}
+                            className="max-h-full max-w-full object-contain mx-auto my-auto" 
+                            draggable="false"
+                        />
+                        
+                        {post.images && post.images.length > 1 && !isExpanded && (
+                            <>
+                                <button 
+                                    onClick={prevImage}
+                                    className="absolute left-4 p-2 rounded-full bg-black/30 text-white hover:bg-black/50 transition-colors z-10"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                                </button>
+                                <button 
+                                    onClick={nextImage}
+                                    className="absolute right-4 p-2 rounded-full bg-black/30 text-white hover:bg-black/50 transition-colors z-10"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                                </button>
+                                <div className="absolute bottom-4 flex gap-1.5 z-10">
+                                    {post.images.map((_, i) => (
+                                        <div key={i} className={`h-1.5 rounded-full transition-all ${i === activeImageIndex ? 'w-4 bg-white' : 'w-1.5 bg-white/50'}`} />
+                                    ))}
+                                </div>
+                            </>
+                        )}
+                    </>
                 )}
             </div>
           ) : (

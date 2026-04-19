@@ -16,6 +16,23 @@ const NewGuidesPage = () => {
   const [activeCategory, setActiveCategory] = useState('');
   const [activeRegion, setActiveRegion] = useState('');
   const [activeCountry, setActiveCountry] = useState('');
+  const [quickFilters, setQuickFilters] = useState({
+    'Top Rated': false,
+    'Available Now': false,
+    'Instant Reply': false,
+    'Verified': false
+  });
+
+  const toggleQuickFilter = (name) => {
+    setQuickFilters(prev => ({ ...prev, [name]: !prev[name] }));
+  };
+
+  const getApiQuickFilters = () => ({
+    top_rated: quickFilters['Top Rated'],
+    available_now: quickFilters['Available Now'],
+    instant_reply: quickFilters['Instant Reply'],
+    verified: quickFilters['Verified']
+  });
 
   useEffect(() => {
     const api = import('../services/api');
@@ -35,7 +52,7 @@ const NewGuidesPage = () => {
     setLoading(true);
     
     if (activeTab === 'experience') {
-        getExperiences(searchQuery, activeCategory, activeRegion, activeCountry)
+        getExperiences(searchQuery, activeCategory, activeRegion, activeCountry, getApiQuickFilters())
           .then(response => {
             const data = Array.isArray(response.data) ? response.data : (response.data.results || []);
             setItems(data);
@@ -47,7 +64,7 @@ const NewGuidesPage = () => {
             setLoading(false);
           });
     } else {
-        getGuides(activeTab, searchQuery, activeCategory)
+        getGuides(activeTab, searchQuery, activeCategory, getApiQuickFilters())
           .then(response => {
             const data = Array.isArray(response.data) ? response.data : (response.data.results || []);
             setItems(data);
@@ -59,7 +76,7 @@ const NewGuidesPage = () => {
             setLoading(false);
           });
     }
-  }, [activeTab, searchQuery, activeCategory, activeRegion, activeCountry]);
+  }, [activeTab, searchQuery, activeCategory, activeRegion, activeCountry, quickFilters]);
 
   const tabs = [
     { id: 'guide', label: 'Guides', icon: '🗺️' },
@@ -70,19 +87,26 @@ const NewGuidesPage = () => {
   return (
     <div className="min-h-screen p-4 lg:p-8">
       <h1 className="text-4xl font-bold mb-8 italic">Guides & Services</h1>
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         
         {/* Left Sidebar */}
-        <div className="md:col-span-1">
+        <div className="hidden lg:block lg:col-span-1">
           <LeftSidebarFilter 
             categories={categories} 
             activeCategory={activeCategory} 
             onCategoryChange={setActiveCategory} 
+            regions={regions}
+            activeRegion={activeRegion}
+            onRegionChange={setActiveRegion}
+            activeCountry={activeCountry}
+            onCountryChange={setActiveCountry}
+            quickFilters={quickFilters}
+            onQuickFilterToggle={toggleQuickFilter}
           />
         </div>
 
         {/* Main Content */}
-        <div className="md:col-span-3">
+        <div className="lg:col-span-3">
           <div className="flex flex-col space-y-6">
             <div className="flex bg-ui-bg-alt p-1 rounded-2xl w-fit border border-ui-border shadow-sm">
               {tabs.map(tab => (
@@ -92,6 +116,14 @@ const NewGuidesPage = () => {
                     setActiveTab(tab.id);
                     setSearchQuery('');
                     setActiveCategory('');
+                    setActiveRegion('');
+                    setActiveCountry('');
+                    setQuickFilters({
+                      'Top Rated': false,
+                      'Available Now': false,
+                      'Instant Reply': false,
+                      'Verified': false
+                    });
                   }}
                   className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${
                     activeTab === tab.id 
@@ -112,6 +144,9 @@ const NewGuidesPage = () => {
                 onSearchChange={setSearchQuery}
                 onCategoryChange={setActiveCategory}
                 activeCategory={activeCategory}
+                quickFilters={quickFilters}
+                onQuickFilterToggle={toggleQuickFilter}
+                value={searchQuery}
               />
               {activeTab === 'experience' && (
                 <FilterComponent 
@@ -120,6 +155,9 @@ const NewGuidesPage = () => {
                   onSearchChange={setActiveCountry}
                   onCategoryChange={setActiveRegion}
                   activeCategory={activeRegion}
+                  quickFilters={quickFilters}
+                  onQuickFilterToggle={toggleQuickFilter}
+                  value={activeCountry}
                 />
               )}
             </div>

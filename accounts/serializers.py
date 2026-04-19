@@ -1,6 +1,24 @@
 from rest_framework import serializers
 from dj_rest_auth.registration.serializers import RegisterSerializer
-from .models import CustomUser, Experience, ExperienceImage
+from .models import CustomUser, Experience, ExperienceImage, ExperienceReview, ProviderReview
+
+class ExperienceReviewSerializer(serializers.ModelSerializer):
+    user_username = serializers.ReadOnlyField(source='user.username')
+    user_profile_picture = serializers.ImageField(source='user.profile_picture', read_only=True)
+
+    class Meta:
+        model = ExperienceReview
+        fields = ('id', 'user', 'user_username', 'user_profile_picture', 'rating', 'comment', 'created_at')
+        read_only_fields = ('user',)
+
+class ProviderReviewSerializer(serializers.ModelSerializer):
+    user_username = serializers.ReadOnlyField(source='user.username')
+    user_profile_picture = serializers.ImageField(source='user.profile_picture', read_only=True)
+
+    class Meta:
+        model = ProviderReview
+        fields = ('id', 'user', 'user_username', 'user_profile_picture', 'rating', 'comment', 'created_at')
+        read_only_fields = ('user',)
 
 class ExperienceImageSerializer(serializers.ModelSerializer):
     class Meta:
@@ -10,15 +28,25 @@ class ExperienceImageSerializer(serializers.ModelSerializer):
 class ExperienceSerializer(serializers.ModelSerializer):
     user_username = serializers.ReadOnlyField(source='user.username')
     images = ExperienceImageSerializer(many=True, read_only=True)
+    rating = serializers.SerializerMethodField()
+    review_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Experience
         fields = (
             'id', 'user', 'user_username', 'title', 'description', 
             'price', 'currency', 'location', 'country', 'region', 
-            'duration', 'images', 'category', 'created_at'
+            'duration', 'images', 'category', 'rating', 'review_count', 'created_at'
         )
         read_only_fields = ('user',)
+
+    def get_rating(self, obj):
+        from django.db.models import Avg
+        avg = obj.reviews.aggregate(Avg('rating'))['rating__avg']
+        return round(avg, 1) if avg else 0.0
+
+    def get_review_count(self, obj):
+        return obj.reviews.count()
 
     def create(self, validated_data):
         images_data = self.context['request'].FILES.getlist('images')
@@ -33,6 +61,9 @@ class UserSerializer(serializers.ModelSerializer):
     following_count = serializers.SerializerMethodField()
     posts_count = serializers.SerializerMethodField()
     posts = serializers.SerializerMethodField()
+    rating = serializers.SerializerMethodField()
+    review_count = serializers.SerializerMethodField()
+    profile_picture = serializers.SerializerMethodField()
 
     class Meta:
         model = CustomUser
@@ -41,7 +72,8 @@ class UserSerializer(serializers.ModelSerializer):
             'city', 'country', 'facebook', 'instagram', 'git_hub',
             'linkedin', 'whatsapp', 'telegram', 'account_type', 'bio', 
             'profile_picture', 'is_following', 'followers_count', 
-            'following_count', 'posts_count', 'posts'
+            'following_count', 'posts_count', 'posts', 'rating', 'review_count',
+            'opt_out_discovery', 'show_followers_list'
         )
         read_only_fields = ('email', 'account_type')
 
@@ -65,6 +97,28 @@ class UserSerializer(serializers.ModelSerializer):
         posts = obj.posts.all()[:12] # Limit to latest 12
         return PostSerializer(posts, many=True, context=self.context).data
 
+    def get_rating(self, obj):
+        from django.db.models import Avg
+        if obj.account_type in ['guide', 'service']:
+            avg = obj.provider_reviews.aggregate(Avg('rating'))['rating__avg']
+            return round(avg, 1) if avg else 0.0
+        return 0.0
+
+    def get_review_count(self, obj):
+        if obj.account_type in ['guide', 'service']:
+            return obj.provider_reviews.count()
+        return 0
+
+    def get_profile_picture(self, obj):
+        if not obj.profile_picture:
+            return None
+        # Check if the stored name is already a full URL
+        if str(obj.profile_picture).startswith('http'):
+            return str(obj.profile_picture)
+        if hasattr(obj.profile_picture, 'url'):
+            return obj.profile_picture.url
+        return str(obj.profile_picture)
+
 
 class CustomRegisterSerializer(RegisterSerializer):
     account_type = serializers.ChoiceField(choices=CustomUser.ACCOUNT_TYPE_CHOICES, default='traveller')
@@ -80,17 +134,11 @@ class CustomRegisterSerializer(RegisterSerializer):
         user.save()
         return user
 
-    def validate(self, attrs):
-        print(f"DEBUG: Backend received registration attempt: {attrs}")
-        return super().validate(attrs)
-
 
 from dj_rest_auth.serializers import LoginSerializer
 
 class CustomLoginSerializer(LoginSerializer):
-    def validate(self, attrs):
-        print(f"DEBUG: Backend received login attempt: {attrs}")
-        return super().validate(attrs)
+    pass
 
 class PasswordResetRequestSerializer(serializers.Serializer):
     email = serializers.EmailField()

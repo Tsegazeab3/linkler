@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate, useLocation, useOutletContext } from 'react-router-dom';
-import { getMessages, sendMessage, getConversations, markChatAsRead } from '../services/api';
+import { getMessages, sendMessage, getConversations, markChatAsRead, updateGroupAvatar } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import useChatWebSocket from '../hooks/useChatWebSocket';
-import { Paperclip, Send, X, Smile, MoreHorizontal, Reply, Edit2 } from "lucide-react";
+import { Paperclip, Send, X, Smile, MoreHorizontal, Reply, Edit2, Info, Copy, Users, Camera } from "lucide-react";
+import { toast } from 'sonner';
 
 const ChatPage = () => {
   const { conversationId } = useParams();
@@ -23,6 +24,7 @@ const ChatPage = () => {
   const [otherUserTyping, setOtherUserTyping] = useState(false);
   const [replyingTo, setReplyingTo] = useState(null);
   const [editingMessage, setEditingMessage] = useState(null);
+  const [showInfo, setShowInfo] = useState(false);
   const typingTimeoutRef = useRef(null);
   const scrollRef = useRef();
   const fileInputRef = useRef(null);
@@ -176,6 +178,31 @@ const ChatPage = () => {
     setNewMessage('');
   };
 
+  const copyInviteCode = () => {
+    if (!displayChat?.invite_code) return;
+    navigator.clipboard.writeText(displayChat.invite_code);
+    toast.success("Invite code copied!", {
+        description: "Share this code with friends to join the group."
+    });
+  };
+
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const formData = new FormData();
+    formData.append('avatar', file);
+    
+    try {
+      const res = await updateGroupAvatar(conversationId, formData);
+      setChat(res.data);
+      toast.success("Group avatar updated!");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to update avatar");
+    }
+  };
+
   const displayChat = chat || location.state?.chat;
 
   if (!displayChat && loading) return null;
@@ -190,7 +217,7 @@ const ChatPage = () => {
            </svg>
         </button>
         <div 
-          className="flex items-center cursor-pointer hover:opacity-80 transition-opacity overflow-hidden"
+          className="flex-grow flex items-center cursor-pointer hover:opacity-80 transition-opacity overflow-hidden"
           onClick={() => handleOpenChat && handleOpenChat(displayChat, displayChat?.type)}
         >
           <Avatar className="w-10 h-10 border border-brand-light mr-4">
@@ -202,10 +229,21 @@ const ChatPage = () => {
             <p className="text-[10px] text-success font-medium tracking-wide uppercase">Active now</p>
           </div>
         </div>
+        
+        {displayChat?.type === 'group' && (
+            <button 
+                onClick={() => setShowInfo(!showInfo)}
+                className={`p-2 rounded-xl transition-all ${showInfo ? 'bg-brand/10 text-brand' : 'text-ui-muted hover:bg-ui-bg-alt'}`}
+            >
+                <Info className="h-6 w-6" />
+            </button>
+        )}
       </header>
 
-      {/* Message History */}
-      <main ref={scrollRef} className="flex-grow overflow-y-auto p-4 space-y-4 no-scrollbar pb-20 relative bg-ui-bg">
+      <div className="flex-grow flex overflow-hidden">
+          <div className="flex-grow flex flex-col min-w-0">
+            {/* Message History */}
+            <main ref={scrollRef} className="flex-grow overflow-y-auto p-4 space-y-4 no-scrollbar pb-20 relative bg-ui-bg">
         {messages.map((msg, index) => {
           const isMe = user && msg.sender_username === user.username;
 
@@ -364,6 +402,80 @@ const ChatPage = () => {
         </div>
       </footer>
     </div>
+
+    {/* Group Info Sidebar */}
+    {displayChat?.type === 'group' && showInfo && (
+        <aside className="w-full lg:w-72 bg-ui-white border-l border-ui-border flex flex-col animate-in slide-in-from-right-4 duration-300 absolute inset-0 z-[30] lg:relative lg:inset-auto shadow-2xl lg:shadow-none">
+          <div className="p-4 border-b border-ui-border flex items-center justify-between">
+              <h3 className="font-black uppercase tracking-widest text-[10px] text-ui-muted">Group Info</h3>
+              <button onClick={() => setShowInfo(false)} className="lg:hidden p-2 rounded-full hover:bg-ui-bg-alt">
+                  <X className="h-5 w-5 text-ui-muted" />
+              </button>
+          </div>
+          
+                <div className="flex-grow overflow-y-auto p-6 no-scrollbar">
+                    <div className="flex flex-col items-center text-center mb-8">
+                        <div className="relative group/avatar">
+                            <Avatar className="w-24 h-24 border-4 border-ui-white shadow-xl mb-4">
+                                <AvatarImage src={displayChat.avatar} className="object-cover" />
+                                <AvatarFallback className="text-2xl font-bold bg-brand-light text-brand">
+                                    {displayChat.name?.charAt(0).toUpperCase()}
+                                </AvatarFallback>
+                            </Avatar>
+                            <label className="absolute inset-0 mb-4 rounded-full bg-black/40 opacity-0 group-hover/avatar:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
+                                <Camera className="text-white h-8 w-8" />
+                                <input type="file" className="hidden" accept="image/*" onChange={handleAvatarChange} />
+                            </label>
+                        </div>
+                        <h4 className="font-bold text-lg text-ui-text-main">{displayChat.name}</h4>
+                        <div className="mt-2 flex items-center gap-1.5 px-3 py-1 rounded-full bg-ui-bg-alt border border-ui-border">
+                            <Users className="h-3 w-3 text-ui-muted" />
+                            <span className="text-[10px] font-bold text-ui-text-secondary uppercase tracking-widest">{displayChat.members_details?.length || 0} members</span>
+                        </div>
+                    </div>
+
+              <div className="space-y-6">
+                  {displayChat.invite_code && (
+                      <div className="p-4 rounded-2xl bg-brand/5 border border-brand/10">
+                          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand mb-3">Invite Link</p>
+                          <div className="flex items-center gap-2">
+                              <div className="flex-grow font-mono text-sm font-bold bg-ui-white border border-ui-border px-3 py-2 rounded-xl text-center tracking-widest">
+                                  {displayChat.invite_code}
+                              </div>
+                              <button 
+                                  onClick={copyInviteCode}
+                                  className="p-2 bg-brand text-white rounded-xl hover:bg-brand-hover active:scale-95 transition-all shadow-md"
+                              >
+                                  <Copy className="h-4 w-4" />
+                              </button>
+                          </div>
+                          <p className="text-[9px] text-ui-muted mt-3 leading-relaxed">Share this code with other travelers to join this conversation instantly.</p>
+                      </div>
+                  )}
+
+                  <div>
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-ui-muted mb-4">Members</p>
+                      <div className="space-y-3">
+                          {displayChat.members_details?.map(member => (
+                              <div key={member.id} className="flex items-center gap-3">
+                                  <Avatar className="h-8 w-8 border border-ui-border">
+                                      <AvatarImage src={member.profile_picture} className="object-cover" />
+                                      <AvatarFallback className="text-[10px]">{member.username?.charAt(0).toUpperCase()}</AvatarFallback>
+                                  </Avatar>
+                                  <div className="overflow-hidden">
+                                      <p className="text-xs font-bold text-ui-text-main truncate">{member.username}</p>
+                                      <p className="text-[9px] text-ui-muted truncate">{member.account_type || 'Traveler'}</p>
+                                  </div>
+                              </div>
+                          ))}
+                      </div>
+                  </div>
+              </div>
+          </div>
+        </aside>
+    )}
+</div>
+</div>
   );
 };
 

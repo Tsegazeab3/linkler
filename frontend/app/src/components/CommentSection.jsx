@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { getComments, addComment } from '../services/api';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -20,7 +21,8 @@ const CommentSection = ({ postId }) => {
   const fetchComments = async () => {
     try {
       const res = await getComments(postId);
-      setComments(res.data);
+      const data = Array.isArray(res.data) ? res.data : (res.data.results || []);
+      setComments(data);
     } catch (err) {
       console.error("Error fetching comments:", err);
       toast.error("Failed to load comments");
@@ -87,13 +89,17 @@ const CommentSection = ({ postId }) => {
               className="flex gap-3 text-sm animate-in fade-in slide-in-from-left-2 duration-300"
               style={{ animationDelay: `${index * 50}ms` }}
             >
-              <Avatar className="h-9 w-9 border border-ui-border shadow-sm">
-                <AvatarImage src={comment.author?.profile_picture} className="object-cover" />
-                <AvatarFallback className="text-[10px] bg-ui-bg-alt text-ui-muted">{comment.author?.username?.charAt(0).toUpperCase()}</AvatarFallback>
-              </Avatar>
+              <Link to={`/app/profile/${comment.author?.username}`}>
+                <Avatar className="h-9 w-9 border border-ui-border shadow-sm hover:opacity-80 transition-opacity">
+                  <AvatarImage src={comment.author?.profile_picture} className="object-cover" />
+                  <AvatarFallback className="text-[10px] bg-ui-bg-alt text-ui-muted">{comment.author?.username?.charAt(0).toUpperCase()}</AvatarFallback>
+                </Avatar>
+              </Link>
               <div className="flex-grow">
                 <div className="flex items-baseline gap-2">
-                  <span className="font-bold text-ui-text-main text-[13px]">{comment.author?.username}</span>
+                  <Link to={`/app/profile/${comment.author?.username}`} className="font-bold text-ui-text-main text-[13px] hover:text-brand transition-colors">
+                    {comment.author?.username}
+                  </Link>
                   <span className="text-[9px] text-ui-muted font-medium uppercase tracking-tighter opacity-70">
                     {new Date(comment.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                   </span>

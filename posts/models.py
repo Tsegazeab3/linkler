@@ -13,7 +13,18 @@ class Post(models.Model):
     class PostAudience(models.TextChoices):
         PUBLIC = 'public', 'Public'
         FOLLOWERS = 'followers', 'Followers'
+        FRIENDS = 'friends', 'Friends'
         PRIVATE = 'private', 'Private'
+
+    REGION_CHOICES = (
+        ('Africa', 'Africa'),
+        ('Asia', 'Asia'),
+        ('Europe', 'Europe'),
+        ('North America', 'North America'),
+        ('South America', 'South America'),
+        ('Oceania', 'Oceania'),
+        ('Middle East', 'Middle East'),
+    )
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -42,6 +53,10 @@ class Post(models.Model):
         blank=True,
         help_text="The text caption accompanying the post."
     )
+    # New fields for indexing/filtering
+    country = models.CharField(max_length=100, blank=True)
+    region = models.CharField(max_length=50, choices=REGION_CHOICES, blank=True, null=True)
+    
     # New fields for post settings
     status = models.CharField(
         max_length=10,
@@ -85,6 +100,14 @@ class Post(models.Model):
     def __str__(self):
         return f"Post by {self.user.username} ({self.status}) - {self.created_at.strftime('%Y-%m-%d')}"
 
+class PostImage(models.Model):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='post_images/')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Image for {self.post.id}"
+
 class Trip(models.Model):
     """
     Represents a trip plan created by a user looking for fellow travelers.
@@ -121,6 +144,7 @@ class Trip(models.Model):
     start_date = models.DateField()
     end_date = models.DateField()
     message = models.TextField()
+    image = models.ImageField(upload_to='trip_images/', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

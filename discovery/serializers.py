@@ -4,6 +4,7 @@ from .models import Promotion
 class PromotionSerializer(serializers.ModelSerializer):
     discounted_price = serializers.SerializerMethodField()
     creator_username = serializers.ReadOnlyField(source='user.username')
+    image = serializers.SerializerMethodField()
 
     class Meta:
         model = Promotion
@@ -19,3 +20,13 @@ class PromotionSerializer(serializers.ModelSerializer):
             discount = (obj.original_price * obj.off_percent) / 100
             return round(obj.original_price - discount, 2)
         return obj.original_price
+
+    def get_image(self, obj):
+        if not obj.image:
+            return None
+        # Check if the stored name is already a full URL
+        if str(obj.image).startswith('http'):
+            return str(obj.image)
+        if hasattr(obj.image, 'url'):
+            return obj.image.url
+        return str(obj.image)

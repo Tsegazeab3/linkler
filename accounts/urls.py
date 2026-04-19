@@ -1,13 +1,20 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from .views import (
     ProfileUpdateView, GuideListView, GuideCountryListView, 
     FollowUserView, UnfollowUserView, 
     UserDetailView, UserSearchView, ExperienceListCreateView,
     ExperienceCategoryListView, ExperienceRegionListView,
-    PasswordResetRequestView, PasswordResetConfirmView
+    PasswordResetRequestView, PasswordResetConfirmView,
+    ExperienceReviewViewSet, ProviderReviewViewSet
 )
 
+router = DefaultRouter()
+router.register(r'experience-reviews', ExperienceReviewViewSet)
+router.register(r'provider-reviews', ProviderReviewViewSet)
+
 urlpatterns = [
+    path('', include(router.urls)),
     path('profile/', ProfileUpdateView.as_view(), name='profile-update'),
     path('guides/', GuideListView.as_view(), name='guide-list'),
     path('guides/countries/', GuideCountryListView.as_view(), name='guide-countries'),

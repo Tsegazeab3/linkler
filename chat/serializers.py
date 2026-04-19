@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Conversation, Message
+from .models import Conversation, Message, JoinRequest
 from accounts.serializers import UserSerializer
 
 class MessageSerializer(serializers.ModelSerializer):
@@ -29,7 +29,11 @@ class ConversationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Conversation
-        fields = ['id', 'type', 'name', 'avatar', 'members', 'members_details', 'last_message', 'unread_count', 'created_at', 'updated_at', 'current_user_id', 'current_user_username']
+        fields = [
+            'id', 'type', 'privacy', 'invite_code', 'name', 'avatar', 
+            'members', 'members_details', 'last_message', 'unread_count', 
+            'created_at', 'updated_at', 'current_user_id', 'current_user_username'
+        ]
         extra_kwargs = {
             'members': {'required': False},
             'name': {'required': False},
@@ -63,3 +67,12 @@ class ConversationSerializer(serializers.ModelSerializer):
         if user.is_authenticated:
             return obj.messages.exclude(sender=user).filter(is_read=False).count()
         return 0
+
+class JoinRequestSerializer(serializers.ModelSerializer):
+    user_details = UserSerializer(source='user', read_only=True)
+    conversation_name = serializers.ReadOnlyField(source='conversation.name')
+    
+    class Meta:
+        model = JoinRequest
+        fields = ['id', 'conversation', 'conversation_name', 'user', 'user_details', 'status', 'created_at']
+        read_only_fields = ['user', 'status', 'created_at']

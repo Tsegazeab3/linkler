@@ -51,6 +51,7 @@ const IndexPage = () => {
                 id={post.id}
                 mediaType={post.media_type || (post.media_file ? (post.media_file.endsWith('.mp4') ? 'video' : 'image') : 'text')}
                 mediaUrl={post.media_file}
+                images={post.images}
                 aspectRatio={post.aspect_ratio || '1:1'}
                 caption={post.caption}
                 timestamp={new Date(post.created_at).toLocaleDateString()}

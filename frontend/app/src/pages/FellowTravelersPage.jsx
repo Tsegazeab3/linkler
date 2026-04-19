@@ -14,6 +14,23 @@ const FellowTravelersPage = () => {
   const [activeRegion, setActiveRegion] = useState('');
   const [activeCountry, setActiveCountry] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [quickFilters, setQuickFilters] = useState({
+    'Top Rated': false,
+    'Available Now': false,
+    'Instant Reply': false,
+    'Verified': false
+  });
+
+  const toggleQuickFilter = (name) => {
+    setQuickFilters(prev => ({ ...prev, [name]: !prev[name] }));
+  };
+
+  const getApiQuickFilters = () => ({
+    top_rated: quickFilters['Top Rated'],
+    available_now: quickFilters['Available Now'],
+    instant_reply: quickFilters['Instant Reply'],
+    verified: quickFilters['Verified']
+  });
 
   useEffect(() => {
     import('../services/api').then(({ getTripCategories, getTripRegions }) => {
@@ -24,7 +41,7 @@ const FellowTravelersPage = () => {
 
   useEffect(() => {
     setLoading(true);
-    getTrips(activeCategory, activeRegion, activeCountry, searchQuery)
+    getTrips(activeCategory, activeRegion, activeCountry, searchQuery, getApiQuickFilters())
       .then(response => {
         const data = Array.isArray(response.data) ? response.data : (response.data.results || []);
         setTrips(data);
@@ -36,7 +53,7 @@ const FellowTravelersPage = () => {
       .finally(() => {
         setLoading(false);
       });
-  }, [activeCategory, activeRegion, activeCountry, searchQuery]);
+  }, [activeCategory, activeRegion, activeCountry, searchQuery, quickFilters]);
 
   const handleNext = () => {
     if (currentIndex < trips.length - 1) {
@@ -50,59 +67,56 @@ const FellowTravelersPage = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#3b82f6]"></div>
-      </div>
-    );
-  }
-
-  const trip = trips.length > 0 ? trips[currentIndex] : null;
-  // Map backend trip to TripCard requirements
-  const formattedTrip = trip ? {
-    id: trip.id,
-    user_id: trip.author?.id,
-    is_following: trip.author?.is_following,
-    picture: trip.author?.profile_picture || 'https://via.placeholder.com/400',
-    name: trip.author?.username || 'User',
-    username: trip.author?.username,
-    bio: trip.author?.bio || '',
-    from: trip.origin,
-    to: trip.destination,
-    country: trip.destination_country,
-    region: trip.region,
-    dates: `${new Date(trip.start_date).toLocaleDateString()} - ${new Date(trip.end_date).toLocaleDateString()}`,
-    message: trip.message
+  const currentTrip = trips.length > 0 ? trips[currentIndex] : null;
+  
+  // Format trip data for TripCard
+  const formattedTrip = currentTrip ? {
+    id: currentTrip.id,
+    user_id: currentTrip.author?.id,
+    is_following: currentTrip.author?.is_following,
+    picture: currentTrip.author?.profile_picture || 'https://via.placeholder.com/400',
+    name: currentTrip.author?.username || 'User',
+    username: currentTrip.author?.username,
+    bio: currentTrip.author?.bio || '',
+    from: currentTrip.origin,
+    to: currentTrip.destination,
+    country: currentTrip.destination_country,
+    region: currentTrip.region,
+    dates: `${new Date(currentTrip.start_date).toLocaleDateString()} - ${new Date(currentTrip.end_date).toLocaleDateString()}`,
+    message: currentTrip.message,
+    image: currentTrip.image
   } : null;
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 lg:p-8">
       <div className='items-center flex flex-col w-full max-w-2xl'>
-        <div className="w-full space-y-2 mb-8">
+        <div className="w-full mb-8">
           <FilterComponent 
             filterOptions={categories}
             placeholder="Search destination or message..."
             onSearchChange={setSearchQuery}
             onCategoryChange={setActiveCategory}
             activeCategory={activeCategory}
-          />
-          <FilterComponent 
-            filterOptions={regions}
-            placeholder="Search by country..."
-            onSearchChange={setActiveCountry}
-            onCategoryChange={setActiveRegion}
-            activeCategory={activeRegion}
+            secondaryFilterOptions={regions}
+            onSecondaryCategoryChange={setActiveRegion}
+            activeSecondaryCategory={activeRegion}
+            quickFilters={quickFilters}
+            onQuickFilterToggle={toggleQuickFilter}
+            value={searchQuery}
           />
         </div>
 
-        {trips.length === 0 ? (
+        {loading ? (
+          <div className="flex-grow flex items-center justify-center py-20 w-full">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand"></div>
+          </div>
+        ) : trips.length === 0 ? (
           <div className="text-center py-20 bg-ui-white rounded-3xl border-2 border-dashed border-ui-border w-full">
             <p className="text-ui-text-secondary font-medium italic">No trips found. Why not create one?</p>
           </div>
         ) : (
           <>
-            <TripCard trip={formattedTrip} />
+            {formattedTrip && <TripCard trip={formattedTrip} />}
             <div className="mt-4 flex flex-col items-center">
               <ActionButtons onNext={handleNext} onPrevious={handlePrevious} />
               <p className="text-xs text-gray-500 mt-2">

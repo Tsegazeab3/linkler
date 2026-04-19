@@ -8,7 +8,7 @@ const CreatePostModal = () => {
   const navigate = useNavigate();
   const [show, setShow] = useState(false);
   const [postMode, setPostMode] = useState(null);
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFiles, setSelectedFiles] = useState([]);
   const [fileType, setFileType] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
@@ -36,8 +36,8 @@ const CreatePostModal = () => {
     };
   }, []);
 
-  const handleFileSelect = (file, type) => {
-    setSelectedFile(file);
+  const handleFileSelect = (files, type) => {
+    setSelectedFiles(files);
     setFileType(type);
     setPostMode('media');
   };
@@ -47,7 +47,7 @@ const CreatePostModal = () => {
   };
 
   const handleBack = () => {
-    setSelectedFile(null);
+    setSelectedFiles([]);
     setFileType(null);
     setPostMode(null);
   };
@@ -98,7 +98,7 @@ const CreatePostModal = () => {
 
         {postMode ? (
           <PostDetails
-            file={selectedFile}
+            files={selectedFiles}
             fileType={fileType}
             onBack={handleBack}
             postMode={postMode}

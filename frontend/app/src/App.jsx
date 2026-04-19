@@ -6,6 +6,7 @@ import FloatingPlusButton from './components/FloatingPlusButton';
 import BottomNav from './components/BottomNav';
 import SearchModal from './components/SearchModal';
 import CreateGroupModal from './components/CreateGroupModal';
+import GroupSearchModal from './components/GroupSearchModal';
 import { Toaster } from "@/components/ui/sonner";
 import { DataProvider } from './context/DataContext';
 
@@ -17,12 +18,18 @@ function App() {
   const [selectedNavItemId, setSelectedNavItemId] = useState(null);
   const [selectedPeer, setSelectedPeer] = useState(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isGroupSearchOpen, setIsGroupSearchOpen] = useState(false);
   const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
 
   useEffect(() => {
     const handleOpenGroupModal = () => setIsGroupModalOpen(true);
+    const handleOpenGroupSearch = () => setIsGroupSearchOpen(true);
     window.addEventListener('open-create-group-modal', handleOpenGroupModal);
-    return () => window.removeEventListener('open-create-group-modal', handleOpenGroupModal);
+    window.addEventListener('open-discover-groups-modal', handleOpenGroupSearch);
+    return () => {
+      window.removeEventListener('open-create-group-modal', handleOpenGroupModal);
+      window.removeEventListener('open-discover-groups-modal', handleOpenGroupSearch);
+    };
   }, []);
 
   const handlePanelItemClick = (itemId, peerData = null) => {
@@ -157,6 +164,7 @@ function App() {
       </div>
 
       <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+      <GroupSearchModal isOpen={isGroupSearchOpen} onClose={() => setIsGroupSearchOpen(false)} />
       
       <CreateGroupModal 
         isOpen={isGroupModalOpen} 

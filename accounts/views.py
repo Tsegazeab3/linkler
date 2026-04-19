@@ -1,12 +1,79 @@
-from rest_framework import generics, status
+from rest_framework import generics, status, viewsets
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.db.models import Q
-from .models import CustomUser, Follow, Experience, PasswordResetToken
+from .models import CustomUser, Follow, Experience, PasswordResetToken, ExperienceReview, ProviderReview
 from .serializers import (
     UserSerializer, ExperienceSerializer, 
-    PasswordResetRequestSerializer, PasswordResetConfirmSerializer
+    PasswordResetRequestSerializer, PasswordResetConfirmSerializer,
+    ExperienceReviewSerializer, ProviderReviewSerializer
 )
+
+class ExperienceReviewViewSet(viewsets.ModelViewSet):
+    queryset = ExperienceReview.objects.all()
+    serializer_class = ExperienceReviewSerializer
+
+    def get_queryset(self):
+        experience_id = self.request.query_params.get('experience_id') or self.request.query_params.get('experience')
+        if experience_id:
+            return self.queryset.filter(experience_id=experience_id)
+        return self.queryset
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [AllowAny()]
+        return [IsAuthenticated()]
+
+    def create(self, request, *args, **kwargs):
+        experience_id = request.data.get('experience')
+        user = request.user
+        
+        # Handle update if already exists
+        existing = ExperienceReview.objects.filter(experience_id=experience_id, user=user).first()
+        if existing:
+            serializer = self.get_serializer(existing, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data)
+            
+        return super().create(request, *args, **kwargs)
+
+    def perform_create(self, serializer):
+        experience_id = self.request.data.get('experience')
+        serializer.save(user=self.request.user, experience_id=experience_id)
+
+class ProviderReviewViewSet(viewsets.ModelViewSet):
+    queryset = ProviderReview.objects.all()
+    serializer_class = ProviderReviewSerializer
+
+    def get_queryset(self):
+        provider_id = self.request.query_params.get('provider_id') or self.request.query_params.get('provider')
+        if provider_id:
+            return self.queryset.filter(provider_id=provider_id)
+        return self.queryset
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [AllowAny()]
+        return [IsAuthenticated()]
+
+    def create(self, request, *args, **kwargs):
+        provider_id = request.data.get('provider')
+        user = request.user
+        
+        # Handle update if already exists
+        existing = ProviderReview.objects.filter(provider_id=provider_id, user=user).first()
+        if existing:
+            serializer = self.get_serializer(existing, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data)
+            
+        return super().create(request, *args, **kwargs)
+
+    def perform_create(self, serializer):
+        provider_id = self.request.data.get('provider')
+        serializer.save(user=self.request.user, provider_id=provider_id)
 
 from rest_framework.parsers import MultiPartParser, FormParser
 
@@ -23,7 +90,10 @@ class ExperienceListCreateView(generics.ListCreateAPIView):
         region = self.request.query_params.get('region', '')
         country = self.request.query_params.get('country', '')
         search = self.request.query_params.get('search', '')
+        user_filter = self.request.query_params.get('user', '')
 
+        if user_filter:
+            queryset = queryset.filter(user__username=user_filter)
         if category:
             queryset = queryset.filter(category=category)
         if region:
@@ -75,7 +145,9 @@ class ProfileUpdateView(generics.RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
-        return self.request.user
+        return CustomUser.objects.prefetch_related(
+            'posts', 'posts__images', 'posts__post_comments', 'posts__post_likes', 'posts__post_saves'
+        ).get(id=self.request.user.id)
 
 class GuideListView(generics.ListAPIView):
     """
@@ -88,8 +160,10 @@ class GuideListView(generics.ListAPIView):
         account_type = self.request.query_params.get('type', 'guide')
         search_query = self.request.query_params.get('search', '')
         category = self.request.query_params.get('category', '')
+        country = self.request.query_params.get('country', '')
+        region = self.request.query_params.get('region', '')
         
-        queryset = CustomUser.objects.filter(account_type=account_type)
+        queryset = CustomUser.objects.filter(account_type=account_type, opt_out_discovery=False)
         
         if search_query:
             queryset = queryset.filter(
@@ -100,9 +174,15 @@ class GuideListView(generics.ListAPIView):
             )
             
         if category:
-            # Assuming 'category' might be a field we want to filter on in the future
-            # For now, let's just filter by nationality if it matches for demo
-            queryset = queryset.filter(nationality__icontains=category)
+            # First try country, then nationality
+            queryset = queryset.filter(Q(country__icontains=category) | Q(nationality__icontains=category))
+
+        if country:
+            queryset = queryset.filter(country__icontains=country)
+            
+        if region:
+            # We don't have a region field on User yet, but we could add one or filter city
+            queryset = queryset.filter(city__icontains=region)
             
         return queryset
 
@@ -130,7 +210,9 @@ class UnfollowUserView(generics.DestroyAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 class UserDetailView(generics.RetrieveAPIView):
-    queryset = CustomUser.objects.all()
+    queryset = CustomUser.objects.all().prefetch_related(
+        'posts', 'posts__images', 'posts__post_comments', 'posts__post_likes', 'posts__post_saves'
+    )
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
     lookup_field = 'username'
@@ -147,9 +229,10 @@ class UserSearchView(generics.ListAPIView):
         query = self.request.query_params.get('q', '')
         if query:
             return CustomUser.objects.filter(
-                Q(username__icontains=query) | 
-                Q(email__icontains=query) |
-                Q(bio__icontains=query)
+                (Q(username__icontains=query) | 
+                 Q(email__icontains=query) |
+                 Q(bio__icontains=query)),
+                opt_out_discovery=False
             ).order_by('username')[:20]
         return CustomUser.objects.none()
 
@@ -167,15 +250,10 @@ class PasswordResetRequestView(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data['email']
         
-        print(f"DEBUG: Password reset requested for email: '{email}'")
-        
         # Use __iexact for case-insensitive matching
         user = CustomUser.objects.filter(email__iexact=email).first()
         
-        if not user:
-            print(f"DEBUG: No user found with email: '{email}'")
-        else:
-            print(f"DEBUG: User found: {user.username}. Generating token...")
+        if user:
             token = secrets.token_urlsafe(32)
             hashed_token = hashlib.sha256(token.encode()).hexdigest()
             expires_at = timezone.now() + timedelta(minutes=30)
@@ -186,14 +264,8 @@ class PasswordResetRequestView(generics.GenericAPIView):
                 expires_at=expires_at
             )
             
-            # Simulate email sending
-            reset_link = f"http://localhost:5173/reset-password?token={token}"
-            print("\n" + "="*50)
-            print(f"LOCAL EMAIL SIMULATION")
-            print(f"To: {email}")
-            print(f"Subject: Password Reset Request")
-            print(f"Body: Click the link to reset your password: {reset_link}")
-            print("="*50 + "\n")
+            # In a real app, send email here
+            # reset_link = f"http://localhost:5173/reset-password?token={token}"
             
         return Response(
             {"detail": "If an account exists with this email, you will receive a reset link shortly."},

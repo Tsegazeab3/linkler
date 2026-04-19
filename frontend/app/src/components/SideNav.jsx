@@ -88,6 +88,39 @@ const PreviewList = ({ items, renderItem, emptyMessage }) => (
 );
 
 
+const EmptyState = ({ icon, title, desc, action }) => (
+  <div className="text-center py-10 px-4 animate-in fade-in duration-500">
+    <div className="w-16 h-16 bg-brand-light text-brand/60 rounded-full flex items-center justify-center mx-auto mb-4">
+      {icon}
+    </div>
+    <h4 className="text-ui-text-main font-bold mb-1">{title}</h4>
+    <p className="text-ui-text-secondary text-sm mb-6">{desc}</p>
+    {action}
+  </div>
+);
+
+const SearchBar = ({ placeholder, className = "", value, onChange }) => (
+  <div className={`relative ${className}`}>
+    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+      <svg className="h-4 w-4 text-ui-muted" viewBox="0 0 20 20" fill="currentColor">
+        <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+      </svg>
+    </div>
+    <form onSubmit={(e) => e.preventDefault()}>
+      <Input
+        id={`search-${placeholder.replace(/\s+/g, '-').toLowerCase()}`}
+        name="search"
+        type="text"
+        className="pl-9 bg-ui-bg"
+        placeholder={placeholder}
+        value={value}
+        onChange={onChange}
+        autoComplete="off"
+      />
+    </form>
+  </div>
+);
+
 const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClick, onClosePanel, onOpenSearch, selectedUser }) => {
   const { user, logout, isAuthenticated } = useAuth();
   const { theme, toggleTheme } = useTheme();
@@ -225,41 +258,16 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
     const filteredDMs = Array.isArray(conversations) ? conversations.filter(c => c.type === 'dm' && (c.name?.toLowerCase().includes(searchQuery.toLowerCase()) || !searchQuery)) : [];
     const filteredGroups = Array.isArray(conversations) ? conversations.filter(c => c.type === 'group' && (c.name?.toLowerCase().includes(searchQuery.toLowerCase()) || !searchQuery)) : [];
 
-    const EmptyState = ({ icon, title, desc, action }) => (
-      <div className="text-center py-10 px-4 animate-in fade-in duration-500">
-        <div className="w-16 h-16 bg-brand-light text-brand/60 rounded-full flex items-center justify-center mx-auto mb-4">
-          {icon}
-        </div>
-        <h4 className="text-ui-text-main font-bold mb-1">{title}</h4>
-        <p className="text-ui-text-secondary text-sm mb-6">{desc}</p>
-        {action}
-      </div>
-    );
-
-    const SearchBar = ({ placeholder, className = "" }) => (
-      <div className={`relative ${className}`}>
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <svg className="h-4 w-4 text-ui-muted" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
-          </svg>
-        </div>
-        <Input
-          id={`search-${placeholder.replace(/\s+/g, '-').toLowerCase()}`}
-          name="search"
-          type="text"
-          className="pl-9 bg-ui-bg"
-          placeholder={placeholder}
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-      </div>
-    );
-
     switch (selectedNavItem.name) {
       case 'Messages':
         return (
           <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <SearchBar placeholder="Search messages..." className="mb-4" />
+            <SearchBar 
+              placeholder="Search messages..." 
+              className="mb-4" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
             <PreviewList 
               items={filteredDMs} 
               renderItem={conv => <ChatPreview key={conv.id} conversation={conv} onSelect={() => onOpenChat(conv, 'dm')} />} 
@@ -296,7 +304,23 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
       case 'Groups':
         return (
           <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <SearchBar placeholder="Search groups..." className="mb-4" />
+            <div className="flex gap-2 mb-4">
+                <SearchBar 
+                  placeholder="Search your groups..." 
+                  className="flex-1" 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <Button 
+                    variant="outline" 
+                    size="icon" 
+                    onClick={() => window.dispatchEvent(new CustomEvent('open-discover-groups-modal'))}
+                    className="shrink-0 rounded-xl border-brand/20 text-brand hover:bg-brand hover:text-white"
+                    title="Discover Public Groups"
+                >
+                    <SvgSearch className="w-5 h-5" />
+                </Button>
+            </div>
             <PreviewList 
               items={filteredGroups} 
               renderItem={conv => (

@@ -1,0 +1,30 @@
+small bugs
+ - there should be a redirection from comment to account
+ - you can't add a profile picture inside the group
+ - the country filters are no showing anything I think the datas are not indexed with country this is in the guides 
+ - there is no way to put the details to get your post indexed and for the filters to work this is the same with the post 
+ - in the fellow travelers the bio is redirecting to account it should be the user name  
+ -  in the fellow travelers user can click on the image and it should zoom 
+ - the logic for the fellow travelers should be if you have images regarding the trib you will show those images if you don't it will just show profile picture
+ - for the profile view there should be other tabs just like shared moemnts that show interactions and posted trips, if they are guides  there should be an additional posted services
+ - in the settings if the user allows it you can see who they are following and who follows them on default it should be allowed
+features
+	home
+		 - the fake posts should be partly message partly images
+		 - the buttons are not working
+	new guides
+		services 
+		 - the services should have filters like rent housing, travell, embassy things... things that people need during travel there should be images for images 
+		 - there should be more details in the pictures for the guides or experiances
+		 - there should be booking page for the guides
+	deals
+		 - there is no booking way there needs to be a way where you show that you came from us
+	groups
+		- there should be some permissions meaning allow with a link or people should allowed in with a search and a join 
+		another thing is there should be an option that allows them to opt out of the search algorithm
+		
+	fellow travllers
+		- the when posting a new travel there should be a choise to allow just friends or viewrs or followers to see it 
+		- if there are no images in the profile there should be a place holder gray avatars
+
+

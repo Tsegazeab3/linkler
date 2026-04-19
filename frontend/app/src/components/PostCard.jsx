@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useOutletContext, useNavigate, useLocation } from 'react-router-dom';
 import { followUser, unfollowUser, createDM, toggleLike, toggleSave } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,7 @@ const PostCard = ({
   id,
   mediaType,
   mediaUrl,
+  images = [], // New prop for multiple images
   aspectRatio, // '1:1' or '4:5'
   caption,
   timestamp,
@@ -24,6 +26,7 @@ const PostCard = ({
   isFollowing: initialIsFollowing,
   userBio,
 }) => {
+  const { user } = useAuth();
   const [isCaptionExpanded, setIsCaptionExpanded] = useState(false);
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
   const [followLoading, setFollowLoading] = useState(false);
@@ -37,6 +40,12 @@ const PostCard = ({
   const { handleOpenChat } = useOutletContext();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const getMediaUrl = (url) => {
+    if (!url) return null;
+    if (url.startsWith('http')) return url;
+    return `http://localhost:8000${url}`;
+  };
 
   const handleFollow = async () => {
     setFollowLoading(true);
@@ -123,6 +132,76 @@ const PostCard = ({
   // Determine aspect ratio class
   const aspectRatioClass = aspectRatio === '4:5' ? 'aspect-[4/5]' : 'aspect-square';
 
+  const renderMedia = () => {
+    if (images && images.length > 0) {
+      return (
+        <div className={`grid gap-0.5 w-full ${aspectRatioClass} cursor-zoom-in`} onClick={handleOpenDetail}>
+          {images.length === 1 ? (
+            <img src={getMediaUrl(images[0].image)} className="w-full h-full object-cover" loading="lazy" alt="" />
+          ) : images.length === 2 ? (
+            <div className="grid grid-cols-2 gap-0.5 h-full w-full">
+               <img src={getMediaUrl(images[0].image)} className="w-full h-full object-cover" loading="lazy" alt="" />
+               <img src={getMediaUrl(images[1].image)} className="w-full h-full object-cover" loading="lazy" alt="" />
+            </div>
+          ) : (
+            /* Compartmentalized layout: One big on side, others small */
+            <div className="flex h-full w-full gap-0.5">
+               <div className="w-2/3 h-full">
+                  <img src={getMediaUrl(images[0].image)} className="w-full h-full object-cover" loading="lazy" alt="" />
+               </div>
+               <div className="w-1/3 flex flex-col gap-0.5 h-full">
+                  <div className="h-1/2 w-full relative">
+                    <img src={getMediaUrl(images[1].image)} className="w-full h-full object-cover" loading="lazy" alt="" />
+                  </div>
+                  <div className="h-1/2 w-full relative">
+                    <img src={getMediaUrl(images[2].image)} className="w-full h-full object-cover" loading="lazy" alt="" />
+                    {images.length > 3 && (
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white font-bold text-lg">
+                        +{images.length - 3}
+                      </div>
+                    )}
+                  </div>
+               </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    if (mediaUrl) {
+      return (
+        <div className={`relative w-full bg-muted ${aspectRatioClass} cursor-zoom-in`} onClick={handleOpenDetail}>
+           {mediaType === 'image' && (
+              <img
+                src={getMediaUrl(mediaUrl)}
+                alt="Post media"
+                className="absolute top-0 left-0 w-full h-full object-cover"
+                loading="lazy"
+              />
+            )}
+            {mediaType === 'video' && (
+              <video
+                src={getMediaUrl(mediaUrl)}
+                className="absolute top-0 left-0 w-full h-full object-cover"
+                preload="metadata"
+              />
+            )}
+        </div>
+      );
+    }
+
+    /* Text-only Post Style */
+    return (
+      <div className={`relative w-full bg-gradient-to-br from-brand-light to-accent-indigo/10 ${aspectRatioClass} cursor-zoom-in`} onClick={handleOpenDetail}>
+        <div className="absolute inset-0 flex items-center justify-center p-8">
+           <p className="text-lg md:text-xl text-ui-text-main font-medium italic text-center leading-relaxed">
+             {caption}
+           </p>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <Card className="w-full max-w-sm mx-auto my-4 overflow-hidden border-border/50 shadow-sm hover:shadow-md transition-shadow">
       {/* User Info Section */}
@@ -149,48 +228,23 @@ const PostCard = ({
           >
             <MessageCircle className="h-5 w-5" />
           </Button>
-          <Button
-            variant={isFollowing ? "secondary" : "default"}
-            size="sm"
-            onClick={handleFollow}
-            disabled={followLoading}
-            className="h-8 text-xs font-bold rounded-full px-4 transition-all"
-          >
-            {isFollowing ? 'Following' : 'Follow'}
-          </Button>
+          {user?.id !== userId && (
+            <Button
+              variant={isFollowing ? "secondary" : "default"}
+              size="sm"
+              onClick={handleFollow}
+              disabled={followLoading}
+              className="h-8 text-xs font-bold rounded-full px-4 transition-all"
+            >
+              {isFollowing ? 'Following' : 'Follow'}
+            </Button>
+          )}
         </div>
       </CardHeader>
 
       {/* Media Renderer */}
       <CardContent className="p-0">
-        <div className={`relative w-full bg-muted ${aspectRatioClass} cursor-zoom-in`} onClick={handleOpenDetail}>
-          {mediaUrl ? (
-            <>
-              {mediaType === 'image' && (
-                <img
-                  src={mediaUrl}
-                  alt="Post media"
-                  className="absolute top-0 left-0 w-full h-full object-cover"
-                  loading="lazy"
-                />
-              )}
-              {mediaType === 'video' && (
-                <video
-                  src={mediaUrl}
-                  className="absolute top-0 left-0 w-full h-full object-cover"
-                  preload="metadata"
-                />
-              )}
-            </>
-          ) : (
-            /* Text-only Post Style */
-            <div className="absolute inset-0 flex items-center justify-center p-8 bg-gradient-to-br from-brand-light to-accent-indigo/10">
-               <p className="text-lg md:text-xl text-ui-text-main font-medium italic text-center leading-relaxed">
-                 {caption}
-               </p>
-            </div>
-          )}
-        </div>
+        {renderMedia()}
       </CardContent>
 
       {/* Action Bar & Metadata */}

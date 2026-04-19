@@ -20,6 +20,8 @@ const SettingsPage = () => {
     city: '',
     country: '',
     nationality: '',
+    opt_out_discovery: false,
+    show_followers_list: true,
   });
   const [passwordData, setPasswordData] = useState({
     oldPassword: '',
@@ -50,6 +52,8 @@ const SettingsPage = () => {
         city: user.city || '',
         country: user.country || '',
         nationality: user.nationality || '',
+        opt_out_discovery: user.opt_out_discovery || false,
+        show_followers_list: user.show_followers_list ?? true,
       });
       setPreviewImage(user.profile_picture || null);
     }
@@ -88,6 +92,8 @@ const SettingsPage = () => {
       dataToSend.append('city', profileData.city);
       dataToSend.append('country', profileData.country);
       dataToSend.append('nationality', profileData.nationality);
+      dataToSend.append('opt_out_discovery', profileData.opt_out_discovery);
+      dataToSend.append('show_followers_list', profileData.show_followers_list);
       
       if (profileImage) {
         dataToSend.append('profile_picture', profileImage);
@@ -273,6 +279,46 @@ const SettingsPage = () => {
 
         <TabsContent value="preferences">
           <Card>
+            <CardHeader>
+              <CardTitle>Discovery & Privacy</CardTitle>
+              <CardDescription>Control how you appear to other travelers.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+               <div className="flex items-center justify-between p-4 rounded-xl border-2 border-border bg-ui-white">
+                  <div>
+                    <p className="font-bold text-sm text-ui-text-main">Opt-out of Discovery</p>
+                    <p className="text-xs text-ui-muted">Hide your profile from search results and discovery algorithms.</p>
+                  </div>
+                  <button 
+                    onClick={() => setProfileData({ ...profileData, opt_out_discovery: !profileData.opt_out_discovery })}
+                    className={`w-12 h-6 rounded-full transition-all relative ${profileData.opt_out_discovery ? 'bg-brand' : 'bg-ui-muted/30'}`}
+                  >
+                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${profileData.opt_out_discovery ? 'left-7' : 'left-1'}`} />
+                  </button>
+               </div>
+
+               <div className="flex items-center justify-between p-4 rounded-xl border-2 border-border bg-ui-white">
+                  <div>
+                    <p className="font-bold text-sm text-ui-text-main">Show Followers List</p>
+                    <p className="text-xs text-ui-muted">Allow others to see who you follow and who follows you.</p>
+                  </div>
+                  <button 
+                    onClick={() => setProfileData({ ...profileData, show_followers_list: !profileData.show_followers_list })}
+                    className={`w-12 h-6 rounded-full transition-all relative ${profileData.show_followers_list ? 'bg-brand' : 'bg-ui-muted/30'}`}
+                  >
+                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${profileData.show_followers_list ? 'left-7' : 'left-1'}`} />
+                  </button>
+               </div>
+               
+               <div className="flex justify-end pt-2 border-t border-border mt-6">
+                  <Button onClick={submitProfileUpdate} disabled={loading}>
+                    {loading ? 'Saving...' : 'Save Preferences'}
+                  </Button>
+               </div>
+            </CardContent>
+          </Card>
+
+          <Card className="mt-8">
             <CardHeader>
               <CardTitle>Chat Preferences</CardTitle>
               <CardDescription>Choose how chats open by default on larger screens.</CardDescription>

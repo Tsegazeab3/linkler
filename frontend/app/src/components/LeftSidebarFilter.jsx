@@ -1,37 +1,127 @@
 import React from 'react';
 
-const LeftSidebarFilter = ({ activeCategory, onCategoryChange, categories = [] }) => {
+const LeftSidebarFilter = ({ 
+  activeCategory = '', 
+  onCategoryChange, 
+  categories = [],
+  activeRegion = '',
+  onRegionChange,
+  regions = [],
+  activeCountry = '',
+  onCountryChange,
+  quickFilters = {},
+  onQuickFilterToggle,
+  placeholder = "Search country..."
+}) => {
+  const handleSelect = (item, current, onChange) => {
+    if (!onChange) return;
+    if (item === '' || current === item) {
+      onChange('');
+    } else {
+      onChange(item);
+    }
+  };
+
+  const quickFilterOptions = ['Top Rated', 'Available Now', 'Instant Reply', 'Verified'];
+
   return (
-    <div className="p-5 rounded-3xl shadow-sm bg-ui-white border border-ui-border">
-      <h3 className="text-lg font-bold mb-4 text-ui-text-main">Categories</h3>
-      
-      <div className="space-y-1">
-        <button
-          onClick={() => onCategoryChange('')}
-          className={`w-full text-left px-4 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-            activeCategory === '' 
-              ? 'bg-brand/10 text-brand' 
-              : 'text-ui-text-secondary hover:bg-ui-bg-alt'
-          }`}
-        >
-          All Categories
-        </button>
-        {categories.map(category => (
+    <div className="space-y-6 hidden lg:block">
+      <div className="p-5 rounded-3xl shadow-sm bg-ui-white border border-ui-border">
+        <h3 className="text-lg font-bold mb-4 text-ui-text-main">Categories</h3>
+        <div className="space-y-1 max-h-60 overflow-y-auto no-scrollbar">
           <button
-            key={category}
-            onClick={() => onCategoryChange(category)}
+            onClick={() => handleSelect('', activeCategory, onCategoryChange)}
             className={`w-full text-left px-4 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-              activeCategory === category 
+              activeCategory === '' 
                 ? 'bg-brand/10 text-brand' 
                 : 'text-ui-text-secondary hover:bg-ui-bg-alt'
             }`}
           >
-            {category}
+            All Categories
           </button>
-        ))}
+          {categories.map(category => (
+            <button
+              key={category}
+              onClick={() => handleSelect(category, activeCategory, onCategoryChange)}
+              className={`w-full text-left px-4 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                activeCategory === category 
+                  ? 'bg-brand/10 text-brand' 
+                  : 'text-ui-text-secondary hover:bg-ui-bg-alt'
+              }`}
+            >
+              {category}
+            </button>
+          ))}
+        </div>
       </div>
+
+      <div className="p-5 rounded-3xl shadow-sm bg-ui-white border border-ui-border">
+        <h3 className="text-lg font-bold mb-4 text-ui-text-main">Quick Filters</h3>
+        <div className="space-y-2">
+          {quickFilterOptions.map(pill => {
+            const isActive = quickFilters[pill];
+            return (
+              <button 
+                key={pill}
+                onClick={() => onQuickFilterToggle && onQuickFilterToggle(pill)}
+                className={`w-full text-left px-4 py-2.5 rounded-xl text-sm font-semibold transition-all border ${
+                  isActive 
+                    ? 'bg-brand text-white border-brand' 
+                    : 'bg-ui-white border-ui-border text-ui-text-secondary hover:bg-ui-bg-alt'
+                }`}
+              >
+                {pill}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {regions.length > 0 && (
+        <div className="p-5 rounded-3xl shadow-sm bg-ui-white border border-ui-border">
+          <h3 className="text-lg font-bold mb-4 text-ui-text-main">Regions</h3>
+          <div className="space-y-1 max-h-60 overflow-y-auto no-scrollbar">
+            <button
+              onClick={() => handleSelect('', activeRegion, onRegionChange)}
+              className={`w-full text-left px-4 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                activeRegion === '' 
+                  ? 'bg-brand/10 text-brand' 
+                  : 'text-ui-text-secondary hover:bg-ui-bg-alt'
+              }`}
+            >
+              All Regions
+            </button>
+            {regions.map(region => (
+              <button
+                key={region}
+                onClick={() => handleSelect(region, activeRegion, onRegionChange)}
+                className={`w-full text-left px-4 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                  activeRegion === region 
+                    ? 'bg-brand/10 text-brand' 
+                    : 'text-ui-text-secondary hover:bg-ui-bg-alt'
+                }`}
+              >
+                {region}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {onCountryChange && (
+        <div className="p-5 rounded-3xl shadow-sm bg-ui-white border border-ui-border">
+          <h3 className="text-lg font-bold mb-4 text-ui-text-main">Country Search</h3>
+          <input 
+            type="text"
+            placeholder={placeholder}
+            className="w-full px-4 py-2.5 rounded-xl text-sm border border-ui-border bg-ui-bg-alt focus:outline-none focus:ring-2 focus:ring-brand/20 transition-all"
+            value={activeCountry}
+            onChange={(e) => onCountryChange(e.target.value)}
+          />
+        </div>
+      )}
       
-      <div className="mt-8 pt-6 border-t border-ui-border">
+      <div className="p-5 rounded-3xl shadow-sm bg-ui-white border border-ui-border">
         <h4 className="font-bold text-xs uppercase tracking-widest text-ui-muted mb-4">Price Range</h4>
         <div className="px-2">
             <input type="range" className="w-full accent-brand" min="0" max="100" />

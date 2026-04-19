@@ -4,8 +4,10 @@ from rest_framework import status, generics
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.parsers import MultiPartParser, FormParser
 from .serializers import PostSerializer, TripSerializer, CommentSerializer
-from .models import Post, Trip, Like, Save, Comment
+from .models import Post, Trip, Like, Save, Comment, PostImage
 from django.shortcuts import get_object_or_404
+from django.db import models
+from django.db.models import Q
 
 class PostCreateView(APIView):
     """
@@ -24,23 +26,80 @@ class PostCreateView(APIView):
         
         if serializer.is_valid():
             # Assign the current authenticated user to the post.
-            # The 'user' field is read-only in the serializer, so we set it here.
-            serializer.save(user=request.user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            post = serializer.save(user=request.user)
+            
+            # Handle multiple images
+            images = request.FILES.getlist('images')
+            for img in images:
+                PostImage.objects.create(post=post, image=img)
+            
+            # Refresh post to include newly created images in serializer
+            post = Post.objects.prefetch_related('images', 'post_comments', 'post_likes', 'post_saves').get(id=post.id)
+                
+            return Response(PostSerializer(post, context={'request': request}).data, status=status.HTTP_201_CREATED)
         else:
             # Return validation errors
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class PostListView(generics.ListAPIView):
-    queryset = Post.objects.filter(status='published')
     serializer_class = PostSerializer
     permission_classes = [AllowAny]
 
+    def get_queryset(self):
+        user = self.request.user
+        qs = Post.objects.filter(status='published').prefetch_related('images', 'post_comments', 'post_likes', 'post_saves')
+        
+        # Filter by audience
+        if user.is_authenticated:
+            qs = qs.filter(
+                Q(audience='public') |
+                Q(user=user) |
+                Q(audience='followers', user__followers__follower=user) |
+                Q(audience='friends', user__followers__follower=user, user__following__following=user)
+            )
+        else:
+            qs = qs.filter(audience='public')
+
+        # Additional filtering
+        country = self.request.query_params.get('country', '')
+        region = self.request.query_params.get('region', '')
+        category = self.request.query_params.get('category', '')
+        search = self.request.query_params.get('search', '')
+
+        if country:
+            qs = qs.filter(country__icontains=country)
+        if region:
+            qs = qs.filter(region=region)
+        if category:
+            qs = qs.filter(caption__icontains=category)
+        if search:
+            qs = qs.filter(
+                Q(caption__icontains=search) |
+                Q(country__icontains=search) |
+                Q(region__icontains=search) |
+                Q(user__username__icontains=search)
+            )
+
+        return qs.distinct()
+
 class PostDetailView(generics.RetrieveAPIView):
-    queryset = Post.objects.filter(status='published')
     serializer_class = PostSerializer
     permission_classes = [AllowAny]
     lookup_url_kwarg = 'post_id'
+
+    def get_queryset(self):
+        user = self.request.user
+        qs = Post.objects.filter(status='published').prefetch_related('images', 'post_comments', 'post_likes', 'post_saves')
+        
+        if user.is_authenticated:
+            return qs.filter(
+                Q(audience='public') |
+                Q(user=user) |
+                Q(audience='followers', user__followers__follower=user) |
+                Q(audience='friends', user__followers__follower=user, user__following__following=user)
+            ).distinct()
+        else:
+            return qs.filter(audience='public')
 
 class TripListCreateView(generics.ListCreateAPIView):
     serializer_class = TripSerializer
@@ -51,7 +110,10 @@ class TripListCreateView(generics.ListCreateAPIView):
         region = self.request.query_params.get('region', '')
         destination_country = self.request.query_params.get('destination_country', '')
         search = self.request.query_params.get('search', '')
+        user_filter = self.request.query_params.get('user', '')
 
+        if user_filter:
+            queryset = queryset.filter(user__username=user_filter)
         if category:
             queryset = queryset.filter(category=category)
         if region:

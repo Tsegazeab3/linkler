@@ -3,6 +3,7 @@ import { createPost } from '../services/api';
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import {
@@ -15,8 +16,10 @@ import {
 
 const MAX_CAPTION_LENGTH = 500;
 
-const PostDetails = ({ file, fileType, onBack, postMode, onSuccess }) => {
+const PostDetails = ({ files, fileType, onBack, postMode, onSuccess }) => {
   const [caption, setCaption] = useState('');
+  const [country, setCountry] = useState('');
+  const [region, setRegion] = useState('');
   const [audience, setAudience] = useState('public');
   const [disableComments, setDisableComments] = useState(false);
   const [aspectRatio, setAspectRatio] = useState('1:1');
@@ -29,20 +32,29 @@ const PostDetails = ({ file, fileType, onBack, postMode, onSuccess }) => {
 
     const formData = new FormData();
     formData.append('caption', caption);
+    formData.append('country', country);
+    formData.append('region', region);
     formData.append('audience', audience);
     // Django expects 'true' or 'false' for BooleanField from FormData
     formData.append('allow_comments', !disableComments); 
     formData.append('status', status);
 
-    if (postMode === 'media' && file) {
-      formData.append('media_file', file);
+    if (postMode === 'media' && files && files.length > 0) {
+      if (fileType === 'video') {
+        formData.append('media_file', files[0]);
+      } else {
+        files.forEach(file => {
+          formData.append('images', file);
+        });
+        // Also set the first one as main media_file for legacy compatibility
+        formData.append('media_file', files[0]);
+      }
       formData.append('media_type', fileType);
       formData.append('aspect_ratio', aspectRatio);
     }
 
     createPost(formData)
       .then(response => {
-        console.log('Post created successfully:', response.data);
         toast.success("Post Created", {
           description: "Your post has been shared successfully!"
         });
@@ -71,13 +83,24 @@ const PostDetails = ({ file, fileType, onBack, postMode, onSuccess }) => {
       {/* Media Preview */}
       {postMode === 'media' && (
         <div className="md:w-1/2">
-          <div className="relative w-full aspect-square overflow-hidden rounded-lg bg-ui-bg-alt">
-            {fileType === 'image' ? (
-              <img src={URL.createObjectURL(file)} alt="Preview" className="absolute top-0 left-0 w-full h-full object-cover" />
-            ) : (
-              <video src={URL.createObjectURL(file)} controls className="absolute top-0 left-0 w-full h-full object-cover" />
-            )}
-          </div>
+          {fileType === 'image' ? (
+            <div className={`grid gap-2 ${files.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+              {Array.from(files).slice(0, 4).map((file, idx) => (
+                <div key={idx} className={`relative overflow-hidden rounded-lg bg-ui-bg-alt ${idx === 0 && files.length > 2 ? 'row-span-2 col-span-1 h-full' : 'aspect-square'}`}>
+                  <img src={URL.createObjectURL(file)} alt="Preview" className="absolute top-0 left-0 w-full h-full object-cover" />
+                  {idx === 3 && files.length > 4 && (
+                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white font-bold">
+                      +{files.length - 4}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="relative w-full aspect-square overflow-hidden rounded-lg bg-ui-bg-alt">
+               <video src={URL.createObjectURL(files[0])} controls className="absolute top-0 left-0 w-full h-full object-cover" />
+            </div>
+          )}
         </div>
       )}
 
@@ -104,6 +127,37 @@ const PostDetails = ({ file, fileType, onBack, postMode, onSuccess }) => {
             </div>
           </div>
 
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="country" className="text-sm font-semibold">Country</Label>
+              <Input
+                id="country"
+                value={country}
+                onChange={(e) => setCountry(e.target.value)}
+                placeholder="e.g. Japan"
+                className="focus-visible:ring-primary"
+                disabled={loading}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="region" className="text-sm font-semibold">Region</Label>
+              <Select value={region} onValueChange={setRegion} disabled={loading}>
+                <SelectTrigger id="region" className="w-full">
+                  <SelectValue placeholder="Select region" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Africa">Africa</SelectItem>
+                  <SelectItem value="Asia">Asia</SelectItem>
+                  <SelectItem value="Europe">Europe</SelectItem>
+                  <SelectItem value="North America">North America</SelectItem>
+                  <SelectItem value="South America">South America</SelectItem>
+                  <SelectItem value="Oceania">Oceania</SelectItem>
+                  <SelectItem value="Middle East">Middle East</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
           {/* Settings */}
           <div className="grid grid-cols-1 gap-6 pt-2">
             <div className="space-y-2">
@@ -115,6 +169,7 @@ const PostDetails = ({ file, fileType, onBack, postMode, onSuccess }) => {
                 <SelectContent>
                   <SelectItem value="public">Public</SelectItem>
                   <SelectItem value="followers">Followers</SelectItem>
+                  <SelectItem value="friends">Friends</SelectItem>
                   <SelectItem value="private">Private</SelectItem>
                 </SelectContent>
               </Select>

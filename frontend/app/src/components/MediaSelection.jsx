@@ -6,10 +6,10 @@ const MediaSelection = ({ onFileSelect, onTextOnly, isMobile }) => {
   const fileInputRef = useRef(null);
 
   const handleFileChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const type = file.type.startsWith('image') ? 'image' : 'video';
-      onFileSelect(file, type);
+    const selectedFiles = Array.from(event.target.files);
+    if (selectedFiles.length > 0) {
+      const type = selectedFiles[0].type.startsWith('image') ? 'image' : 'video';
+      onFileSelect(selectedFiles, type);
     }
   };
 
@@ -32,10 +32,10 @@ const MediaSelection = ({ onFileSelect, onTextOnly, isMobile }) => {
   const handleDrop = (event) => {
     event.preventDefault();
     event.stopPropagation();
-    const file = event.dataTransfer.files[0];
-    if (file) {
-      const type = file.type.startsWith('image') ? 'image' : 'video';
-      onFileSelect(file, type);
+    const droppedFiles = Array.from(event.dataTransfer.files);
+    if (droppedFiles.length > 0) {
+      const type = droppedFiles[0].type.startsWith('image') ? 'image' : 'video';
+      onFileSelect(droppedFiles, type);
     }
   };
 
@@ -47,6 +47,7 @@ const MediaSelection = ({ onFileSelect, onTextOnly, isMobile }) => {
         ref={fileInputRef}
         onChange={handleFileChange}
         className="hidden"
+        multiple
       />
 
       {isMobile ? (

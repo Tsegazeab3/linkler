@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { searchUsers, createGroup } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import { Dialog, DialogContent, DialogTitle, DialogFooter, DialogHeader, DialogDescription } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -8,8 +9,10 @@ import { toast } from "sonner";
 import { X, Search, Users, Plus, Check } from "lucide-react";
 
 const CreateGroupModal = ({ isOpen, onClose, onSuccess }) => {
+  const { user: authUser } = useAuth();
   const [step, setStep] = useState(1); // 1: Select Members, 2: Group Info
   const [groupName, setGroupName] = useState('');
+  const [privacy, setPrivacy] = useState('public');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [selectedMembers, setSelectedMembers] = useState([]);
@@ -39,7 +42,9 @@ const CreateGroupModal = ({ isOpen, onClose, onSuccess }) => {
     debounceTimeout.current = setTimeout(() => {
       searchUsers(searchQuery)
         .then(res => {
-          const data = Array.isArray(res.data) ? res.data : (res.data.results || []);
+          let data = Array.isArray(res.data) ? res.data : (res.data.results || []);
+          // Filter out current user to ensure group has at least one other member
+          data = data.filter(u => u.id !== authUser?.id);
           setSearchResults(data);
         })
         .catch(err => console.error(err))
@@ -70,7 +75,7 @@ const CreateGroupModal = ({ isOpen, onClose, onSuccess }) => {
     setSubmitting(true);
     try {
       const memberIds = selectedMembers.map(m => m.id);
-      const res = await createGroup(groupName, memberIds);
+      const res = await createGroup(groupName, memberIds, privacy);
       toast.success("Group created successfully!");
       if (onSuccess) onSuccess(res.data);
       onClose();
@@ -174,6 +179,29 @@ const CreateGroupModal = ({ isOpen, onClose, onSuccess }) => {
                     className="h-12 text-lg font-bold border-ui-border rounded-xl focus-visible:ring-brand"
                     autoFocus
                   />
+                </div>
+
+                <div className="w-full space-y-2 mt-4">
+                  <Label className="text-xs font-bold uppercase tracking-widest text-ui-muted ml-1">Privacy</Label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setPrivacy('public')}
+                      className={`py-3 px-4 rounded-xl border-2 transition-all text-sm font-bold ${privacy === 'public' ? 'border-brand bg-brand/5 text-brand' : 'border-ui-border text-ui-muted'}`}
+                    >
+                      Public
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPrivacy('private')}
+                      className={`py-3 px-4 rounded-xl border-2 transition-all text-sm font-bold ${privacy === 'private' ? 'border-brand bg-brand/5 text-brand' : 'border-ui-border text-ui-muted'}`}
+                    >
+                      Private
+                    </button>
+                  </div>
+                  <p className="text-[10px] text-ui-muted mt-1 px-1">
+                    {privacy === 'public' ? 'Searchable by anyone. Requires request to join.' : 'Hidden from search. Invite link only.'}
+                  </p>
                 </div>
               </div>
 

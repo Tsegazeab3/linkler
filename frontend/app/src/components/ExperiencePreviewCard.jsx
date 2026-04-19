@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 const ExperiencePreviewCard = ({ experience }) => {
-  const { id, title, description, price, currency, location, country, region, duration, images, user, user_username } = experience;
+  const { id, title, description, price, currency, location, country, region, duration, images, user, user_username, rating, review_count } = experience;
   const { handleOpenChat } = useOutletContext();
 
   const handleChat = async (e) => {
@@ -42,8 +42,17 @@ const ExperiencePreviewCard = ({ experience }) => {
       <CardContent className="p-5">
         <div className="flex justify-between items-start mb-1">
           <h3 className="text-lg font-bold text-ui-text-main group-hover:text-brand transition-colors uppercase tracking-tight line-clamp-1">{title}</h3>
-          <div className="text-[10px] text-brand font-bold bg-brand-light px-2 py-1 rounded-md uppercase tracking-wider">
-            {duration}
+          <div className="flex flex-col items-end gap-1">
+            <div className="text-[10px] text-brand font-bold bg-brand-light px-2 py-1 rounded-md uppercase tracking-wider">
+              {duration}
+            </div>
+            <div className="flex items-center bg-warning/10 px-2 py-0.5 rounded-lg border border-warning/20">
+              <span className="text-warning mr-1 text-[10px]">★</span>
+              <span className="text-[10px] font-bold text-warning">{rating > 0 ? rating : 'New'}</span>
+              {review_count > 0 && (
+                <span className="text-[8px] text-ui-muted ml-0.5">({review_count})</span>
+              )}
+            </div>
           </div>
         </div>
         <p className="text-xs font-semibold text-ui-muted mb-3 flex items-center">

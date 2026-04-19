@@ -22,6 +22,8 @@ class CustomUser(AbstractUser):
     account_type = models.CharField(max_length=10, choices=ACCOUNT_TYPE_CHOICES, default='traveller')
     profile_picture = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
     bio = models.TextField(max_length=80, blank=True)
+    opt_out_discovery = models.BooleanField(default=False, help_text="If true, the user will not appear in search or discovery algorithms.")
+    show_followers_list = models.BooleanField(default=True, help_text="Whether other users can see this user's followers/following lists.")
 
     def __str__(self):
         return self.username
@@ -144,6 +146,32 @@ class ExperienceSave(models.Model):
 
     def __str__(self):
         return f"{self.user.username} saved {self.experience.title}"
+
+class ProviderReview(models.Model):
+    """
+    Allows travellers to rate and review Guides and Service Providers directly.
+    """
+    provider = models.ForeignKey(
+        CustomUser, 
+        on_delete=models.CASCADE, 
+        related_name='provider_reviews',
+        limit_choices_to={'account_type__in': ['guide', 'service']}
+    )
+    user = models.ForeignKey(
+        CustomUser, 
+        on_delete=models.CASCADE, 
+        related_name='submitted_provider_reviews'
+    )
+    rating = models.PositiveIntegerField(default=5)
+    comment = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        unique_together = ('provider', 'user')
+
+    def __str__(self):
+        return f"Review by {self.user.username} for {self.provider.username}"
 
 class PasswordResetToken(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='password_reset_tokens')

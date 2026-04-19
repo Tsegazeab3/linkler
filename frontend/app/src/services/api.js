@@ -90,34 +90,63 @@ export const confirmPasswordReset = (token, newPassword) => {
   return api.post('accounts/password-reset/confirm/', { token, new_password: newPassword });
 };
 
+// Helper to build query parameters with support for multiple values (arrays)
+const buildParams = (params) => {
+  const searchParams = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (Array.isArray(value)) {
+      value.forEach(val => {
+        if (val) searchParams.append(key, val);
+      });
+    } else if (typeof value === 'boolean') {
+      if (value) searchParams.append(key, 'true');
+    } else if (value) {
+      searchParams.append(key, value);
+    }
+  });
+  const queryString = searchParams.toString();
+  return queryString ? `?${queryString}` : '';
+};
+
 // Posts & Trips
 export const getPosts = (url = 'posts/') => api.get(url);
 export const getPost = (postId) => api.get(`posts/${postId}/`);
-export const getTrips = (category = '', region = '', destination_country = '', search = '') => {
-  return api.get(`posts/trips/?category=${encodeURIComponent(category)}&region=${encodeURIComponent(region)}&destination_country=${encodeURIComponent(destination_country)}&search=${encodeURIComponent(search)}`);
+export const getTrips = (category = '', region = '', destination_country = '', search = '', quickFilters = {}, user = '') => {
+  const params = buildParams({ category, region, destination_country, search, user, ...quickFilters });
+  return api.get(`posts/trips/${params}`);
 };
 export const getTripCategories = () => api.get('posts/trips/categories/');
 export const getTripRegions = () => api.get('posts/trips/regions/');
 export const createTrip = (tripData) => api.post('posts/trips/', tripData);
 
 // Guides & Promotions
-export const getGuides = (type = 'guide', search = '', category = '') => {
-  return api.get(`accounts/guides/?type=${type}&search=${encodeURIComponent(search)}&category=${encodeURIComponent(category)}`);
+export const getGuides = (type = 'guide', search = '', category = '', quickFilters = {}) => {
+  const params = buildParams({ type, search, category, ...quickFilters });
+  return api.get(`accounts/guides/${params}`);
 };
 export const getGuideCountries = (type = 'guide') => api.get(`accounts/guides/countries/?type=${type}`);
-export const getPromotions = (search = '', category = '', region = '', country = '') => {
-  return api.get(`promotions/?search=${encodeURIComponent(search)}&category=${encodeURIComponent(category)}&region=${encodeURIComponent(region)}&country=${encodeURIComponent(country)}`);
+export const getPromotions = (search = '', category = '', region = '', country = '', quickFilters = {}) => {
+  const params = buildParams({ search, category, region, country, ...quickFilters });
+  return api.get(`promotions/${params}`);
 };
 export const getPromotionCategories = () => api.get('promotions/categories/');
 export const getPromotionRegions = () => api.get('promotions/regions/');
-export const getExperiences = (search = '', category = '', region = '', country = '') => {
-  return api.get(`accounts/experiences/?search=${encodeURIComponent(search)}&category=${encodeURIComponent(category)}&region=${encodeURIComponent(region)}&country=${encodeURIComponent(country)}`);
+export const getExperiences = (search = '', category = '', region = '', country = '', quickFilters = {}, user = '') => {
+  const params = buildParams({ search, category, region, country, user, ...quickFilters });
+  return api.get(`accounts/experiences/${params}`);
 };
 export const getExperienceCategories = () => api.get('accounts/experiences/categories/');
 export const getExperienceRegions = () => api.get('accounts/experiences/regions/');
 export const createExperience = (data) => api.post('accounts/experiences/', data, {
   headers: { 'Content-Type': 'multipart/form-data' }
 });
+
+// Reviews
+export const getExperienceReviews = (experienceId) => api.get(`accounts/experience-reviews/?experience_id=${experienceId}`);
+export const createExperienceReview = (experienceId, rating, comment) => api.post('accounts/experience-reviews/', { experience: experienceId, rating, comment });
+export const getProviderReviews = (providerId) => api.get(`accounts/provider-reviews/?provider_id=${providerId}`);
+export const createProviderReview = (providerId, rating, comment) => api.post('accounts/provider-reviews/', { provider: providerId, rating, comment });
+
 export const createPromotion = (data) => api.post('promotions/', data, {
   headers: { 'Content-Type': 'multipart/form-data' }
 });
@@ -141,7 +170,13 @@ export const sendMessage = (conversationId, data) => {
 };
 export const markChatAsRead = (conversationId) => api.patch(`chat/conversations/${conversationId}/read/`);
 export const createDM = (recipientId) => api.post('chat/conversations/', { type: 'dm', recipient_id: recipientId });
-export const createGroup = (name, memberIds) => api.post('chat/conversations/', { type: 'group', name, member_ids: memberIds });
+export const createGroup = (name, memberIds, privacy = 'public') => api.post('chat/conversations/', { type: 'group', name, member_ids: memberIds, privacy });
+export const updateGroupAvatar = (conversationId, formData) => api.patch(`chat/conversations/${conversationId}/`, formData, {
+  headers: { 'Content-Type': 'multipart/form-data' }
+});
+export const searchGroups = (query) => api.get(`chat/groups/search/?q=${query}`);
+export const requestToJoinGroup = (conversationId) => api.post('chat/groups/join-request/', { conversation_id: conversationId });
+export const joinGroupByInvite = (inviteCode) => api.post('chat/groups/join-invite/', { invite_code: inviteCode });
 
 // Social
 export const followUser = (username) => api.post(`accounts/${username}/follow/`);

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useOutletContext } from 'react-router-dom';
 import { followUser, unfollowUser, createDM } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 const LocationPinIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 inline-block mr-1 text-ui-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -16,8 +17,10 @@ const CalendarIcon = () => (
 );
 
 const TripCard = ({ trip }) => {
-  const { picture, name, username, bio, from, to, country, region, dates, message, id, user_id, is_following: initialIsFollowing } = trip;
+  const { picture, name, username, bio, from, to, country, region, dates, message, id, user_id, is_following: initialIsFollowing, image: tripImage } = trip;
+  const { user } = useAuth();
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
+  const [isZoomed, setIsZoomed] = useState(false);
   const { handleOpenChat } = useOutletContext();
 
   const handleFollow = async () => {
@@ -47,33 +50,38 @@ const TripCard = ({ trip }) => {
     <div className="rounded-lg max-w-4xl mx-auto my-4 overflow-hidden flex flex-col md:flex-row shadow-xl bg-gradient-to-br from-ui-white to-ui-bg-alt group">
       <div className="w-full md:w-1/2 shrink-0 relative overflow-hidden">
         <img
-          src={picture || 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80'}
-          alt={`${name}'s profile`}
-          className="w-full h-64 md:h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          src={tripImage || picture || 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80'}
+          alt={`${name}'s trip`}
+          className="w-full h-64 md:h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-zoom-in"
+          onClick={() => setIsZoomed(true)}
         />
         <div className="absolute top-4 right-4 flex space-x-2">
-          <button 
-            onClick={handleChat}
-            className="p-2 bg-ui-white/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-ui-white transition-colors text-brand"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
-          </button>
-          <button 
-            onClick={handleFollow}
-            className={`p-2 bg-ui-white/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-ui-white transition-colors ${isFollowing ? 'text-ui-muted' : 'text-brand'}`}
-          >
-            {isFollowing ? (
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
-              </svg>
-            ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-              </svg>
-            )}
-          </button>
+          {user?.id !== user_id && (
+            <>
+              <button 
+                onClick={handleChat}
+                className="p-2 bg-ui-white/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-ui-white transition-colors text-brand"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+              </button>
+              <button 
+                onClick={handleFollow}
+                className={`p-2 bg-ui-white/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-ui-white transition-colors ${isFollowing ? 'text-ui-muted' : 'text-brand'}`}
+              >
+                {isFollowing ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
+                  </svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                  </svg>
+                )}
+              </button>
+            </>
+          )}
         </div>
       </div>
       <div className="w-full md:w-1/2 p-6 flex flex-col justify-between">
@@ -112,6 +120,30 @@ const TripCard = ({ trip }) => {
           <p className="text-sm text-ui-text-secondary italic bg-ui-bg-alt p-2 rounded-lg">"{message}"</p>
         </div>
       </div>
+      
+      {/* Zoom Modal */}
+      {isZoomed && (
+        <div 
+          className="fixed inset-0 z-[1000] bg-black/90 flex items-center justify-center p-4 animate-in fade-in duration-300"
+          onClick={() => setIsZoomed(false)}
+        >
+          <div className="relative max-w-5xl w-full max-h-[90vh]">
+            <img 
+              src={tripImage || picture || 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80'} 
+              alt="Zoomed view" 
+              className="w-full h-full object-contain rounded-lg"
+            />
+            <button 
+              className="absolute -top-12 right-0 text-white hover:text-brand transition-colors"
+              onClick={(e) => { e.stopPropagation(); setIsZoomed(false); }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

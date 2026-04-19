@@ -3,7 +3,7 @@ from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
 from faker import Faker
 from accounts.models import Experience, ExperienceImage, ExperienceReview, ExperienceSave, Follow
-from posts.models import Post, Trip, Like, Save, Comment
+from posts.models import Post, Trip, Like, Save, Comment, PostImage
 from discovery.models import Promotion
 from chat.models import Conversation, Message
 from django.utils import timezone
@@ -65,6 +65,19 @@ class Command(BaseCommand):
         users = []
         account_types = ['traveller', 'guide', 'service']
         
+        profile_images = [
+            "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde",
+            "https://images.unsplash.com/photo-1494790108377-be9c29b29330",
+            "https://images.unsplash.com/photo-1599566150163-29194dcaad36",
+            "https://images.unsplash.com/photo-1527980965255-d3b416303d12",
+            "https://images.unsplash.com/photo-1580489944761-15a19d654956",
+            "https://images.unsplash.com/photo-1438761681033-6461ffad8d80",
+            "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d",
+            "https://images.unsplash.com/photo-1544005313-94ddf0286df2",
+            "https://images.unsplash.com/photo-1500648767791-00dcc994a43e",
+            "https://images.unsplash.com/photo-1554151228-14d9def656e4"
+        ]
+        
         # Ensure we have a superuser for testing
         if not User.objects.filter(is_superuser=True).exists():
             admin = User.objects.create_superuser('admin', 'admin@example.com', 'adminpass')
@@ -91,7 +104,8 @@ class Command(BaseCommand):
                 country=selected_country,
                 account_type=random.choice(account_types),
                 bio=fake.text(max_nb_chars=80),
-                phone_no=fake.phone_number()
+                phone_no=fake.phone_number(),
+                profile_picture=random.choice(profile_images)
             )
             users.append(user)
         
@@ -140,15 +154,82 @@ class Command(BaseCommand):
             self.stdout.write(f'Created {num_users} experiences with reviews.')
 
         # 4. Create Posts
+        travel_captions = [
+            "Exploring the hidden gems of the Mediterranean. The water is so clear! 🌊 #travel #summer",
+            "Wandering through the ancient streets of Kyoto. Every corner is a photo op. ⛩️",
+            "Finally made it to the Top of Europe! The view from Jungfraujoch is breathtaking. 🏔️",
+            "Sunset over the Serengeti was a spiritual experience. Nature at its finest. 🌅",
+            "Lost in the vibrant colors of Marrakesh. The spices smell incredible! 🏮",
+            "Morning coffee with a view of the Eiffel Tower. Living the Parisian dream. ☕🥐",
+            "The architecture in Barcelona is out of this world. Gaudi was a genius. 🏗️",
+            "Hiking the Inca Trail was tough but seeing Machu Picchu at dawn was worth it. 🧗‍♂️",
+            "Diving in the Great Barrier Reef. The coral colors are so vivid! 🐠",
+            "Road tripping through Iceland. The landscapes look like another planet. 🇮🇸",
+            "Enjoying the best street food in Bangkok. Spicy but so good! 🍜",
+            "Winter wonderland in Lapland. Chasing the Northern Lights tonight! 🌌",
+            "The serenity of the Swiss Alps is unmatched. Perfect place to disconnect. ❄️",
+            "Cruising along the Amalfi Coast. This place is straight out of a movie. 🛥️",
+            "Exploring the futuristic skyline of Singapore. The Gardens by the Bay are magical. 🌳"
+        ]
+
+        travel_images = [
+            "https://images.unsplash.com/photo-1507525428034-b723cf961d3e",
+            "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e",
+            "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b",
+            "https://images.unsplash.com/photo-1516026672322-bc52d61a55d5",
+            "https://images.unsplash.com/photo-1539020140153-e479b8c22e70",
+            "https://images.unsplash.com/photo-1502602898657-3e917247a183",
+            "https://images.unsplash.com/photo-1583997051651-8255c48b7525",
+            "https://images.unsplash.com/photo-1508913912821-b4bbd5bc89be",
+            "https://images.unsplash.com/photo-1544551763-46a013bb70d5",
+            "https://images.unsplash.com/photo-1504109586057-7a2ae83d1338",
+            "https://images.unsplash.com/photo-1528605248644-14dd04022da1",
+            "https://images.unsplash.com/photo-1517154421773-0529f29ea451",
+            "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1",
+            "https://images.unsplash.com/photo-1461896836934-ffe607ba8211",
+            "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800"
+        ]
+
         for i in range(num_posts):
             author = random.choice(users)
-            post = Post.objects.create(
-                user=author,
-                caption=fake.paragraph(),
-                status='published',
-                audience='public',
-                allow_comments=True
-            )
+            caption = random.choice(travel_captions)
+            
+            # Decide if it's text-only, single image, or multiple images
+            post_type = random.choice(['text', 'single', 'multiple'])
+            
+            if post_type == 'text':
+                post = Post.objects.create(
+                    user=author,
+                    caption=caption,
+                    status='published',
+                    audience='public',
+                    allow_comments=True
+                )
+            elif post_type == 'single':
+                image_url = random.choice(travel_images)
+                post = Post.objects.create(
+                    user=author,
+                    caption=caption,
+                    media_file=image_url,
+                    media_type='image',
+                    status='published',
+                    audience='public',
+                    allow_comments=True
+                )
+            else:
+                post = Post.objects.create(
+                    user=author,
+                    caption=caption,
+                    media_type='image',
+                    status='published',
+                    audience='public',
+                    allow_comments=True
+                )
+                # Create 2-5 images for this post
+                num_imgs = random.randint(2, 5)
+                selected_imgs = random.sample(travel_images, num_imgs)
+                for img_url in selected_imgs:
+                    PostImage.objects.create(post=post, image=img_url)
             
             # Add interactions
             others = [u for u in users if u != author]
@@ -191,6 +272,17 @@ class Command(BaseCommand):
         self.stdout.write(f'Created {num_trips} trips.')
 
         # 6. Create Promotions
+        promotion_images = [
+            "https://images.unsplash.com/photo-1566073771259-6a8506099945", # Hotel
+            "https://images.unsplash.com/photo-1517841905240-472988babdf9", # Restaurant
+            "https://images.unsplash.com/photo-1551882547-ff43c636ff74", # Bar
+            "https://images.unsplash.com/photo-1501785888041-af3ef285b470", # Travel
+            "https://images.unsplash.com/photo-1530789253388-582c481c54b0", # Activities
+            "https://images.unsplash.com/photo-1506012787146-f92b2d7d6d96",
+            "https://images.unsplash.com/photo-1445019980597-93fa8acb246c",
+            "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800"
+        ]
+
         for i in range(num_promotions):
             selected_region = random.choice(regions_list)
             selected_country = random.choice(region_countries[selected_region])
@@ -202,8 +294,11 @@ class Command(BaseCommand):
                 category=random.choice(['Hotels', 'Restaurants', 'Bars', 'Travel', 'Activities']),
                 region=selected_region,
                 country=selected_country,
-                description=fake.text(),
-                rating=round(random.uniform(3.5, 5.0), 1)
+                description=fake.paragraph(),
+                rating=round(random.uniform(3.5, 5.0), 1),
+                image=random.choice(promotion_images),
+                original_price=random.randint(50, 1000),
+                currency='USD'
             )
         self.stdout.write(f'Created {num_promotions} promotions.')
 

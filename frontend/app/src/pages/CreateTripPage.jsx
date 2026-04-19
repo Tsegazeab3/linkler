@@ -20,6 +20,7 @@ const CreateTripPage = () => {
     end_date: '',
     message: '',
   });
+  const [image, setImage] = useState(null);
 
   useEffect(() => {
     import('../services/api').then(({ getTripCategories, getTripRegions }) => {
@@ -43,8 +44,12 @@ const CreateTripPage = () => {
   }, []);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setTripData(prev => ({ ...prev, [name]: value }));
+    const { name, value, files } = e.target;
+    if (name === 'image' && files) {
+      setImage(files[0]);
+    } else {
+      setTripData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -53,7 +58,11 @@ const CreateTripPage = () => {
     setError('');
 
     try {
-      await createTrip(tripData);
+      const formData = new FormData();
+      Object.entries(tripData).forEach(([key, val]) => formData.append(key, val));
+      if (image) formData.append('image', image);
+      
+      await createTrip(formData);
       handleClose();
     } catch (err) {
       console.error('Error creating trip:', err);
@@ -216,6 +225,18 @@ const CreateTripPage = () => {
               placeholder="Tell others what you're looking for..."
               required
             ></textarea>
+          </div>
+
+          <div>
+            <label htmlFor="image" className="block text-sm font-medium text-ui-text-secondary">Trip Image (Optional)</label>
+            <input
+              type="file"
+              name="image"
+              id="image"
+              onChange={handleChange}
+              accept="image/*"
+              className="mt-1 block w-full text-sm text-ui-text-main"
+            />
           </div>
 
           <button

@@ -74,7 +74,6 @@ const ProfileCompletionPage = () => {
 
     try {
       const response = await updateProfile(dataToSend);
-      console.log('Profile updated successfully:', response.data);
       toast.success("Profile Updated", {
         description: "Your profile has been updated successfully!"
       });

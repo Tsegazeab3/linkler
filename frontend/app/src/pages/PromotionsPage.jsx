@@ -11,9 +11,27 @@ const PromotionsPage = () => {
     const [regions, setRegions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
-    const [activeCategory, setActiveCategory] = useState('');
-    const [activeRegion, setActiveRegion] = useState('');
-    const [activeCountry, setActiveCountry] = useState('');
+    const [activeCategory, setActiveCategory] = useState(''); // Single string
+    const [activeRegion, setActiveRegion] = useState(''); // Single string
+    const [activeCountry, setActiveCountry] = useState(''); // Single string
+    const [quickFilters, setQuickFilters] = useState({
+        'Top Rated': false,
+        'Available Now': false,
+        'Instant Reply': false,
+        'Verified': false
+    });
+
+    const toggleQuickFilter = (name) => {
+        setQuickFilters(prev => ({ ...prev, [name]: !prev[name] }));
+    };
+
+    // Map UI names to API keys
+    const getApiQuickFilters = () => ({
+        top_rated: quickFilters['Top Rated'],
+        available_now: quickFilters['Available Now'],
+        instant_reply: quickFilters['Instant Reply'],
+        verified: quickFilters['Verified']
+    });
 
     useEffect(() => {
         import('../services/api').then(({ getPromotionCategories, getPromotionRegions }) => {
@@ -24,7 +42,7 @@ const PromotionsPage = () => {
 
     useEffect(() => {
         setLoading(true);
-        getPromotions(searchQuery, activeCategory, activeRegion, activeCountry)
+        getPromotions(searchQuery, activeCategory, activeRegion, activeCountry, getApiQuickFilters())
             .then(response => {
                 const data = Array.isArray(response.data) ? response.data : (response.data.results || []);
                 setPromotions(data);
@@ -35,37 +53,43 @@ const PromotionsPage = () => {
             .finally(() => {
                 setLoading(false);
             });
-    }, [searchQuery, activeCategory, activeRegion, activeCountry]);
+    }, [searchQuery, activeCategory, activeRegion, activeCountry, quickFilters]);
 
     return (
         <div className="p-4 lg:p-8">
             <h1 className="text-4xl font-bold mb-8">Deals & Promotions</h1>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                 {/* Left Sidebar for Filters */}
-                <div className="md:col-span-1">
+                <div className="hidden lg:block lg:col-span-1">
                     <PromotionFilter 
                         categories={categories}
                         activeCategory={activeCategory} 
                         onCategoryChange={setActiveCategory} 
+                        regions={regions}
+                        activeRegion={activeRegion}
+                        onRegionChange={setActiveRegion}
+                        activeCountry={activeCountry}
+                        onCountryChange={setActiveCountry}
+                        quickFilters={quickFilters}
+                        onQuickFilterToggle={toggleQuickFilter}
                     />
                 </div>
 
                 {/* Main Content */}
-                <div className="md:col-span-3">
-                    <div className="space-y-2 mb-8">
+                <div className="lg:col-span-3">
+                    <div className="mb-8">
                         <FilterComponent 
                             filterOptions={categories}
                             placeholder="Search for promotions..."
                             onSearchChange={setSearchQuery}
                             onCategoryChange={setActiveCategory}
                             activeCategory={activeCategory}
-                        />
-                        <FilterComponent 
-                            filterOptions={regions}
-                            placeholder="Search by country..."
-                            onSearchChange={setActiveCountry}
-                            onCategoryChange={setActiveRegion}
-                            activeCategory={activeRegion}
+                            secondaryFilterOptions={regions}
+                            onSecondaryCategoryChange={setActiveRegion}
+                            activeSecondaryCategory={activeRegion}
+                            quickFilters={quickFilters}
+                            onQuickFilterToggle={toggleQuickFilter}
+                            value={searchQuery}
                         />
                     </div>
                     
