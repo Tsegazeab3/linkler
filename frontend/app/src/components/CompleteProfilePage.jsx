@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import apiClient from '../services/api';
 import { useNavigate } from 'react-router-dom';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { User } from "lucide-react";
 
 const CompleteProfilePage = () => {
   const [formData, setFormData] = useState({
@@ -129,11 +131,12 @@ const CompleteProfilePage = () => {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {/* Profile Picture Section */}
           <div className="flex flex-col items-center space-y-4">
-            <img 
-              src={profilePicturePreview || 'https://via.placeholder.com/150'} 
-              alt="Profile" 
-              className="w-32 h-32 rounded-full object-cover"
-            />
+            <Avatar className="w-32 h-32 border-4 border-ui-white shadow-xl">
+              <AvatarImage src={profilePicturePreview} alt="Profile" className="object-cover" />
+              <AvatarFallback className="bg-ui-bg-alt">
+                 <User className="h-16 w-16 text-ui-muted opacity-20" />
+              </AvatarFallback>
+            </Avatar>
             <input
               type="file"
               accept="image/*"

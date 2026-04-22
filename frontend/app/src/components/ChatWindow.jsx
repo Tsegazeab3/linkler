@@ -22,6 +22,14 @@ const ChatWindow = ({ chat, type, onClose, index, onOpenChat }) => {
   
   const rightPosition = 20 + (index * 340);
   
+  const isOwner = true; // Placeholder or check if needed
+  
+  const getMediaUrl = (url) => {
+    if (!url) return null;
+    if (url.startsWith('http')) return url;
+    return `http://localhost:8000${url}`;
+  };
+
   const { isConnected, sendEvent, lastEvent } = useChatWebSocket(chat.id);
 
   const handleExpand = (e) => {
@@ -341,7 +349,7 @@ const ChatWindow = ({ chat, type, onClose, index, onOpenChat }) => {
         onClick={() => onOpenChat && onOpenChat(chat, type)}
       >
         <Avatar className="w-8 h-8 mr-3 border border-ui-border">
-          <AvatarImage src={chat.avatarUrl} alt={chat.name} className="object-cover" />
+          <AvatarImage src={getMediaUrl(chat.avatarUrl)} alt={chat.name} className="object-cover" />
           <AvatarFallback>{chat.name?.charAt(0).toUpperCase()}</AvatarFallback>
         </Avatar>
         <h3 className="text-sm font-bold truncate">{chat.name}</h3>

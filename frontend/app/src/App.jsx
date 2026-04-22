@@ -98,7 +98,7 @@ function App() {
     ? 'lg:ml-[400px]'
     : 'ml-0 lg:ml-20';
 
-  const isHome = location.pathname === '/app';
+  const isHome = location.pathname === '/app' || location.pathname === '/app/';
   const isSpecificChat = location.pathname.startsWith('/app/messages/') && location.pathname !== '/app/messages';
 
   useEffect(() => {
@@ -132,17 +132,15 @@ function App() {
         )}
 
         <main className={`flex-1 transition-[margin] duration-300 ease-in-out ${mainContentMargin} pb-16 lg:pb-0 min-w-0 flex flex-col relative`}>
-          {/* Mobile Top Header */}
-          {!isSpecificChat && (
-            <div className={`lg:hidden sticky top-0 z-[30] bg-ui-white/95 backdrop-blur-md border-b border-ui-border px-4 py-3 flex items-center ${isHome ? 'justify-between' : 'justify-end'}`}>
-              {isHome && (
-                <h1 
-                  onClick={() => handlePanelItemClick('user_profile')}
-                  className="text-xl font-bold bg-gradient-to-r from-brand to-accent-indigo bg-clip-text text-transparent italic font-display cursor-pointer active:scale-95 transition-transform"
-                >
-                  Linkler
-                </h1>
-              )}
+          {/* Mobile Top Header - ONLY on home page */}
+          {isHome && (
+            <div className={`lg:hidden sticky top-0 z-[30] bg-ui-white/95 backdrop-blur-md border-b border-ui-border px-4 py-3 flex items-center justify-between`}>
+              <h1 
+                onClick={() => handlePanelItemClick('user_profile')}
+                className="text-xl font-bold bg-gradient-to-r from-brand to-accent-indigo bg-clip-text text-transparent italic font-display cursor-pointer active:scale-95 transition-transform"
+              >
+                Linkler
+              </h1>
               <button
                 onClick={() => setIsSearchOpen(true)}
                 className="w-10 h-10 flex items-center justify-center rounded-full bg-ui-bg-alt text-ui-text-secondary active:scale-95 transition-transform"

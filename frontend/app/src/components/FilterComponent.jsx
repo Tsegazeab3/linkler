@@ -21,6 +21,7 @@ const FilterComponent = ({
     quickFilters = {},
     onQuickFilterToggle,
     showQuickFilters = true,
+    showCategoryFilter = true,
     value = ''
 }) => {
     const [searchTerm, setSearchTerm] = useState(value);
@@ -91,51 +92,53 @@ const FilterComponent = ({
 
             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2 -mx-1 px-1">
                 {/* Main Category Dropdown */}
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button 
-                            variant="ghost" 
-                            className={`rounded-full border-none font-black text-[10px] uppercase tracking-widest h-10 px-5 gap-2 transition-all shrink-0 ${hasActiveFilter ? 'bg-brand text-white shadow-lg shadow-brand/20' : 'bg-ui-white text-ui-text-main hover:bg-ui-bg-alt shadow-sm border border-ui-border'}`}
+                {showCategoryFilter && (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button 
+                                variant="ghost" 
+                                className={`rounded-full border-none font-black text-[10px] uppercase tracking-widest h-10 px-5 gap-2 transition-all shrink-0 ${hasActiveFilter ? 'bg-brand text-white shadow-lg shadow-brand/20' : 'bg-ui-white text-ui-text-main hover:bg-ui-bg-alt shadow-sm border border-ui-border'}`}
+                            >
+                                {activeCategory || (isCountryFilter ? 'Country' : 'Category')}
+                                <ChevronDown className="h-3 w-3 opacity-50" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        
+                        {/* Full width bottom pane dropdown */}
+                        <DropdownMenuContent 
+                            align="start"
+                            side="bottom"
+                            className="w-[100vw] lg:w-[calc(100vw-350px)] mt-2 border-none bg-ui-white/95 backdrop-blur-xl shadow-[0_-20px_50px_rgba(0,0,0,0.1)] rounded-t-[2.5rem] rounded-b-none p-6 pb-12 animate-in slide-in-from-bottom-10 duration-300"
                         >
-                            {activeCategory || (isCountryFilter ? 'Country' : 'Category')}
-                            <ChevronDown className="h-3 w-3 opacity-50" />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    
-                    {/* Full width bottom pane dropdown */}
-                    <DropdownMenuContent 
-                        align="start"
-                        side="bottom"
-                        className="w-[100vw] lg:w-[calc(100vw-350px)] mt-2 border-none bg-ui-white/95 backdrop-blur-xl shadow-[0_-20px_50px_rgba(0,0,0,0.1)] rounded-t-[2.5rem] rounded-b-none p-6 pb-12 animate-in slide-in-from-bottom-10 duration-300"
-                    >
-                        <div className="flex flex-col gap-6">
-                            <div className="flex items-center justify-between px-2">
-                                <h4 className="text-sm font-black uppercase tracking-[0.2em] text-ui-text-main italic">
-                                    Select {isRegionFilter ? 'Region' : (isCountryFilter ? 'Destination' : 'Category')}
-                                </h4>
-                                <div className="w-12 h-1 bg-ui-border rounded-full mx-auto" />
-                            </div>
-                            
-                            <div className="flex overflow-x-auto no-scrollbar gap-3 py-2 px-1">
-                                <button 
-                                    onClick={() => handleSelectCategory('')}
-                                    className={`px-6 py-3 rounded-2xl text-xs font-bold whitespace-nowrap transition-all border ${!hasActiveFilter ? 'bg-brand text-white border-brand shadow-md' : 'bg-ui-bg-alt text-ui-text-secondary border-transparent hover:border-ui-border'}`}
-                                >
-                                    All {isRegionFilter ? 'Regions' : (isCountryFilter ? 'Countries' : 'Items')}
-                                </button>
-                                {filterOptions.map(option => (
-                                    <button
-                                        key={option}
-                                        onClick={() => handleSelectCategory(option)}
-                                        className={`px-6 py-3 rounded-2xl text-xs font-bold whitespace-nowrap transition-all border ${activeCategory === option ? 'bg-brand text-white border-brand shadow-md' : 'bg-ui-bg-alt text-ui-text-secondary border-transparent hover:border-ui-border'}`}
+                            <div className="flex flex-col gap-6">
+                                <div className="flex items-center justify-between px-2">
+                                    <h4 className="text-sm font-black uppercase tracking-[0.2em] text-ui-text-main italic">
+                                        Select {isRegionFilter ? 'Region' : (isCountryFilter ? 'Destination' : 'Category')}
+                                    </h4>
+                                    <div className="w-12 h-1 bg-ui-border rounded-full mx-auto" />
+                                </div>
+                                
+                                <div className="flex overflow-x-auto no-scrollbar gap-3 py-2 px-1">
+                                    <button 
+                                        onClick={() => handleSelectCategory('')}
+                                        className={`px-6 py-3 rounded-2xl text-xs font-bold whitespace-nowrap transition-all border ${!hasActiveFilter ? 'bg-brand text-white border-brand shadow-md' : 'bg-ui-bg-alt text-ui-text-secondary border-transparent hover:border-ui-border'}`}
                                     >
-                                        {option}
+                                        All {isRegionFilter ? 'Regions' : (isCountryFilter ? 'Countries' : 'Items')}
                                     </button>
-                                ))}
+                                    {filterOptions.map(option => (
+                                        <button
+                                            key={option}
+                                            onClick={() => handleSelectCategory(option)}
+                                            className={`px-6 py-3 rounded-2xl text-xs font-bold whitespace-nowrap transition-all border ${activeCategory === option ? 'bg-brand text-white border-brand shadow-md' : 'bg-ui-bg-alt text-ui-text-secondary border-transparent hover:border-ui-border'}`}
+                                        >
+                                            {option}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
-                        </div>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                )}
 
                 {/* Secondary Category Dropdown (Optional) */}
                 {secondaryFilterOptions.length > 0 && (

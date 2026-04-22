@@ -7,6 +7,12 @@ class CustomUser(AbstractUser):
         ('guide', 'Guides'),
         ('service', 'Services'),
     )
+
+    VERIFICATION_STATUS_CHOICES = (
+        ('pending', 'Pending'),
+        ('verified', 'Verified'),
+        ('rejected', 'Rejected'),
+    )
     
     age = models.IntegerField(null=True, blank=True)
     nationality = models.CharField(max_length=100, blank=True)
@@ -24,9 +30,90 @@ class CustomUser(AbstractUser):
     bio = models.TextField(max_length=80, blank=True)
     opt_out_discovery = models.BooleanField(default=False, help_text="If true, the user will not appear in search or discovery algorithms.")
     show_followers_list = models.BooleanField(default=True, help_text="Whether other users can see this user's followers/following lists.")
+    
+    # New Onboarding & Verification Fields
+    onboarding_completed = models.BooleanField(default=False)
+    verification_status = models.CharField(
+        max_length=10, 
+        choices=VERIFICATION_STATUS_CHOICES, 
+        default='pending'
+    )
+
+    @property
+    def is_profile_complete(self):
+        return len(self.missing_fields) == 0
+
+    @property
+    def missing_fields(self):
+        missing = []
+        
+        # Everyone needs onboarding
+        if not self.onboarding_completed:
+            missing.append('onboarding_questionnaire')
+
+        # Guides and Services need more professional details
+        if self.account_type in ['guide', 'service']:
+            if not self.profile_picture: missing.append('profile_picture')
+            if not self.bio: missing.append('bio')
+            if not self.country: missing.append('country')
+            if not self.phone_no: missing.append('phone_no')
+            
+            docs = self.verification_documents.all()
+            if not docs.filter(document_type='id').exists():
+                missing.append('verification_id')
+            if not docs.filter(document_type='visa').exists():
+                missing.append('verification_visa')
+            
+        return missing
 
     def __str__(self):
         return self.username
+
+class TravelerProfile(models.Model):
+    """
+    Detailed questionnaire for Travelers after sign-up.
+    """
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='traveler_profile')
+    
+    # Travel Interests (Stored as JSON)
+    interests = models.JSONField(default=list, help_text="e.g. ['adventure', 'culture', 'food']")
+    
+    # Structured Travel Data
+    past_adventures = models.JSONField(default=list, help_text="List of objects: {country, purpose, duration, motivation}")
+    future_intentions = models.JSONField(default=list, help_text="List of objects: {destination, timeline, purpose, motivation}")
+    
+    job_industry = models.CharField(max_length=100, blank=True)
+    travel_flexibility = models.CharField(max_length=50, blank=True, help_text="Flexibility for travel")
+    
+    budget_range = models.CharField(max_length=50, blank=True, help_text="e.g. Luxury, Mid-range, Budget")
+    travel_style = models.CharField(max_length=50, blank=True, help_text="e.g. Backpacker, Organized")
+    
+    group_preference = models.CharField(max_length=50, blank=True, help_text="Group vs solo travel preferences")
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Profile for {self.user.username}"
+
+class VerificationDocument(models.Model):
+    """
+    Identity and legal documentation for Guide verification.
+    """
+    DOCUMENT_TYPE_CHOICES = (
+        ('id', 'Government Issued ID'),
+        ('visa', 'Residency/Visa Documentation (UAE)'),
+        ('license', 'Professional Guide License'),
+        ('other', 'Other'),
+    )
+    
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='verification_documents')
+    document_type = models.CharField(max_length=20, choices=DOCUMENT_TYPE_CHOICES)
+    file = models.FileField(upload_to='verification_docs/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.get_document_type_display()} for {self.user.username}"
 
 class Follow(models.Model):
     follower = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='following')
@@ -90,7 +177,11 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 class ExperienceImage(models.Model):
     experience = models.ForeignKey(Experience, on_delete=models.CASCADE, related_name='images')
     image = models.ImageField(upload_to='experiences/')
+    order = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['order', 'created_at']
 
     def save(self, *args, **kwargs):
         if not self.id and self.image:
@@ -186,4 +277,74 @@ class PasswordResetToken(models.Model):
 
     def __str__(self):
         return f"Token for {self.user.email}"
+
+class Booking(models.Model):
+    STATUS_CHOICES = (
+        ('pending', 'Pending'),
+        ('confirmed', 'Confirmed'),
+        ('cancelled', 'Cancelled'),
+        ('completed', 'Completed'),
+    )
+    
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='user_bookings')
+    provider = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='provider_bookings', limit_choices_to={'account_type__in': ['guide', 'service']})
+    experience = models.ForeignKey(Experience, on_delete=models.SET_NULL, null=True, blank=True, related_name='bookings')
+    source_post = models.ForeignKey('posts.Post', on_delete=models.SET_NULL, null=True, blank=True, related_name='generated_bookings')
+    booking_date = models.DateField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    currency = models.CharField(max_length=10, default='USD')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-booking_date']
+        # Removed unique_together to support multiple bookings per day
+
+    def __str__(self):
+        return f"Booking for {self.provider.username} on {self.booking_date} by {self.user.username}"
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        if self.provider.account_type in ['guide', 'service'] and self.provider.verification_status != 'verified':
+            raise ValidationError("This provider is not yet verified and cannot accept bookings.")
+
+class Notification(models.Model):
+    NOTIFICATION_TYPES = (
+        ('booking_request', 'New Booking Request'),
+        ('booking_confirmed', 'Booking Confirmed'),
+        ('booking_cancelled', 'Booking Cancelled'),
+        ('system', 'System Alert'),
+    )
+    
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='notifications')
+    type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES)
+    title = models.CharField(max_length=100)
+    message = models.TextField()
+    link = models.CharField(max_length=255, blank=True, help_text="Relative URL to navigate to")
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Notification for {self.user.username}: {self.title}"
+
+class GuideAvailability(models.Model):
+    """
+    Allows guides to mark specific dates as unavailable.
+    """
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='availability')
+    date = models.DateField()
+    is_available = models.BooleanField(default=False, help_text="False means blackout date")
+    reason = models.CharField(max_length=255, blank=True)
+
+    class Meta:
+        unique_together = ('user', 'date')
+        verbose_name_plural = "Guide Availabilities"
+
+    def __str__(self):
+        return f"{self.user.username} unavailable on {self.date}"
+        return f"{self.type} for {self.user.username} - {self.title}"
 

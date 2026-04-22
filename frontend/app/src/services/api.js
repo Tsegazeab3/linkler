@@ -53,8 +53,8 @@ export const createPost = (postData) => {
   });
 };
 
-export const login = (email, password) => {
-  return api.post('auth/login/', { email, password });
+export const login = (username, password) => {
+  return api.post('auth/login/', { username, password });
 };
 
 export const register = (userData) => {
@@ -111,8 +111,8 @@ const buildParams = (params) => {
 // Posts & Trips
 export const getPosts = (url = 'posts/') => api.get(url);
 export const getPost = (postId) => api.get(`posts/${postId}/`);
-export const getTrips = (category = '', region = '', destination_country = '', search = '', quickFilters = {}, user = '') => {
-  const params = buildParams({ category, region, destination_country, search, user, ...quickFilters });
+export const getTrips = (category = '', region = '', destination_country = '', search = '', quickFilters = {}, user = '', origin = '') => {
+  const params = buildParams({ category, region, destination_country, search, user, origin, ...quickFilters });
   return api.get(`posts/trips/${params}`);
 };
 export const getTripCategories = () => api.get('posts/trips/categories/');
@@ -154,6 +154,41 @@ export const getUserDetail = (username) => api.get(`accounts/${username}/`);
 export const searchUsers = (query) => api.get(`accounts/search/?q=${encodeURIComponent(query)}`);
 export const getPromotionDetail = (id) => api.get(`promotions/${id}/`);
 
+// Dashboard & Bookings
+export const getGuideDashboardStats = () => api.get('accounts/dashboard/stats/');
+export const getGuideAvailability = (username) => api.get(`accounts/availability-manage/${username}/`);
+export const updateGuideAvailability = (username, data) => api.post(`accounts/availability-manage/${username}/`, data);
+export const createBooking = (data) => api.post('accounts/bookings/', data);
+export const getBookings = () => api.get('accounts/bookings/');
+export const updateBookingStatus = (id, status) => api.patch(`accounts/bookings/${id}/`, { status });
+
+// Onboarding & Verification
+export const submitTravelerOnboarding = (data) => api.post('accounts/onboarding/', data);
+export const uploadVerificationDoc = (formData) => api.post('accounts/verification/upload/', formData, {
+  headers: { 'Content-Type': 'multipart/form-data' }
+});
+export const getVerificationDocs = () => api.get('accounts/verification/upload/');
+
+// Notifications
+export const getNotifications = () => api.get('accounts/notifications/');
+export const markNotificationRead = (id) => api.patch(`accounts/notifications/${id}/`, { is_read: true });
+export const deleteNotification = (id) => api.delete(`accounts/notifications/${id}/`);
+
+// My Content
+export const getMyPosts = () => api.get('posts/?my_posts=true');
+export const updatePost = (id, formData) => api.patch(`posts/${id}/edit/`, formData, {
+  headers: { 'Content-Type': 'multipart/form-data' }
+});
+export const deletePost = (id) => api.delete(`posts/${id}/edit/`);
+export const deletePostsBatch = (postIds) => api.post('posts/batch-delete/', { post_ids: postIds });
+
+export const getMyServices = () => api.get('accounts/experiences/?my_services=true');
+
+export const updateService = (id, formData) => api.patch(`accounts/experiences/${id}/`, formData, {
+  headers: { 'Content-Type': 'multipart/form-data' }
+});
+export const deleteService = (id) => api.delete(`accounts/experiences/${id}/`);
+
 // Chat
 export const getConversations = () => api.get('chat/conversations/');
 export const getMessages = (conversationId) => api.get(`chat/conversations/${conversationId}/messages/`);
@@ -181,6 +216,8 @@ export const joinGroupByInvite = (inviteCode) => api.post('chat/groups/join-invi
 // Social
 export const followUser = (username) => api.post(`accounts/${username}/follow/`);
 export const unfollowUser = (username) => api.delete(`accounts/${username}/unfollow/`);
+export const getFollowers = (username) => api.get(`accounts/${username}/followers/`);
+export const getFollowing = (username) => api.get(`accounts/${username}/following/`);
 
 // Post Interactions
 export const toggleLike = (postId) => api.post(`posts/${postId}/like/`);

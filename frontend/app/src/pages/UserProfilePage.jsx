@@ -1,14 +1,52 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { getUserDetail, getTrips, getExperiences } from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import { 
+    getUserDetail, 
+    getTrips, 
+    getExperiences, 
+    deletePost, 
+    deletePostsBatch,
+    updatePost,
+    getFollowers,
+    getFollowing
+} from '../services/api';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 import TripCard from '../components/TripCard';
+import { 
+    Trash2, 
+    Edit3, 
+    Check, 
+    X, 
+    Settings, 
+    Lock, 
+    Globe, 
+    Users as UsersIcon,
+    MoreVertical,
+    CheckCircle2,
+    Save,
+    Heart,
+    MapPin,
+    Clock,
+    Plus,
+    Camera,
+    GripVertical,
+    ShieldCheck,
+    ChevronRight
+} from "lucide-react";
 
 const UserProfilePage = () => {
     const { username } = useParams();
     const navigate = useNavigate();
+    const { user: currentUser } = useAuth();
     const [user, setUser] = useState(null);
     const [trips, setTrips] = useState([]);
     const [experiences, setExperiences] = useState([]);
@@ -16,34 +54,187 @@ const UserProfilePage = () => {
     const [error, setError] = useState(null);
     const [activeTab, setActiveTab] = useState('moments');
 
-    useEffect(() => {
-        const fetchProfileData = async () => {
-            setLoading(true);
-            setError(null);
-            try {
-                const profileRes = await getUserDetail(username);
-                const userData = profileRes.data;
-                setUser(userData);
-                
-                // Fetch trips for this user specifically
-                const tripsRes = await getTrips('', '', '', '', {}, userData.username);
-                setTrips(Array.isArray(tripsRes.data) ? tripsRes.data : (tripsRes.data.results || []));
-                
-                // Fetch experiences (services) if they are a guide/service
-                if (userData.account_type !== 'traveller') {
-                    const expRes = await getExperiences('', '', '', '', {}, userData.username);
-                    setExperiences(Array.isArray(expRes.data) ? expRes.data : (expRes.data.results || []));
-                }
-            } catch (err) {
-                console.error('UserProfilePage: Fetch error:', err);
-                setError(err.response?.data?.detail || err.message || 'Failed to load user profile.');
-            } finally {
-                setLoading(false);
+    // Follower/Following state
+    const [isFollowModalOpen, setIsFollowModalOpen] = useState(false);
+    const [followModalType, setFollowModalType] = useState('followers'); // 'followers' or 'following'
+    const [followList, setFollowList] = useState([]);
+    const [followListLoading, setFollowListLoading] = useState(false);
+
+    // Selection & Edit State
+    const [isSelectMode, setIsSelectMode] = useState(false);
+    const [selectedPosts, setSelectedPosts] = useState([]);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [editingPost, setEditingPost] = useState(null);
+    const [editFormData, setEditFormData] = useState({});
+    
+    // New Advanced Image Management State
+    // List of { type: 'existing'|'new', id?: number, file?: File, preview: string }
+    const [orderedMedia, setOrderedMedia] = useState([]);
+    const fileInputRef = useRef(null);
+    const [draggedIndex, setDragIndex] = useState(null);
+
+    const isOwner = currentUser?.username === username;
+    const missingFieldsText = user?.missing_fields?.map(f => f.replace(/_/g, ' ')).join(', ');
+
+    const fetchProfileData = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const profileRes = await getUserDetail(username);
+            const userData = profileRes.data;
+            setUser(userData);
+            
+            const tripsRes = await getTrips('', '', '', '', {}, userData.username);
+            setTrips(Array.isArray(tripsRes.data) ? tripsRes.data : (tripsRes.data.results || []));
+            
+            if (userData.account_type !== 'traveller') {
+                const expRes = await getExperiences('', '', '', '', {}, userData.username);
+                setExperiences(Array.isArray(expRes.data) ? expRes.data : (expRes.data.results || []));
             }
-        };
-        
+        } catch (err) {
+            console.error('UserProfilePage: Fetch error:', err);
+            setError(err.response?.data?.detail || err.message || 'Failed to load user profile.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
         fetchProfileData();
     }, [username]);
+
+    const togglePostSelection = (postId) => {
+        setSelectedPosts(prev => 
+            prev.includes(postId) 
+                ? prev.filter(id => id !== postId) 
+                : [...prev, postId]
+        );
+    };
+
+    const handleDeleteSelected = async () => {
+        if (!window.confirm(`Delete ${selectedPosts.length} selected moments?`)) return;
+        try {
+            await deletePostsBatch(selectedPosts);
+            toast.success(`Deleted ${selectedPosts.length} posts`);
+            setUser(prev => ({
+                ...prev,
+                posts: prev.posts.filter(p => !selectedPosts.includes(p.id))
+            }));
+            setSelectedPosts([]);
+            setIsSelectMode(false);
+        } catch (err) {
+            console.error(err);
+            toast.error("Batch delete failed");
+        }
+    };
+
+    const openEditModal = (post) => {
+        setEditingPost(post);
+        setEditFormData({
+            caption: post.caption || '',
+            audience: post.audience || 'public',
+            status: post.status || 'published'
+        });
+
+        // Initialize ordered media from existing post images
+        const existing = (post.images || []).map(img => ({
+            type: 'existing',
+            id: img.id,
+            preview: getMediaUrl(img.image)
+        }));
+        
+        // Also add the main media_file if it's not in images (legacy support)
+        if (post.media_file && existing.length === 0) {
+            existing.push({
+                type: 'existing_main',
+                preview: getMediaUrl(post.media_file)
+            });
+        }
+
+        setOrderedMedia(existing);
+        setIsEditModalOpen(true);
+    };
+
+    const openFollowModal = async (type) => {
+        setFollowModalType(type);
+        setIsFollowModalOpen(true);
+        setFollowListLoading(true);
+        try {
+            const res = type === 'followers' ? await getFollowers(username) : await getFollowing(username);
+            setFollowList(res.data);
+        } catch (err) {
+            console.error(err);
+            toast.error(`Failed to load ${type}`);
+        } finally {
+            setFollowListLoading(false);
+        }
+    };
+
+    const handleFileChange = (e) => {
+        const files = Array.from(e.target.files);
+        const newItems = files.map(file => ({
+            type: 'new',
+            file: file,
+            preview: URL.createObjectURL(file)
+        }));
+        setOrderedMedia(prev => [...prev, ...newItems]);
+    };
+
+    const removeMediaItem = (index) => {
+        setOrderedMedia(prev => prev.filter((_, i) => i !== index));
+    };
+
+    // Drag and Drop Logic
+    const onDragStart = (index) => setDragIndex(index);
+    const onDragOver = (e) => e.preventDefault();
+    const onDrop = (index) => {
+        if (draggedIndex === null) return;
+        const items = [...orderedMedia];
+        const draggedItem = items[draggedIndex];
+        items.splice(draggedIndex, 1);
+        items.splice(index, 0, draggedItem);
+        setOrderedMedia(items);
+        setDragIndex(null);
+    };
+
+    const handleEditSubmit = async (e) => {
+        e.preventDefault();
+        const loadingToast = toast.loading("Updating moment...");
+        try {
+            const formData = new FormData();
+            formData.append('caption', editFormData.caption);
+            formData.append('audience', editFormData.audience);
+            formData.append('status', editFormData.status);
+            
+            // Build the image_order and gather new files
+            const newFiles = [];
+            orderedMedia.forEach((item, idx) => {
+                if (item.type === 'existing') {
+                    formData.append('image_order', `id:${item.id}`);
+                } else if (item.type === 'new') {
+                    formData.append('image_order', `file:${newFiles.length}`);
+                    newFiles.push(item.file);
+                }
+            });
+
+            newFiles.forEach(file => {
+                formData.append('images', file);
+            });
+            
+            const res = await updatePost(editingPost.id, formData);
+            
+            setUser(prev => ({
+                ...prev,
+                posts: prev.posts.map(p => p.id === editingPost.id ? res.data : p)
+            }));
+            
+            toast.success("Post updated successfully", { id: loadingToast });
+            setIsEditModalOpen(false);
+        } catch (err) {
+            console.error(err);
+            toast.error("Failed to update post", { id: loadingToast });
+        }
+    };
 
     if (loading) {
         return (
@@ -60,17 +251,9 @@ const UserProfilePage = () => {
         return (
             <div className="min-h-screen flex items-center justify-center p-4 bg-ui-bg">
                 <div className="max-w-md w-full bg-ui-white p-8 rounded-3xl shadow-xl border border-ui-border text-center">
-                    <div className="w-20 h-20 bg-error-light text-error rounded-full flex items-center justify-center mx-auto mb-6">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                        </svg>
-                    </div>
                     <h2 className="text-2xl font-bold text-ui-text-main mb-2">Oops!</h2>
                     <p className="text-ui-text-secondary mb-8">{error || 'User not found'}</p>
-                    <div className="flex flex-col gap-3">
-                        <button onClick={() => window.location.reload()} className="w-full py-3 bg-brand text-white rounded-xl font-bold shadow-lg hover:bg-brand-hover transition-all">Try Again</button>
-                        <button onClick={() => navigate('/app')} className="w-full py-3 bg-ui-bg-alt text-ui-text-main rounded-xl font-bold border border-ui-border hover:bg-ui-border/30 transition-all">Back to Home</button>
-                    </div>
+                    <button onClick={() => navigate('/app')} className="w-full py-3 bg-brand text-white rounded-xl font-bold">Back to Home</button>
                 </div>
             </div>
         );
@@ -83,89 +266,187 @@ const UserProfilePage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-ui-bg animate-in fade-in duration-500">
+        <div className="min-h-screen bg-ui-bg animate-in fade-in duration-500 pb-24">
             <div className="max-w-4xl mx-auto px-4 py-8 lg:py-12">
+                {/* Completeness / Verification Alert */}
+                {isOwner && (!user?.is_profile_complete || user?.verification_status !== 'verified') && (
+                    <Card className="mb-12 rounded-[2.5rem] border-none shadow-xl bg-warning/5 border border-warning/20 p-8 flex flex-col md:flex-row items-center justify-between gap-8 animate-in slide-in-from-top-4 duration-700">
+                        <div className="flex items-center gap-6">
+                            <div className="w-16 h-16 bg-warning/10 text-warning rounded-3xl flex items-center justify-center shadow-inner border border-warning/20">
+                                <ShieldCheck className="w-8 h-8" />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-black uppercase tracking-tight text-ui-text-main">
+                                    {!user?.is_profile_complete ? 'Complete Your Profile' : 'Verification Pending'}
+                                </h3>
+                                <p className="text-sm text-ui-muted font-medium max-w-md mt-1">
+                                    {!user?.is_profile_complete 
+                                        ? `You're missing: ${missingFieldsText || 'required info'}. Finish setup to unlock all features.`
+                                        : "Your documents are under review. A verification badge will appear once approved."
+                                    }
+                                </p>
+                            </div>
+                        </div>
+                        <Button 
+                            onClick={() => navigate(!user?.is_profile_complete ? '/app/complete-profile' : '/app/verify')}
+                            className="rounded-2xl bg-warning hover:bg-warning-hover text-ui-text-main font-black uppercase tracking-widest text-[10px] px-10 h-14 shadow-lg shadow-warning/20 transition-all hover:scale-105 active:scale-95"
+                        >
+                            {!user?.is_profile_complete ? 'Complete Now' : 'Check Documents'}
+                        </Button>
+                    </Card>
+                )}
+
                 {/* Profile Header */}
                 <div className="flex flex-col md:flex-row items-center md:items-start mb-12 text-center md:text-left gap-6 md:gap-10">
-                    <Avatar className="w-28 h-28 md:w-40 md:h-40 border-4 border-ui-white shadow-2xl">
+                    <Avatar className="w-28 h-28 md:w-40 md:h-40 border-4 border-ui-white shadow-2xl ring-1 ring-ui-border/30">
                         <AvatarImage src={user.profile_picture} className="object-cover" />
-                        <AvatarFallback className="text-4xl bg-brand-light text-brand">{user.username?.charAt(0).toUpperCase()}</AvatarFallback>
+                        <AvatarFallback className="text-4xl bg-brand-light text-brand font-black">{user.username?.charAt(0).toUpperCase()}</AvatarFallback>
                     </Avatar>
                     
-                    <div className="flex-1 flex flex-col pt-2">
-                        <div className="flex flex-col md:flex-row md:items-center gap-3 mb-4">
-                            <h1 className="text-3xl md:text-4xl font-black text-ui-text-main tracking-tight italic">{user.username}</h1>
-                            {user.account_type && user.account_type !== 'traveller' && (
-                                <span className="bg-brand/10 text-brand text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-[0.2em] border border-brand/20">{user.account_type}</span>
+                    <div className="flex-1 flex flex-col pt-2 w-full">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                            <div className="flex flex-col md:flex-row md:items-center gap-3">
+                                <h1 className="text-3xl md:text-4xl font-black text-ui-text-main tracking-tighter italic uppercase">{user.username}</h1>
+                                {user.account_type && user.account_type !== 'traveller' && (
+                                    <span className="bg-success/10 text-success text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest border border-success/20">Verified {user.account_type}</span>
+                                )}
+                            </div>
+                            {isOwner && (
+                                <Button onClick={() => navigate('/app/settings')} variant="outline" size="sm" className="rounded-xl font-bold text-[10px] uppercase tracking-widest border-ui-border bg-white shadow-sm self-center md:self-auto">
+                                    <Settings className="w-3.5 h-3.5 mr-2" /> Edit Profile
+                                </Button>
                             )}
                         </div>
 
-                        <div className="flex items-center justify-center md:justify-start gap-8 mb-6">
-                            <div className="flex flex-col">
-                                <span className="text-xl font-black text-ui-text-main">{user.posts_count || 0}</span>
-                                <span className="text-[10px] font-bold text-ui-muted uppercase tracking-widest mt-1">Posts</span>
+                        <div className="flex items-center justify-center md:justify-start gap-12 mb-8 bg-ui-white/50 backdrop-blur-md p-6 rounded-3xl border border-ui-border/30 shadow-inner">
+                            <div className="text-center">
+                                <p className="text-2xl font-black text-ui-text-main leading-none">{user.posts_count || 0}</p>
+                                <p className="text-[10px] font-black text-ui-muted uppercase tracking-[0.2em] mt-2">Moments</p>
                             </div>
-                            <div className="flex flex-col border-l border-ui-border pl-8">
-                                <span className="text-xl font-black text-ui-text-main">{user.followers_count || 0}</span>
-                                <span className="text-[10px] font-bold text-ui-muted uppercase tracking-widest mt-1">Followers</span>
+                            <div 
+                                className={`text-center border-x border-ui-border/50 px-12 ${(user.show_followers_list || isOwner) ? 'cursor-pointer hover:opacity-70 transition-opacity' : ''}`}
+                                onClick={() => (user.show_followers_list || isOwner) && openFollowModal('followers')}
+                            >
+                                <p className="text-2xl font-black text-ui-text-main leading-none">{(user.show_followers_list || isOwner) ? (user.followers_count || 0) : '—'}</p>
+                                <p className="text-[10px] font-black text-ui-muted uppercase tracking-[0.2em] mt-2">Explorers</p>
                             </div>
-                            <div className="flex flex-col border-l border-ui-border pl-8">
-                                <span className="text-xl font-black text-ui-text-main">{user.following_count || 0}</span>
-                                <span className="text-[10px] font-bold text-ui-muted uppercase tracking-widest mt-1">Following</span>
+                            <div 
+                                className={`text-center ${(user.show_followers_list || isOwner) ? 'cursor-pointer hover:opacity-70 transition-opacity' : ''}`}
+                                onClick={() => (user.show_followers_list || isOwner) && openFollowModal('following')}
+                            >
+                                <p className="text-2xl font-black text-ui-text-main leading-none">{(user.show_followers_list || isOwner) ? (user.following_count || 0) : '—'}</p>
+                                <p className="text-[10px] font-black text-ui-muted uppercase tracking-[0.2em] mt-2">Following</p>
                             </div>
                         </div>
 
-                        <div className="space-y-2">
+                        <div className="space-y-4">
                             {(user.city || user.country) && (
-                                <p className="text-sm font-bold text-brand flex items-center justify-center md:justify-start gap-1.5">
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                                <p className="text-xs font-black text-brand flex items-center justify-center md:justify-start gap-2 uppercase tracking-widest">
+                                    <MapPin className="w-4 h-4" />
                                     {[user.city, user.country].filter(Boolean).join(', ')}
                                 </p>
                             )}
-                            {user.bio && <p className="text-ui-text-secondary text-sm md:text-base leading-relaxed max-w-xl">{user.bio}</p>}
+                            {user.bio && <p className="text-ui-text-secondary text-sm md:text-base leading-relaxed max-w-xl font-medium italic opacity-80">"{user.bio}"</p>}
                         </div>
                     </div>
                 </div>
 
                 {/* Tabs Section */}
-                <div className="border-t border-ui-border pt-6">
+                <div className="border-t border-ui-border/50 pt-8">
                     <Tabs defaultValue="moments" value={activeTab} onValueChange={setActiveTab} className="w-full">
-                        <TabsList className="grid w-full grid-cols-3 max-w-md mx-auto mb-10 bg-ui-bg-alt rounded-2xl p-1">
-                            <TabsTrigger value="moments" className="rounded-xl font-bold text-xs uppercase tracking-widest data-[state=active]:bg-ui-white data-[state=active]:shadow-md">Moments</TabsTrigger>
-                            <TabsTrigger value="trips" className="rounded-xl font-bold text-xs uppercase tracking-widest data-[state=active]:bg-ui-white data-[state=active]:shadow-md">Trips</TabsTrigger>
-                            {user.account_type !== 'traveller' && (
-                                <TabsTrigger value="services" className="rounded-xl font-bold text-xs uppercase tracking-widest data-[state=active]:bg-ui-white data-[state=active]:shadow-md">Services</TabsTrigger>
+                        <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-10">
+                            <TabsList className="bg-ui-bg-alt rounded-2xl p-1 shadow-sm border border-ui-border/30">
+                                <TabsTrigger value="moments" className="rounded-xl px-8 font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-ui-white data-[state=active]:shadow-md">Moments</TabsTrigger>
+                                <TabsTrigger value="trips" className="rounded-xl px-8 font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-ui-white data-[state=active]:shadow-md">Trips</TabsTrigger>
+                                {user.account_type !== 'traveller' && (
+                                    <TabsTrigger value="services" className="rounded-xl px-8 font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-ui-white data-[state=active]:shadow-md">Services</TabsTrigger>
+                                )}
+                            </TabsList>
+
+                            {activeTab === 'moments' && isOwner && user.posts?.length > 0 && (
+                                <div className="flex items-center gap-3">
+                                    {isSelectMode ? (
+                                        <>
+                                            <Button onClick={handleDeleteSelected} disabled={selectedPosts.length === 0} variant="destructive" size="sm" className="rounded-xl font-black text-[9px] uppercase tracking-widest px-4 h-10 shadow-lg shadow-error/20">
+                                                Delete Selected ({selectedPosts.length})
+                                            </Button>
+                                            <Button onClick={() => { setIsSelectMode(false); setSelectedPosts([]); }} variant="ghost" size="sm" className="rounded-xl font-black text-[9px] uppercase tracking-widest h-10">
+                                                Cancel
+                                            </Button>
+                                        </>
+                                    ) : (
+                                        <Button onClick={() => setIsSelectMode(true)} variant="outline" size="sm" className="rounded-xl font-black text-[9px] uppercase tracking-widest px-4 h-10 bg-white shadow-sm border-ui-border">
+                                            Select Moments
+                                        </Button>
+                                    )}
+                                </div>
                             )}
-                        </TabsList>
+                        </div>
 
                         <TabsContent value="moments" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                             {user.posts && user.posts.length > 0 ? (
-                                <div className="grid grid-cols-3 gap-1 md:gap-4 lg:gap-6">
+                                <div className="grid grid-cols-3 gap-2 md:gap-6">
                                     {user.posts.map(post => {
                                         const displayMedia = (post.images && post.images.length > 0) ? post.images[0].image : post.media_file;
+                                        const isSelected = selectedPosts.includes(post.id);
                                         
                                         return (
-                                            <div key={post.id} onClick={() => navigate(`/app/posts/${post.id}`, { state: { background: { pathname: `/app/profile/${username}` } } })} className="relative aspect-square group overflow-hidden bg-ui-bg-alt rounded-xl cursor-pointer shadow-sm hover:shadow-xl transition-all duration-500">
+                                            <div 
+                                                key={post.id} 
+                                                onClick={() => isSelectMode ? togglePostSelection(post.id) : navigate(`/app/posts/${post.id}`, { state: { background: { pathname: `/app/profile/${username}` } } })} 
+                                                className={`relative aspect-square group overflow-hidden bg-ui-bg-alt rounded-3xl cursor-pointer shadow-sm transition-all duration-500 ring-offset-4 ${isSelectMode && isSelected ? 'ring-4 ring-brand scale-95 shadow-xl' : 'hover:shadow-2xl'}`}
+                                            >
                                                 {displayMedia ? (
                                                     displayMedia.toLowerCase().endsWith('.mp4') ? (
                                                         <video src={getMediaUrl(displayMedia)} className="w-full h-full object-cover" />
                                                     ) : (
-                                                        <img src={getMediaUrl(displayMedia)} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                                        <img src={getMediaUrl(displayMedia)} alt="" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                                                     )
                                                 ) : (
                                                     <div className="w-full h-full flex items-center justify-center p-4 text-center bg-gradient-to-br from-brand-light/30 to-accent-indigo/10">
                                                         <p className="text-[10px] md:text-xs font-medium text-ui-text-secondary line-clamp-4 italic">"{post.caption || 'No caption'}"</p>
                                                     </div>
                                                 )}
-                                                <div className="absolute inset-0 bg-brand/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-[2px]">
-                                                    <div className="flex gap-4 text-white scale-90 group-hover:scale-100 transition-transform duration-300">
-                                                        <div className="flex items-center gap-1.5">
-                                                            <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-                                                            <span className="font-black text-sm">{post.likes_count || 0}</span>
+                                                
+                                                {/* Edit/Delete Overlay for Owner */}
+                                                {!isSelectMode && isOwner && (
+                                                    <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0 duration-300">
+                                                        <button 
+                                                            onClick={(e) => { e.stopPropagation(); openEditModal(post); }}
+                                                            className="p-2 bg-white/90 backdrop-blur-md rounded-xl text-ui-text-main shadow-lg hover:bg-brand hover:text-white transition-all"
+                                                        >
+                                                            <Edit3 className="w-3.5 h-3.5" />
+                                                        </button>
+                                                        <button 
+                                                            onClick={async (e) => { 
+                                                                e.stopPropagation(); 
+                                                                if(window.confirm("Delete this moment?")) {
+                                                                    await deletePost(post.id);
+                                                                    setUser(prev => ({...prev, posts: prev.posts.filter(p => p.id !== post.id)}));
+                                                                    toast.success("Moment deleted");
+                                                                }
+                                                            }}
+                                                            className="p-2 bg-white/90 backdrop-blur-md rounded-xl text-error shadow-lg hover:bg-error hover:text-white transition-all"
+                                                        >
+                                                            <Trash2 className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    </div>
+                                                )}
+
+                                                {/* Selection Checkbox */}
+                                                {isSelectMode && (
+                                                    <div className={`absolute inset-0 flex items-center justify-center transition-all ${isSelected ? 'bg-brand/20' : 'bg-black/10'}`}>
+                                                        <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${isSelected ? 'bg-brand border-brand shadow-lg scale-110' : 'border-white bg-transparent'}`}>
+                                                            {isSelected && <Check className="w-5 h-5 text-white stroke-[4]" />}
                                                         </div>
-                                                        <div className="flex items-center gap-1.5">
-                                                            <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l4-4V5a2 2 0 012-2h6a2 2 0 012 2v10z"/></svg>
-                                                            <span className="font-black text-sm">{post.comments_count || 0}</span>
+                                                    </div>
+                                                )}
+
+                                                <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <div className="flex gap-3 text-white">
+                                                        <div className="flex items-center gap-1">
+                                                            <Heart className="w-3.5 h-3.5 fill-current" />
+                                                            <span className="text-[10px] font-black">{post.likes_count || 0}</span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -183,6 +464,7 @@ const UserProfilePage = () => {
                                         <TripCard key={trip.id} trip={{
                                             ...trip,
                                             user_id: trip.author?.id,
+                                            verification_status: trip.author?.verification_status,
                                             is_following: trip.author?.is_following,
                                             picture: trip.author?.profile_picture,
                                             name: trip.author?.username,
@@ -191,6 +473,8 @@ const UserProfilePage = () => {
                                             from: trip.origin,
                                             to: trip.destination,
                                             country: trip.destination_country,
+                                            region: trip.region,
+                                            category: trip.category,
                                             dates: `${new Date(trip.start_date).toLocaleDateString()} - ${new Date(trip.end_date).toLocaleDateString()}`
                                         }} />
                                     ))}
@@ -202,12 +486,52 @@ const UserProfilePage = () => {
                              {experiences.length > 0 ? (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     {experiences.map(exp => (
-                                        <Card key={exp.id} className="rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all">
-                                            <img src={exp.images?.[0]?.image || 'https://images.unsplash.com/photo-1440778303588-435521a205bc?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80'} className="w-full h-48 object-cover" alt={exp.title} />
-                                            <CardContent className="p-4">
-                                                <h4 className="font-bold text-lg mb-1">{exp.title}</h4>
-                                                <p className="text-brand font-black">${exp.price} {exp.currency}</p>
-                                                <p className="text-xs text-ui-muted mt-2 line-clamp-2">{exp.description}</p>
+                                        <Card key={exp.id} className="rounded-3xl overflow-hidden border border-ui-border/50 shadow-xl bg-white group">
+                                            <div className="h-48 overflow-hidden relative bg-ui-bg-alt">
+                                                {exp.images?.[0]?.image ? (
+                                                    <img src={getMediaUrl(exp.images[0].image)} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={exp.title} />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center text-ui-muted">
+                                                        <Globe className="w-12 h-12 opacity-20" />
+                                                    </div>
+                                                )}
+                                                <div className="absolute top-4 right-4 bg-ui-white/90 backdrop-blur-md px-4 py-1.5 rounded-full text-xs font-black text-brand border border-brand/10 shadow-lg">
+                                                    {exp.currency} {exp.price}
+                                                </div>
+                                                
+                                                {/* Edit/Delete for Owner */}
+                                                {isOwner && (
+                                                    <div className="absolute bottom-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0 duration-300">
+                                                        <button 
+                                                            onClick={() => navigate('/app/dashboard')}
+                                                            className="p-2 bg-white/90 backdrop-blur-md rounded-xl text-ui-text-main shadow-lg hover:bg-brand hover:text-white transition-all"
+                                                            title="Edit in Dashboard"
+                                                        >
+                                                            <Edit3 className="w-3.5 h-3.5" />
+                                                        </button>
+                                                        <button 
+                                                            onClick={async () => {
+                                                                if(window.confirm("Delete this service?")) {
+                                                                    const { deleteService } = await import('../services/api');
+                                                                    await deleteService(exp.id);
+                                                                    setExperiences(prev => prev.filter(e => e.id !== exp.id));
+                                                                    toast.success("Service deleted");
+                                                                }
+                                                            }}
+                                                            className="p-2 bg-white/90 backdrop-blur-md rounded-xl text-error shadow-lg hover:bg-error hover:text-white transition-all"
+                                                        >
+                                                            <Trash2 className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <CardContent className="p-6">
+                                                <h4 className="font-black text-lg mb-2 italic uppercase tracking-tight group-hover:text-brand transition-colors">{exp.title}</h4>
+                                                <p className="text-xs text-ui-text-secondary mt-3 line-clamp-2 italic font-medium opacity-80">"{exp.description}"</p>
+                                                <div className="flex items-center gap-4 mt-6 pt-4 border-t border-ui-border/50">
+                                                    <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-ui-muted"><Clock className="w-3 h-3" /> {exp.duration}</div>
+                                                    <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-ui-muted"><MapPin className="w-3 h-3" /> {exp.location}</div>
+                                                </div>
                                             </CardContent>
                                         </Card>
                                     ))}
@@ -217,6 +541,186 @@ const UserProfilePage = () => {
                     </Tabs>
                 </div>
             </div>
+
+            {/* Advanced Edit Moment Modal */}
+            <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+                <DialogContent className="sm:max-w-3xl rounded-[2.5rem] p-0 border-none bg-ui-white shadow-2xl overflow-hidden">
+                    <div className="flex flex-col h-[85vh]">
+                        <DialogHeader className="p-8 pb-4 border-b border-ui-border/50 shrink-0">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <DialogTitle className="text-3xl font-black italic uppercase tracking-tighter text-ui-text-main">Manage Moment</DialogTitle>
+                                    <DialogDescription className="text-xs font-bold uppercase tracking-widest text-brand">Reorder, add or remove images</DialogDescription>
+                                </div>
+                                <Button 
+                                    onClick={handleEditSubmit} 
+                                    className="rounded-2xl bg-brand text-white font-black uppercase tracking-widest text-xs px-8 h-12 shadow-xl shadow-brand/20"
+                                >
+                                    <Save className="w-4 h-4 mr-2" /> Save Changes
+                                </Button>
+                            </div>
+                        </DialogHeader>
+
+                        <div className="flex-1 overflow-y-auto no-scrollbar p-8 pt-6 space-y-10">
+                            {/* Image Management Section */}
+                            <div className="space-y-6">
+                                <div className="flex items-center justify-between">
+                                    <Label className="text-[11px] font-black uppercase tracking-[0.2em] text-ui-muted">Visual Gallery</Label>
+                                    <Button 
+                                        variant="outline" 
+                                        size="sm" 
+                                        onClick={() => fileInputRef.current?.click()}
+                                        className="rounded-xl border-dashed border-2 border-brand/30 text-brand font-black text-[10px] uppercase tracking-widest hover:bg-brand/5"
+                                    >
+                                        <Plus className="w-3.5 h-3.5 mr-1" /> Add More
+                                    </Button>
+                                    <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleFileChange} accept="image/*,video/*" />
+                                </div>
+
+                                <div className="p-6 bg-ui-bg-alt/50 rounded-[2.5rem] border-2 border-ui-border/50 shadow-inner">
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                                        {orderedMedia.map((item, index) => (
+                                            <div 
+                                                key={index}
+                                                draggable
+                                                onDragStart={() => onDragStart(index)}
+                                                onDragOver={onDragOver}
+                                                onDrop={() => onDrop(index)}
+                                                className={`relative aspect-square rounded-3xl overflow-hidden bg-white border-2 border-ui-border group transition-all duration-300 cursor-move ${draggedIndex === index ? 'opacity-30 scale-90' : 'hover:shadow-xl hover:border-brand/40'}`}
+                                            >
+                                                <img src={item.preview} className="w-full h-full object-cover" alt="" />
+                                                
+                                                {/* Item Toolbar */}
+                                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-3">
+                                                    <div className="p-2 bg-white/20 backdrop-blur-md rounded-full text-white">
+                                                        <GripVertical className="w-5 h-5" />
+                                                    </div>
+                                                    <button 
+                                                        onClick={() => removeMediaItem(index)}
+                                                        className="p-2 bg-error text-white rounded-xl shadow-lg hover:scale-110 active:scale-95 transition-all"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+
+                                                {/* Badge for New Items */}
+                                                {item.type === 'new' && (
+                                                    <div className="absolute top-2 left-2 px-2 py-1 bg-success text-white text-[8px] font-black uppercase rounded-lg shadow-md">New</div>
+                                                )}
+                                                
+                                                {/* Position Indicator */}
+                                                <div className="absolute bottom-2 left-2 w-6 h-6 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-[10px] font-black text-white">{index + 1}</div>
+                                            </div>
+                                        ))}
+                                        
+                                        {orderedMedia.length === 0 && (
+                                            <div 
+                                                onClick={() => fileInputRef.current?.click()}
+                                                className="col-span-full aspect-video rounded-[2rem] bg-white border-2 border-dashed border-ui-border flex flex-col items-center justify-center cursor-pointer hover:bg-brand/5 transition-all group"
+                                            >
+                                                <Camera className="w-10 h-10 text-ui-muted mb-4 group-hover:scale-110 transition-transform" />
+                                                <p className="text-[10px] font-black uppercase tracking-widest text-ui-muted">Upload moments to get started</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Details Section */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                                <div className="space-y-4">
+                                    <Label className="text-[11px] font-black uppercase tracking-[0.2em] text-ui-muted">Caption & Narrative</Label>
+                                    <Textarea 
+                                        value={editFormData.caption || ''} 
+                                        onChange={(e) => setEditFormData({...editFormData, caption: e.target.value})}
+                                        placeholder="Tell the story behind these moments..."
+                                        className="min-h-[160px] rounded-[1.8rem] bg-ui-bg-alt border-none focus:ring-2 focus:ring-brand/20 font-medium italic p-6"
+                                    />
+                                </div>
+
+                                <div className="space-y-8">
+                                    <div className="space-y-4">
+                                        <Label className="text-[11px] font-black uppercase tracking-[0.2em] text-ui-muted">Visibility Settings</Label>
+                                        <div className="grid grid-cols-1 gap-3">
+                                            {[
+                                                { val: 'public', label: 'Public', desc: 'Anyone on Linkler', icon: Globe },
+                                                { val: 'followers', label: 'Followers', desc: 'Only your explorers', icon: UsersIcon },
+                                                { val: 'friends', label: 'Friends', desc: 'Mutual connections only', icon: Heart },
+                                                { val: 'private', label: 'Private', desc: 'Only you can see this', icon: Lock }
+                                            ].map(item => (
+                                                <button
+                                                    key={item.val}
+                                                    type="button"
+                                                    onClick={() => setEditFormData({...editFormData, audience: item.val})}
+                                                    className={`flex items-center gap-4 p-4 rounded-2xl border-2 text-left transition-all ${editFormData.audience === item.val ? 'border-brand bg-brand/5 shadow-md' : 'border-ui-border hover:bg-ui-bg-alt opacity-70'}`}
+                                                >
+                                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${editFormData.audience === item.val ? 'bg-brand text-white shadow-lg' : 'bg-ui-bg-alt text-ui-muted'}`}>
+                                                        <item.icon className="w-5 h-5" />
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <p className={`text-xs font-black uppercase tracking-tight ${editFormData.audience === item.val ? 'text-brand' : 'text-ui-text-main'}`}>{item.label}</p>
+                                                        <p className="text-[10px] font-medium text-ui-muted">{item.desc}</p>
+                                                    </div>
+                                                    {editFormData.audience === item.val && <CheckCircle2 className="w-5 h-5 text-brand" />}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Follower/Following Modal */}
+            <Dialog open={isFollowModalOpen} onOpenChange={setIsFollowModalOpen}>
+                <DialogContent className="sm:max-w-md rounded-[2.5rem] p-0 border-none bg-ui-white shadow-2xl overflow-hidden">
+                    <DialogHeader className="p-8 pb-4 border-b border-ui-border/50">
+                        <DialogTitle className="text-2xl font-black italic uppercase tracking-tighter text-ui-text-main">
+                            {followModalType === 'followers' ? 'Explorers' : 'Following'}
+                        </DialogTitle>
+                    </DialogHeader>
+                    
+                    <div className="max-h-[60vh] overflow-y-auto no-scrollbar p-4">
+                        {followListLoading ? (
+                            <div className="flex justify-center py-8">
+                                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-brand"></div>
+                            </div>
+                        ) : followList.length > 0 ? (
+                            <div className="space-y-2">
+                                {followList.map((fUser) => (
+                                    <div 
+                                        key={fUser.id} 
+                                        className="flex items-center justify-between p-3 rounded-2xl hover:bg-ui-bg-alt transition-colors group cursor-pointer"
+                                        onClick={() => {
+                                            setIsFollowModalOpen(false);
+                                            navigate(`/app/profile/${fUser.username}`);
+                                        }}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <Avatar className="w-12 h-12 border-2 border-ui-white shadow-sm">
+                                                <AvatarImage src={fUser.profile_picture} className="object-cover" />
+                                                <AvatarFallback className="bg-brand-light text-brand font-black">{fUser.username?.charAt(0).toUpperCase()}</AvatarFallback>
+                                            </Avatar>
+                                            <div>
+                                                <p className="font-bold text-ui-text-main text-sm">{fUser.username}</p>
+                                                <p className="text-[10px] text-ui-muted uppercase tracking-widest font-black">{fUser.account_type || 'Traveler'}</p>
+                                            </div>
+                                        </div>
+                                        <ChevronRight className="w-4 h-4 text-ui-muted group-hover:text-brand transition-colors" />
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center py-12">
+                                <UsersIcon className="w-12 h-12 text-ui-muted/20 mx-auto mb-4" />
+                                <p className="text-sm font-medium text-ui-muted italic">No {followModalType} yet.</p>
+                            </div>
+                        )}
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };
@@ -224,12 +728,12 @@ const UserProfilePage = () => {
 const EmptyState = ({ icon, title, description }) => (
     <div className="flex flex-col items-center justify-center py-24 bg-ui-white/50 rounded-[2.5rem] border-2 border-dashed border-ui-border">
         <div className="w-20 h-20 bg-ui-bg-alt text-ui-muted rounded-full flex items-center justify-center mb-6">
-            {icon === 'moments' && <svg className="h-10 w-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>}
-            {icon === 'trips' && <svg className="h-10 w-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>}
-            {icon === 'services' && <svg className="h-10 w-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>}
+            {icon === 'moments' && <Globe className="h-10 w-10 opacity-40" />}
+            {icon === 'trips' && <Compass className="h-10 w-10 opacity-40" />}
+            {icon === 'services' && <ShieldCheck className="h-10 w-10 opacity-40" />}
         </div>
-        <h3 className="text-lg font-bold text-ui-text-main mb-1">{title}</h3>
-        <p className="text-ui-text-secondary text-sm">{description}</p>
+        <h3 className="text-lg font-black italic uppercase tracking-tighter text-ui-text-main mb-1">{title}</h3>
+        <p className="text-ui-text-secondary text-sm font-medium">{description}</p>
     </div>
 );
 

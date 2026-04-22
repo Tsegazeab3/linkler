@@ -1,8 +1,16 @@
 from rest_framework import serializers
 from .models import Post, Trip, Comment, Like, Save, PostImage
 from django.contrib.auth import get_user_model
+from django.db.models import Sum
 
 User = get_user_model()
+
+class BookingShortSerializer(serializers.ModelSerializer):
+    user_username = serializers.ReadOnlyField(source='user.username')
+    class Meta:
+        from accounts.models import Booking
+        model = Booking
+        fields = ('id', 'user_username', 'booking_date', 'status', 'price', 'currency')
 
 class UserShortSerializer(serializers.ModelSerializer):
     is_following = serializers.SerializerMethodField()
@@ -62,9 +70,12 @@ class PostSerializer(serializers.ModelSerializer):
     likes_count = serializers.SerializerMethodField()
     comments_count = serializers.SerializerMethodField()
     saves_count = serializers.SerializerMethodField()
+    bookings_count = serializers.SerializerMethodField()
+    total_earnings = serializers.SerializerMethodField()
     post_comments = CommentSerializer(many=True, read_only=True)
     media_file = serializers.SerializerMethodField()
     images = PostImageSerializer(many=True, read_only=True)
+    bookings = BookingShortSerializer(source='generated_bookings', many=True, read_only=True)
     
     class Meta:
         model = Post
@@ -85,12 +96,21 @@ class PostSerializer(serializers.ModelSerializer):
             'likes_count',
             'comments_count',
             'saves_count',
+            'bookings_count',
+            'total_earnings',
+            'bookings',
             'is_liked',
             'is_saved',
             'post_comments',
             'created_at',
         ]
         read_only_fields = ['user', 'created_at', 'id']
+
+    def get_bookings_count(self, obj):
+        return obj.generated_bookings.count()
+
+    def get_total_earnings(self, obj):
+        return obj.generated_bookings.filter(status='confirmed').aggregate(Sum('price'))['price__sum'] or 0
 
     def get_is_liked(self, obj):
         request = self.context.get('request')

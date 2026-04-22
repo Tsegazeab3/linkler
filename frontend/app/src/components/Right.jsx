@@ -15,7 +15,7 @@ const Right = (props) => (
 			ry={47.286}
 			style={{
 				fill: "none",
-				stroke: "#1a1a1a",
+				stroke: "currentColor",
 				strokeWidth: 4,
 				strokeDasharray: "none",
 			}}

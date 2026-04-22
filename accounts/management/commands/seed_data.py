@@ -66,16 +66,16 @@ class Command(BaseCommand):
         account_types = ['traveller', 'guide', 'service']
         
         profile_images = [
-            "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde",
-            "https://images.unsplash.com/photo-1494790108377-be9c29b29330",
-            "https://images.unsplash.com/photo-1599566150163-29194dcaad36",
-            "https://images.unsplash.com/photo-1527980965255-d3b416303d12",
-            "https://images.unsplash.com/photo-1580489944761-15a19d654956",
-            "https://images.unsplash.com/photo-1438761681033-6461ffad8d80",
-            "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d",
-            "https://images.unsplash.com/photo-1544005313-94ddf0286df2",
-            "https://images.unsplash.com/photo-1500648767791-00dcc994a43e",
-            "https://images.unsplash.com/photo-1554151228-14d9def656e4"
+            "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80",
+            "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80",
+            "https://images.unsplash.com/photo-1599566150163-29194dcaad36?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80",
+            "https://images.unsplash.com/photo-1527980965255-d3b416303d12?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80",
+            "https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80",
+            "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80",
+            "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80",
+            "https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80",
+            "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80",
+            "https://images.unsplash.com/photo-1554151228-14d9def656e4?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80"
         ]
         
         # Ensure we have a superuser for testing
@@ -173,21 +173,21 @@ class Command(BaseCommand):
         ]
 
         travel_images = [
-            "https://images.unsplash.com/photo-1507525428034-b723cf961d3e",
-            "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e",
-            "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b",
-            "https://images.unsplash.com/photo-1516026672322-bc52d61a55d5",
-            "https://images.unsplash.com/photo-1539020140153-e479b8c22e70",
-            "https://images.unsplash.com/photo-1502602898657-3e917247a183",
-            "https://images.unsplash.com/photo-1583997051651-8255c48b7525",
-            "https://images.unsplash.com/photo-1508913912821-b4bbd5bc89be",
-            "https://images.unsplash.com/photo-1544551763-46a013bb70d5",
-            "https://images.unsplash.com/photo-1504109586057-7a2ae83d1338",
-            "https://images.unsplash.com/photo-1528605248644-14dd04022da1",
-            "https://images.unsplash.com/photo-1517154421773-0529f29ea451",
-            "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1",
-            "https://images.unsplash.com/photo-1461896836934-ffe607ba8211",
-            "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800"
+            "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1539020140153-e479b8c22e70?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1502602898657-3e917247a183?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1583997051651-8255c48b7525?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1508913912821-b4bbd5bc89be?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1544551763-46a013bb70d5?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1504109586057-7a2ae83d1338?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1528605248644-14dd04022da1?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1517154421773-0529f29ea451?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
         ]
 
         for i in range(num_posts):

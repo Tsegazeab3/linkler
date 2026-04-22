@@ -82,7 +82,7 @@ const GroupChatPreview = ({ conversation, ...props }) => (
 const PreviewList = ({ items, renderItem, emptyMessage }) => (
   <div className="space-y-2">
     {items.length > 0 ? items.map(item => renderItem(item)) : (
-      <div className="text-gray-400 text-sm text-center py-4">{emptyMessage || 'Nothing here yet.'}</div>
+      <div className="text-ui-muted text-sm text-center py-4 font-medium italic">{emptyMessage || 'Nothing here yet.'}</div>
     )}
   </div>
 );
@@ -129,13 +129,45 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [pushEnabled, setPushEnabled] = useState(true);
+  const [notifications, setNotifications] = useState([]);
+  const [loadingNotifications, setLoadingLoadingNotifications] = useState(false);
+
+  const getMediaUrl = (url) => {
+    if (!url) return null;
+    if (url.startsWith('http')) return url;
+    return `http://localhost:8000${url}`;
+  };
 
   // Reset search when panel changes
   useEffect(() => {
     setSearchQuery('');
+    if (selectedNavItemId === 11) {
+        fetchNotifications();
+    }
   }, [selectedNavItemId]);
 
+  const fetchNotifications = async () => {
+    setLoadingLoadingNotifications(true);
+    import('../services/api').then(async ({ getNotifications }) => {
+        try {
+            const res = await getNotifications();
+            setNotifications(Array.isArray(res.data) ? res.data : (res.data.results || []));
+        } catch (err) { console.error(err); }
+        finally { setLoadingLoadingNotifications(false); }
+    });
+  };
+
+  const handleMarkRead = async (id) => {
+    import('../services/api').then(async ({ markNotificationRead }) => {
+        try {
+            await markNotificationRead(id);
+            setNotifications(notifications.map(n => n.id === id ? { ...n, is_read: true } : n));
+        } catch (err) { console.error(err); }
+    });
+  };
+
   const totalUnread = Array.isArray(conversations) ? conversations.reduce((acc, conv) => acc + (conv.unread_count || 0), 0) : 0;
+  const unreadNotifications = user?.unread_notifications_count || notifications.filter(n => !n.is_read).length;
   
   const navItems = [
     { id: 1, icon: SvgHome, name: 'Home', type: 'link', href: '/app' },
@@ -143,6 +175,10 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
     { id: 2, icon: SvgSavedGuides, name: 'Saved Guides', type: 'panel' },
     { id: 3, icon: SvgChats, name: 'Messages', type: 'panel' },
     { id: 4, icon: SvgGroups, name: 'Groups', type: 'panel' },
+    { id: 11, icon: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>, name: 'Alerts', type: 'panel' },
+    ...(user?.account_type === 'guide' || user?.account_type === 'service' ? [
+        { id: 10, icon: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>, name: 'Dashboard', type: 'link', href: '/app/dashboard' }
+    ] : []),
     { id: 5, icon: SvgFellowTravelers, name: 'Fellow Travelers', type: 'link', href: '/app/travelers' },
     { id: 6, icon: SvgNewGuides, name: 'New Guides', type: 'link', href: '/app/guides' },
     { id: 7, icon: SvgPromotions, name: 'Deals', type: 'link', href: '/app/promotions' },
@@ -343,6 +379,37 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
             />
           </div>
         );
+      case 'Alerts':
+        return (
+            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                {loadingNotifications ? (
+                    <div className="flex justify-center py-10"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-brand"></div></div>
+                ) : notifications.length > 0 ? (
+                    <div className="space-y-2">
+                        {notifications.map(n => (
+                            <div 
+                                key={n.id} 
+                                onClick={() => { handleMarkRead(n.id); n.link && navigate(n.link); n.link && onClosePanel(); }}
+                                className={`p-4 rounded-2xl border transition-all cursor-pointer ${n.is_read ? 'bg-ui-white border-ui-border opacity-60' : 'bg-brand/5 border-brand/20 shadow-sm'}`}
+                            >
+                                <div className="flex justify-between items-start mb-1">
+                                    <h5 className={`text-xs font-black uppercase tracking-tight ${n.is_read ? 'text-ui-text-secondary' : 'text-brand'}`}>{n.title}</h5>
+                                    {!n.is_read && <div className="w-2 h-2 rounded-full bg-brand animate-pulse" />}
+                                </div>
+                                <p className="text-xs text-ui-text-secondary line-clamp-2">{n.message}</p>
+                                <p className="text-[9px] text-ui-muted mt-2 font-bold uppercase tracking-widest">{new Date(n.created_at).toLocaleDateString()}</p>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <EmptyState 
+                        icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>}
+                        title="No alerts"
+                        desc="You're all caught up! New notifications will appear here."
+                    />
+                )}
+            </div>
+        );
       case 'Settings':
         return (
           <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
@@ -403,9 +470,14 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
       <>
         <span className="relative mb-0.5">
           <Icon className="w-7 h-7" />
-          {(item.name === 'Messages' || item.name === 'Groups') && totalUnread > 0 && (
+          {((item.name === 'Messages' || item.name === 'Groups') && totalUnread > 0) && (
             <span className="absolute -top-1 -right-1 flex items-center justify-center h-4 w-4 rounded-full bg-red-500 text-white text-[10px] font-bold border-2 border-[var(--color-linkler-bg)]">
               {totalUnread}
+            </span>
+          )}
+          {(item.name === 'Alerts' && unreadNotifications > 0) && (
+            <span className="absolute -top-1 -right-1 flex items-center justify-center h-4 w-4 rounded-full bg-red-500 text-white text-[10px] font-bold border-2 border-[var(--color-linkler-bg)]">
+              {unreadNotifications}
             </span>
           )}
         </span>
@@ -476,40 +548,28 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
           {isAuthenticated ? (
             user ? (
               <div
-                onClick={() => onPanelItemClick('user_profile')}
-                className={`relative group flex flex-col items-center w-full px-2 cursor-pointer py-2 rounded-lg mx-1 hover:bg-brand-light transition-colors ${selectedNavItemId === 'user_profile' ? 'bg-brand-light' : ''}`}
+                onClick={() => { onClosePanel(); navigate(`/app/profile/${user.username}`); }}
+                className={`relative group flex flex-col items-center w-full px-2 cursor-pointer py-2 rounded-lg mx-1 hover:bg-brand-light transition-colors ${location.pathname === `/app/profile/${user.username}` ? 'bg-brand-light' : ''}`}
               >
-                <div className="w-10 h-10 rounded-full bg-brand/10 flex items-center justify-center text-brand font-bold text-base border-2 border-ui-white shadow-sm overflow-hidden">
-                  <img
-                    src={user.profile_picture || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80'}
-                    alt={user.username}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
+                <Avatar className="w-10 h-10 border-2 border-ui-white shadow-sm text-base font-bold text-brand bg-ui-white">
+                  <AvatarImage src={getMediaUrl(user.profile_picture)} alt={user.username} className="object-cover" />
+                  <AvatarFallback>{user.username?.charAt(0).toUpperCase()}</AvatarFallback>
+                </Avatar>
                 <span className="text-[10px] text-ui-muted mt-1 truncate w-full text-center px-1 font-medium leading-tight">
                   {user.username}
                 </span>
 
-                {/* Hover tooltip */}
-                <div className="absolute left-full bottom-2 ml-3 pointer-events-none opacity-0 group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-150 w-56 bg-ui-white shadow-2xl rounded-xl p-4 border border-ui-border z-50">
-                  <div className="flex items-center gap-3 mb-3 pb-3 border-b border-ui-border">
-                    <div className="w-10 h-10 rounded-full bg-brand flex items-center justify-center text-white font-bold shrink-0">
+                {/* Hover tooltip - Simplified */}
+                <div className="absolute left-full bottom-2 ml-3 pointer-events-none opacity-0 group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-150 w-48 bg-ui-white shadow-2xl rounded-xl p-3 border border-ui-border z-50">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-brand flex items-center justify-center text-white text-xs font-bold shrink-0">
                       {user.username?.charAt(0).toUpperCase() || 'U'}
                     </div>
                     <div className="overflow-hidden">
-                      <p className="font-bold text-sm text-ui-text-main truncate">{user.username}</p>
-                      <p className="text-xs text-ui-muted truncate">{user.email}</p>
+                      <p className="font-bold text-xs text-ui-text-main truncate">{user.username}</p>
+                      <p className="text-[10px] text-ui-muted truncate">View Profile</p>
                     </div>
                   </div>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); logout(); }}
-                    className="w-full text-left p-2.5 rounded-lg text-error hover:bg-error/10 text-xs font-bold flex items-center gap-2 transition-all active:scale-95"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                    </svg>
-                    Sign Out
-                  </button>
                 </div>
               </div>
             ) : (

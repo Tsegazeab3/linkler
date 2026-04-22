@@ -303,7 +303,7 @@ const PostDetailPage = () => {
             onClick={handleMediaClick}
             onDoubleClick={handleDoubleClick}
         >
-          {post.media_file || (post.images && post.images.length > 0) ? (
+          {((post.images && post.images.length > 0) || post.media_file) ? (
             <div 
                 className="w-full h-full flex items-center justify-center min-w-full min-h-full"
                 onTouchStart={handleTouchStart}
@@ -355,10 +355,17 @@ const PostDetailPage = () => {
                 )}
             </div>
           ) : (
-            <div className="w-full h-full flex items-center justify-center p-12 bg-gradient-to-br from-brand-light to-accent-indigo/10">
-              <p className={`text-2xl text-ui-text-main font-medium italic text-center`}>
-                {post.caption}
-              </p>
+            <div className="w-full h-full flex flex-col items-center justify-center p-12 bg-gradient-to-br from-brand-light to-accent-indigo/10 gap-4">
+              {post.caption ? (
+                <p className={`text-2xl text-ui-text-main font-medium italic text-center leading-relaxed`}>
+                  {post.caption}
+                </p>
+              ) : (
+                <>
+                  <Share2 className="w-16 h-16 text-ui-muted opacity-20" />
+                  <p className="text-sm font-black uppercase tracking-[0.4em] text-ui-muted opacity-40">No Content Shared</p>
+                </>
+              )}
             </div>
           )}
         </div>
@@ -368,7 +375,7 @@ const PostDetailPage = () => {
         >
           <div className="flex items-center p-4 border-b border-ui-border shrink-0">
             <Avatar className="h-10 w-10 mr-3 border border-ui-border shadow-sm">
-                <AvatarImage src={post.author?.profile_picture} className="object-cover" />
+                <AvatarImage src={getMediaUrl(post.author?.profile_picture)} className="object-cover" />
                 <AvatarFallback>{post.author?.username?.charAt(0).toUpperCase()}</AvatarFallback>
             </Avatar>
             <div className="flex-grow min-w-0">
@@ -388,10 +395,10 @@ const PostDetailPage = () => {
           </div>
 
           <div className="flex-grow overflow-y-auto no-scrollbar p-4 space-y-6">
-            {post.media_file && post.caption && (
+            {post.caption && (
                <div className="flex space-x-3 mb-2">
                  <Avatar className="h-8 w-8 border border-ui-border/30 shadow-sm flex-shrink-0">
-                    <AvatarImage src={post.author?.profile_picture} className="object-cover" />
+                    <AvatarImage src={getMediaUrl(post.author?.profile_picture)} className="object-cover" />
                     <AvatarFallback>{post.author?.username?.charAt(0).toUpperCase()}</AvatarFallback>
                  </Avatar>
                  <div className="text-sm">
@@ -405,7 +412,7 @@ const PostDetailPage = () => {
                 {post.post_comments?.map(comment => (
                 <div key={comment.id} className="flex space-x-3 animate-in fade-in slide-in-from-left-2 duration-300">
                     <Avatar className="h-8 w-8 border border-ui-border/30 shadow-sm flex-shrink-0">
-                        <AvatarImage src={comment.author?.profile_picture} className="object-cover" />
+                        <AvatarImage src={getMediaUrl(comment.author?.profile_picture)} className="object-cover" />
                         <AvatarFallback>{comment.author?.username?.charAt(0).toUpperCase()}</AvatarFallback>
                     </Avatar>
                     <div className="flex-grow">

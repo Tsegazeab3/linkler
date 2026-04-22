@@ -1,6 +1,30 @@
 from rest_framework import serializers
 from dj_rest_auth.registration.serializers import RegisterSerializer
-from .models import CustomUser, Experience, ExperienceImage, ExperienceReview, ProviderReview
+from .models import CustomUser, Experience, ExperienceImage, ExperienceReview, ProviderReview, Booking, TravelerProfile, VerificationDocument, Notification, GuideAvailability
+
+class TravelerProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TravelerProfile
+        fields = '__all__'
+        read_only_fields = ('user',)
+
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = '__all__'
+        read_only_fields = ('user', 'created_at')
+
+class VerificationDocumentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VerificationDocument
+        fields = '__all__'
+        read_only_fields = ('user', 'uploaded_at')
+
+class GuideAvailabilitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GuideAvailability
+        fields = ('id', 'date', 'is_available', 'reason')
+        read_only_fields = ('id',)
 
 class ExperienceReviewSerializer(serializers.ModelSerializer):
     user_username = serializers.ReadOnlyField(source='user.username')
@@ -8,7 +32,7 @@ class ExperienceReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ExperienceReview
-        fields = ('id', 'user', 'user_username', 'user_profile_picture', 'rating', 'comment', 'created_at')
+        fields = ('id', 'experience', 'user', 'user_username', 'user_profile_picture', 'rating', 'comment', 'created_at')
         read_only_fields = ('user',)
 
 class ProviderReviewSerializer(serializers.ModelSerializer):
@@ -17,7 +41,7 @@ class ProviderReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProviderReview
-        fields = ('id', 'user', 'user_username', 'user_profile_picture', 'rating', 'comment', 'created_at')
+        fields = ('id', 'provider', 'user', 'user_username', 'user_profile_picture', 'rating', 'comment', 'created_at')
         read_only_fields = ('user',)
 
 class ExperienceImageSerializer(serializers.ModelSerializer):
@@ -30,15 +54,25 @@ class ExperienceSerializer(serializers.ModelSerializer):
     images = ExperienceImageSerializer(many=True, read_only=True)
     rating = serializers.SerializerMethodField()
     review_count = serializers.SerializerMethodField()
+    bookings_count = serializers.SerializerMethodField()
+    total_earnings = serializers.SerializerMethodField()
 
     class Meta:
         model = Experience
         fields = (
             'id', 'user', 'user_username', 'title', 'description', 
             'price', 'currency', 'location', 'country', 'region', 
-            'duration', 'images', 'category', 'rating', 'review_count', 'created_at'
+            'duration', 'images', 'category', 'rating', 'review_count', 
+            'bookings_count', 'total_earnings', 'created_at'
         )
         read_only_fields = ('user',)
+
+    def get_bookings_count(self, obj):
+        return obj.bookings.count()
+
+    def get_total_earnings(self, obj):
+        from django.db.models import Sum
+        return obj.bookings.filter(status='confirmed').aggregate(Sum('price'))['price__sum'] or 0
 
     def get_rating(self, obj):
         from django.db.models import Avg
@@ -64,19 +98,24 @@ class UserSerializer(serializers.ModelSerializer):
     rating = serializers.SerializerMethodField()
     review_count = serializers.SerializerMethodField()
     profile_picture = serializers.SerializerMethodField()
+    unread_notifications_count = serializers.SerializerMethodField()
 
     class Meta:
         model = CustomUser
         fields = (
             'id', 'username', 'email', 'age', 'nationality', 'phone_no', 
-            'city', 'country', 'facebook', 'instagram', 'git_hub',
+            'city', 'country', 'facebook', 'instagram', 'git_hub', 
             'linkedin', 'whatsapp', 'telegram', 'account_type', 'bio', 
             'profile_picture', 'is_following', 'followers_count', 
             'following_count', 'posts_count', 'posts', 'rating', 'review_count',
-            'opt_out_discovery', 'show_followers_list'
+            'opt_out_discovery', 'show_followers_list',
+            'onboarding_completed', 'verification_status',
+            'is_profile_complete', 'missing_fields', 'unread_notifications_count'
         )
-        read_only_fields = ('email', 'account_type')
+        read_only_fields = ('email', 'account_type', 'verification_status', 'is_profile_complete', 'missing_fields', 'unread_notifications_count')
 
+    def get_unread_notifications_count(self, obj):
+        return obj.notifications.filter(is_read=False).count()
     def get_is_following(self, obj):
         request = self.context.get('request')
         if request and request.user.is_authenticated:
@@ -146,3 +185,20 @@ class PasswordResetRequestSerializer(serializers.Serializer):
 class PasswordResetConfirmSerializer(serializers.Serializer):
     token = serializers.CharField()
     new_password = serializers.CharField(min_length=8)
+
+class BookingSerializer(serializers.ModelSerializer):
+    user_details = UserSerializer(source='user', read_only=True)
+    provider_details = UserSerializer(source='provider', read_only=True)
+    experience_details = ExperienceSerializer(source='experience', read_only=True)
+
+    class Meta:
+        model = Booking
+        fields = (
+            'id', 'user', 'user_details', 
+            'provider', 'provider_details', 
+            'experience', 'experience_details', 
+            'source_post', 'booking_date', 'status', 
+            'price', 'currency', 'created_at', 'updated_at'
+        )
+        read_only_fields = ('user', 'created_at', 'updated_at')
+

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { getProfile, updateProfile, changePassword } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,9 +9,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Sun, Moon } from 'lucide-react';
 
 const SettingsPage = () => {
-  const { user, setUser } = useAuth();
+  const { user, setUser, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   
   const [profileData, setProfileData] = useState({
@@ -280,6 +283,32 @@ const SettingsPage = () => {
         <TabsContent value="preferences">
           <Card>
             <CardHeader>
+              <CardTitle>Appearance</CardTitle>
+              <CardDescription>Customize how Linkler looks on your device.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+               <div className="flex items-center justify-between p-4 rounded-xl border-2 border-border bg-ui-white">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-lg bg-ui-bg-alt flex items-center justify-center text-ui-text-secondary">
+                      {theme === 'dark' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+                    </div>
+                    <div>
+                        <p className="font-bold text-sm text-ui-text-main">Dark Mode</p>
+                        <p className="text-xs text-ui-muted">Switch between light and dark themes.</p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={toggleTheme}
+                    className={`w-12 h-6 rounded-full transition-all relative ${theme === 'dark' ? 'bg-brand' : 'bg-ui-muted/30'}`}
+                  >
+                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${theme === 'dark' ? 'left-7' : 'left-1'}`} />
+                  </button>
+               </div>
+            </CardContent>
+          </Card>
+
+          <Card className="mt-8">
+            <CardHeader>
               <CardTitle>Discovery & Privacy</CardTitle>
               <CardDescription>Control how you appear to other travelers.</CardDescription>
             </CardHeader>
@@ -411,6 +440,25 @@ const SettingsPage = () => {
                   </Button>
                 </div>
               </form>
+            </CardContent>
+          </Card>
+
+          <Card className="mt-8 border-error/20 bg-error-light/5">
+            <CardHeader>
+              <CardTitle className="text-error">Account Actions</CardTitle>
+              <CardDescription>Logout or permanent actions for your account.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button 
+                variant="destructive" 
+                className="w-full h-12 rounded-xl font-bold uppercase tracking-widest text-xs shadow-lg shadow-error/20"
+                onClick={() => {
+                   logout();
+                   navigate('/signin');
+                }}
+              >
+                Sign Out
+              </Button>
             </CardContent>
           </Card>
         </TabsContent>

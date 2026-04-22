@@ -30,12 +30,12 @@ function ContentSection({ title, description, imageSrc }) {
            Using specific px and py values for better control across breakpoints.
         */}
         <div className="relative z-10 flex flex-col gap-4 rotate-1 justify-center h-full px-12 py-14 sm:px-16 sm:py-20 lg:px-24 lg:py-28">
-          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold leading-tight whitespace-pre-wrap">{title}</h2>
+          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold leading-tight whitespace-pre-wrap text-ui-text-main">{title}</h2>
 
           {/* ADDED MAX-WIDTH TO PARAGRAPH:
              Restricts line length to keep text in the "safe zone" of the blob.
           */}
-          <p className="text-sm sm:text-base mx-auto max-w-[40ch] sm:max-w-[40ch]">
+          <p className="text-sm sm:text-base mx-auto max-w-[40ch] sm:max-w-[40ch] text-ui-text-secondary">
             {description}
           </p>
         </div>

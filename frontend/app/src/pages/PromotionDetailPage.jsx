@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import StarRating from '../components/StarRating';
 import { getPromotionDetail, addComment } from '../services/api';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from 'sonner';
 
 const PromotionDetailPage = () => {
@@ -11,6 +12,12 @@ const PromotionDetailPage = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [newComment, setNewComment] = useState('');
+
+    const getMediaUrl = (url) => {
+        if (!url) return null;
+        if (url.startsWith('http')) return url;
+        return `http://localhost:8000${url}`;
+    };
 
     const handleBookNow = () => {
         toast.success("Redirecting to partner site...", {
@@ -64,7 +71,13 @@ const PromotionDetailPage = () => {
             <div className="max-w-5xl mx-auto">
                 <h1 className="text-4xl font-bold text-ui-text-main">{promotion.title}</h1>
                 <p className="text-xl text-ui-text-secondary mb-6 font-medium tracking-tight uppercase tracking-widest">{promotion.company}</p>
-                <img src={promotion.image || 'https://images.unsplash.com/photo-1506012787146-f92b2d7d6d96?ixlib=rb-1.2.1&auto=format&fit=crop&w=1200&q=80'} alt={promotion.title} className="w-full h-[400px] object-cover rounded-3xl shadow-2xl mb-12 border-4 border-ui-white" />
+                <div className="w-full h-[400px] bg-ui-bg-alt rounded-3xl shadow-2xl mb-12 border-4 border-ui-white overflow-hidden flex items-center justify-center">
+                    {promotion.image ? (
+                        <img src={getMediaUrl(promotion.image)} alt={promotion.title} className="w-full h-full object-cover" />
+                    ) : (
+                        <ShieldCheck className="w-24 h-24 text-ui-muted opacity-20" />
+                    )}
+                </div>
                 
                 <div className="bg-success-light rounded-2xl p-6 border border-success/20 flex items-center justify-between mb-8">
                     <div>
@@ -119,7 +132,10 @@ const PromotionDetailPage = () => {
                         <div className="space-y-4">
                             {promotion.reviews.map(review => (
                                 <div key={review.id} className="bg-ui-white p-6 rounded-2xl border border-ui-border shadow-sm flex items-start space-x-4 animate-in fade-in slide-in-from-bottom-2">
-                                    <img src={review.avatar || 'https://via.placeholder.com/150'} alt={review.reviewer} className="w-12 h-12 rounded-full border border-ui-border object-cover"/>
+                                    <Avatar className="w-12 h-12 border border-ui-border shrink-0">
+                                        <AvatarImage src={review.avatar} alt={review.reviewer} className="object-cover" />
+                                        <AvatarFallback className="bg-ui-bg-alt text-ui-muted font-bold">{review.reviewer?.charAt(0).toUpperCase()}</AvatarFallback>
+                                    </Avatar>
                                     <div>
                                         <div className="flex items-center gap-3 mb-1">
                                             <h3 className="font-bold text-ui-text-main">{review.reviewer}</h3>

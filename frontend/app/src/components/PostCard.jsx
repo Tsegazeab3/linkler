@@ -190,15 +190,25 @@ const PostCard = ({
       );
     }
 
-    /* Text-only Post Style */
+    if (caption) {
+        /* Text-only Post Style */
+        return (
+          <div className={`relative w-full bg-gradient-to-br from-brand-light to-accent-indigo/10 ${aspectRatioClass} cursor-zoom-in`} onClick={handleOpenDetail}>
+            <div className="absolute inset-0 flex items-center justify-center p-8">
+               <p className="text-lg md:text-xl text-ui-text-main font-medium italic text-center leading-relaxed">
+                 {caption}
+               </p>
+            </div>
+          </div>
+        );
+    }
+
+    /* Fallback for truly empty posts */
     return (
-      <div className={`relative w-full bg-gradient-to-br from-brand-light to-accent-indigo/10 ${aspectRatioClass} cursor-zoom-in`} onClick={handleOpenDetail}>
-        <div className="absolute inset-0 flex items-center justify-center p-8">
-           <p className="text-lg md:text-xl text-ui-text-main font-medium italic text-center leading-relaxed">
-             {caption}
-           </p>
+        <div className={`relative w-full bg-ui-bg-alt flex flex-col items-center justify-center gap-2 ${aspectRatioClass}`}>
+            <Share2 className="w-8 h-8 text-ui-muted opacity-20" />
+            <p className="text-[10px] font-black uppercase tracking-widest text-ui-muted opacity-40">No Content Shared</p>
         </div>
-      </div>
     );
   };
 
@@ -207,7 +217,7 @@ const PostCard = ({
       {/* User Info Section */}
       <CardHeader className="flex flex-row items-center p-3 space-y-0">
         <Avatar className="w-10 h-10 mr-3 border border-border cursor-pointer" onClick={() => navigate(`/app/profile/${username}`)}>
-          <AvatarImage src={userProfilePic} alt={`${username}'s profile`} className="object-cover" />
+          <AvatarImage src={getMediaUrl(userProfilePic)} alt={`${username}'s profile`} className="object-cover" />
           <AvatarFallback>{username?.charAt(0).toUpperCase()}</AvatarFallback>
         </Avatar>
           <div className="flex-grow min-w-0">

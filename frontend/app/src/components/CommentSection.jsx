@@ -18,6 +18,16 @@ const CommentSection = ({ postId }) => {
     fetchComments();
   }, [postId]);
 
+  const navigate = (path) => {
+    // Custom navigate if needed, but we use Link
+  };
+
+  const getMediaUrl = (url) => {
+    if (!url) return null;
+    if (url.startsWith('http')) return url;
+    return `http://localhost:8000${url}`;
+  };
+
   const fetchComments = async () => {
     try {
       const res = await getComments(postId);
@@ -91,7 +101,7 @@ const CommentSection = ({ postId }) => {
             >
               <Link to={`/app/profile/${comment.author?.username}`}>
                 <Avatar className="h-9 w-9 border border-ui-border shadow-sm hover:opacity-80 transition-opacity">
-                  <AvatarImage src={comment.author?.profile_picture} className="object-cover" />
+                  <AvatarImage src={getMediaUrl(comment.author?.profile_picture)} className="object-cover" />
                   <AvatarFallback className="text-[10px] bg-ui-bg-alt text-ui-muted">{comment.author?.username?.charAt(0).toUpperCase()}</AvatarFallback>
                 </Avatar>
               </Link>

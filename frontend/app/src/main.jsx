@@ -23,7 +23,12 @@ import CreateTripPage from './pages/CreateTripPage.jsx';
 import CreateExperiencePage from './pages/CreateExperiencePage.jsx';
 import CreatePromotionPage from './pages/CreatePromotionPage.jsx';
 import PromotionsPage from './pages/PromotionsPage.jsx';
-import PromotionDetailPage from './pages/PromotionDetailPage.jsx';
+import PromotionDetailPage from './pages/PromotionDetailPage';
+import GuideDashboardPage from './pages/GuideDashboardPage';
+import CheckoutPage from './pages/CheckoutPage';
+import TravelerOnboardingPage from './pages/TravelerOnboardingPage';
+import GuideVerificationPage from './pages/GuideVerificationPage';
+
 import ChatPage from './pages/ChatPage.jsx';
 import MessagesPage from './pages/MessagesPage.jsx';
 import SettingsPage from './pages/SettingsPage.jsx';
@@ -42,14 +47,20 @@ function NotFound() {
 // Logic to handle the root path based on auth status
 function HomeRedirect() {
   const { isAuthenticated, loading } = useAuth();
+  const location = useLocation();
   
-  if (loading) return null; // Or a loading spinner
-  
-  if (isAuthenticated) {
+  if (loading) return null; 
+
+  // Only redirect from the base URL /
+  if (isAuthenticated && location.pathname === '/') {
     return <Navigate to="/app" replace />;
   }
   
-  return <LandingPage />;
+  if (location.pathname === '/') {
+    return <LandingPage />;
+  }
+
+  return null;
 }
 
 // This is the key component that will manage the routing logic
@@ -65,14 +76,18 @@ function AppRouter() {
         <Route path="/signup" element={<SignUpPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
-        <Route path="/complete-profile" element={<AuthGuard><ProfileCompletionPage /></AuthGuard>} />
         
         {/* Protected App Routes */}
         <Route path="/app" element={<AuthGuard><App /></AuthGuard>}>
           <Route index element={<IndexPage />} />
+          <Route path="onboarding" element={<TravelerOnboardingPage />} />
+          <Route path="complete-profile" element={<ProfileCompletionPage />} />
+          <Route path="verify" element={<GuideVerificationPage />} />
           <Route path="travelers" element={<FellowTravelersPage />} />
           <Route path="guides" element={<NewGuidesPage />} />
           <Route path="guides/:username" element={<GuideDetailPage />} />
+          <Route path="dashboard" element={<GuideDashboardPage />} />
+          <Route path="checkout" element={<CheckoutPage />} />
           <Route path="posts/:postId" element={<PostDetailPage />} />
           <Route path="profile/:username" element={<UserProfilePage />} />
           <Route path="promotions" element={<PromotionsPage />} />

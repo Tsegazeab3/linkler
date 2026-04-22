@@ -83,6 +83,7 @@
   --color-ui-bg-alt: var(--ui-bg-alt);
   --color-ui-white: var(--ui-white); /* Panel / card */
   --color-ui-soft-bg: var(--ui-soft-bg);
+  --color-linkler-orange-light: var(--linkler-orange-light);
 
   /* Brand layer */
   --color-brand: var(--brand);
@@ -154,6 +155,7 @@
   --ui-disabled: #9A9A9A;
   --ui-border-light: #E3DAC9;
   --ui-border: #D6C9B8;
+  --linkler-orange-light: #FEEBC8;
 
   --background: 0 0% 100%;
   --foreground: 222.2 84% 4.9%;
@@ -184,18 +186,19 @@
   --ui-bg-alt: #161414;
   --ui-white: #121111; /* Changed from #211E20 to match background */
   --ui-soft-bg: #1A1819;
+  --linkler-orange-light: #2D241E;
 
   /* Brand colors (dark mode) */
-  --color-brand: #B49AA8;
-  --color-brand-hover: #C3A9B6;
-  --color-brand-pressed: #8E6E82;
-  --color-brand-light: rgba(180, 154, 168, 0.15);
+  --brand: #B49AA8;
+  --brand-hover: #C3A9B6;
+  --brand-pressed: #8E6E82;
+  --brand-light: rgba(180, 154, 168, 0.15);
 
   /* Text colors (dark mode) */
-  --color-ui-text-main: #F4EDE6;
-  --color-ui-text-secondary: #D8D1CA;
-  --color-ui-muted: #A79F99;
-  --color-ui-disabled: #6E6763;
+  --ui-text-main: #F4EDE6;
+  --ui-text-secondary: #D8D1CA;
+  --ui-muted: #A79F99;
+  --ui-disabled: #6E6763;
   --ui-border-light: #302B2E;
   --ui-border: #3A3438;
 

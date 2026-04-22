@@ -22,34 +22,43 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (token) {
-      setLoading(true);
-      getProfile()
-      .then(response => {
-        setUser(response.data);
-        localStorage.setItem('user', JSON.stringify(response.data));
-      })
-      .catch(error => {
-        console.error('AuthContext: Profile fetch failed', error.response ? error.response.data : error.message);
-        // Only logout if it's a 401 Unauthorized
-        if (error.response && error.response.status === 401) {
-          logout();
-        }
-      })
-      .finally(() => {
+    if (token && token !== 'null' && token !== 'undefined') {
+      // Only fetch if we don't have a user yet or need a refresh
+      if (!user) {
+        setLoading(true);
+        getProfile()
+        .then(response => {
+            setUser(response.data);
+            localStorage.setItem('user', JSON.stringify(response.data));
+        })
+        .catch(error => {
+            console.error('AuthContext: Profile fetch failed', error);
+            if (error.response?.status === 401) logout();
+        })
+        .finally(() => setLoading(false));
+      } else {
         setLoading(false);
-      });
+      }
     } else {
-      setUser(null);
       setLoading(false);
     }
   }, [token]);
 
   const login = (newToken, userData) => {
+    if (!newToken) return;
     localStorage.setItem('token', newToken);
-    localStorage.setItem('user', JSON.stringify(userData));
+    // Merge only if existing user exists to preserve flags
+    const existingUserStr = localStorage.getItem('user');
+    let combinedUser = userData;
+    if (existingUserStr && existingUserStr !== 'null') {
+        try {
+            const existingUser = JSON.parse(existingUserStr);
+            combinedUser = { ...existingUser, ...userData };
+        } catch(e) {}
+    }
+    localStorage.setItem('user', JSON.stringify(combinedUser));
     setToken(newToken);
-    setUser(userData);
+    setUser(combinedUser);
   };
 
   const logout = () => {
@@ -57,6 +66,16 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('user');
     setToken(null);
     setUser(null);
+  };
+
+  const refreshProfile = async () => {
+    try {
+      const res = await getProfile();
+      setUser(res.data);
+      localStorage.setItem('user', JSON.stringify(res.data));
+    } catch (e) {
+      console.error('AuthContext: Failed to refresh profile', e);
+    }
   };
 
   const value = {
@@ -69,6 +88,7 @@ export const AuthProvider = ({ children }) => {
     loading,
     login,
     logout,
+    refreshProfile,
     isAuthenticated: !!token
   };
 
