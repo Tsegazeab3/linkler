@@ -148,7 +148,7 @@ const GuideDetailPage = () => {
                 <Card className="max-w-md w-full p-8 text-center rounded-[2rem] border-none shadow-2xl bg-ui-white">
                     <h2 className="text-2xl font-bold text-ui-text-main mb-4">Error</h2>
                     <p className="text-ui-text-secondary mb-8">{error}</p>
-                    <Button onClick={() => navigate('/app/guides')} className="w-full rounded-xl">Back to Guides</Button>
+                    <Button onClick={() => navigate('/app/experiences')} className="w-full rounded-xl bg-brand text-white">Back to Experiences</Button>
                 </Card>
             </div>
         );
@@ -199,9 +199,11 @@ const GuideDetailPage = () => {
                         {/* Description Section (Width aligned with Gallery) */}
                         <div className="space-y-10 py-6 border-b border-ui-border">
                             <div className="space-y-4">
-                                <h2 className="text-3xl font-black italic uppercase tracking-tighter text-ui-text-main">About this experience</h2>
+                                <h2 className="text-3xl font-black italic uppercase tracking-tighter text-ui-text-main">
+                                    About this {(guide.experiences?.[0]?.listing_type || 'experience') === 'service' ? 'Service' : 'Experience'}
+                                </h2>
                                 <p className="text-lg text-ui-text-secondary leading-relaxed font-medium italic">
-                                    "{guide.bio || 'Professional guide dedicated to providing unforgettable experiences.'}"
+                                    "{guide.bio || `Professional provider dedicated to providing unforgettable ${(guide.experiences?.[0]?.listing_type || 'experience') === 'service' ? 'services' : 'experiences'}.`}"
                                 </p>
                             </div>
 

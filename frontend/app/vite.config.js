@@ -16,9 +16,15 @@ export default defineConfig({
     },
   },
   server: {
+    host: '0.0.0.0',
     proxy: {
-      // Proxying API requests to the Django backend
+      # Proxying API requests to the Django backend
       '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/media': {
         target: 'http://localhost:8000',
         changeOrigin: true,
         secure: false,

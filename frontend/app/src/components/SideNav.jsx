@@ -172,15 +172,16 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
   const navItems = [
     { id: 1, icon: SvgHome, name: 'Home', type: 'link', href: '/app' },
     { id: 9, icon: SvgSearch, name: 'Search', type: 'button', onClick: onOpenSearch },
-    { id: 2, icon: SvgSavedGuides, name: 'Saved Guides', type: 'panel' },
     { id: 3, icon: SvgChats, name: 'Messages', type: 'panel' },
     { id: 4, icon: SvgGroups, name: 'Groups', type: 'panel' },
     { id: 11, icon: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>, name: 'Alerts', type: 'panel' },
-    ...(user?.account_type === 'guide' || user?.account_type === 'service' ? [
+    { id: 13, icon: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>, name: 'My Bookings', type: 'link', href: '/app/bookings' },
+    ...(user?.account_type === 'guide' ? [
         { id: 10, icon: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>, name: 'Dashboard', type: 'link', href: '/app/dashboard' }
     ] : []),
     { id: 5, icon: SvgFellowTravelers, name: 'Fellow Travelers', type: 'link', href: '/app/travelers' },
-    { id: 6, icon: SvgNewGuides, name: 'New Guides', type: 'link', href: '/app/guides' },
+    { id: 6, icon: SvgNewGuides, name: 'Experiences', type: 'link', href: '/app/experiences' },
+    { id: 12, icon: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>, name: 'Essentials', type: 'link', href: '/app/essentials' },
     { id: 7, icon: SvgPromotions, name: 'Deals', type: 'link', href: '/app/promotions' },
     { id: 8, icon: SvgSettings, name: 'Settings', type: 'link', href: '/app/settings' },
   ];

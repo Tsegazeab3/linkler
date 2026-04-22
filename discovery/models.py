@@ -38,3 +38,15 @@ class Promotion(models.Model):
 
     def __str__(self):
         return f"{self.title} by {self.company}"
+
+class PromotionImage(models.Model):
+    promotion = models.ForeignKey(Promotion, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='promotions/')
+    order = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['order', 'created_at']
+
+    def __str__(self):
+        return f"Image for {self.promotion.title}"

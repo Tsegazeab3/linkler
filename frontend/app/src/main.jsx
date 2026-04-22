@@ -15,7 +15,10 @@ import SignUpPage from './pages/SignUpPage.jsx';
 import ProfileCompletionPage from './pages/ProfileCompletionPage.jsx';
 import IndexPage from './pages/IndexPage.jsx';
 import FellowTravelersPage from './pages/FellowTravelersPage.jsx';
-import NewGuidesPage from './pages/NewGuidesPage.jsx';
+import ExperiencesPage from './pages/ExperiencesPage.jsx';
+import EssentialsPage from './pages/EssentialsPage.jsx';
+import ExperienceDetailPage from './pages/ExperienceDetailPage.jsx';
+import BookingsPage from './pages/BookingsPage.jsx';
 import GuideDetailPage from './pages/GuideDetailPage.jsx';
 import PostDetailPage from './pages/PostDetailPage.jsx';
 import UserProfilePage from './pages/UserProfilePage.jsx';
@@ -84,7 +87,11 @@ function AppRouter() {
           <Route path="complete-profile" element={<ProfileCompletionPage />} />
           <Route path="verify" element={<GuideVerificationPage />} />
           <Route path="travelers" element={<FellowTravelersPage />} />
-          <Route path="guides" element={<NewGuidesPage />} />
+          <Route path="experiences" element={<ExperiencesPage />} />
+          <Route path="experiences/:id" element={<ExperienceDetailPage />} />
+          <Route path="essentials" element={<EssentialsPage />} />
+          <Route path="essentials/:id" element={<ExperienceDetailPage />} />
+          <Route path="bookings" element={<BookingsPage />} />
           <Route path="guides/:username" element={<GuideDetailPage />} />
           <Route path="dashboard" element={<GuideDashboardPage />} />
           <Route path="checkout" element={<CheckoutPage />} />

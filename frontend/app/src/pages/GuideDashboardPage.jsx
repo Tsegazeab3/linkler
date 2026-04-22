@@ -117,7 +117,7 @@ const GuideDashboardPage = () => {
     useEffect(() => {
         if (!user) return;
         
-        if (user.account_type !== 'guide' && user.account_type !== 'service') {
+        if (user.account_type !== 'guide') {
             navigate('/app');
             return;
         }
@@ -531,7 +531,12 @@ const GuideDashboardPage = () => {
                                     </div>
                                     <CardContent className="p-8">
                                         <div className="flex justify-between items-start mb-4">
-                                            <h3 className="font-black text-xl italic uppercase tracking-tighter truncate max-w-[70%] text-ui-text-main">{service.title}</h3>
+                                            <div className="min-w-0">
+                                                <h3 className="font-black text-xl italic uppercase tracking-tighter truncate text-ui-text-main mb-1">{service.title}</h3>
+                                                <span className={`text-[8px] font-black px-2 py-0.5 rounded-md uppercase tracking-widest ${service.listing_type === 'service' ? 'bg-indigo-500 text-white' : 'bg-brand text-white'}`}>
+                                                    {service.listing_type === 'service' ? 'Essential' : 'Experience'}
+                                                </span>
+                                            </div>
                                             <span className="text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest bg-brand/10 text-brand border border-brand/20">
                                                 {service.category}
                                             </span>

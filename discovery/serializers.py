@@ -1,16 +1,30 @@
 from rest_framework import serializers
-from .models import Promotion
+from .models import Promotion, PromotionImage
+
+class PromotionImageSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+    class Meta:
+        model = PromotionImage
+        fields = ('id', 'image')
+    
+    def get_image(self, obj):
+        if not obj.image: return None
+        image_str = str(obj.image)
+        if image_str.startswith('http'): return image_str
+        if hasattr(obj.image, 'url'): return obj.image.url
+        return image_str
 
 class PromotionSerializer(serializers.ModelSerializer):
     discounted_price = serializers.SerializerMethodField()
     creator_username = serializers.ReadOnlyField(source='user.username')
     image = serializers.SerializerMethodField()
+    images = PromotionImageSerializer(many=True, read_only=True)
 
     class Meta:
         model = Promotion
         fields = [
             'id', 'user', 'creator_username', 'category', 'region', 'country', 
-            'title', 'company', 'image', 'original_price', 'currency', 
+            'title', 'company', 'image', 'images', 'original_price', 'currency', 
             'off_percent', 'discounted_price', 'description', 'rating', 'created_at'
         ]
         read_only_fields = ('user',)

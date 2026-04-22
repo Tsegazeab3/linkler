@@ -131,12 +131,13 @@ export const getPromotions = (search = '', category = '', region = '', country =
 };
 export const getPromotionCategories = () => api.get('promotions/categories/');
 export const getPromotionRegions = () => api.get('promotions/regions/');
-export const getExperiences = (search = '', category = '', region = '', country = '', quickFilters = {}, user = '') => {
-  const params = buildParams({ search, category, region, country, user, ...quickFilters });
+export const getExperiences = (search = '', category = '', region = '', country = '', quickFilters = {}, user = '', listing_type = '') => {
+  const params = buildParams({ search, category, region, country, user, listing_type, ...quickFilters });
   return api.get(`accounts/experiences/${params}`);
 };
 export const getExperienceCategories = () => api.get('accounts/experiences/categories/');
 export const getExperienceRegions = () => api.get('accounts/experiences/regions/');
+export const getExperienceDetail = (id) => api.get(`accounts/experiences/${id}/`);
 export const createExperience = (data) => api.post('accounts/experiences/', data, {
   headers: { 'Content-Type': 'multipart/form-data' }
 });

@@ -19,8 +19,8 @@ const BottomNav = ({ onPanelItemClick, selectedNavItemId, showSidePanel }) => {
 
   const navItems = [
     { id: 'home', icon: SvgHome, label: 'Home', path: '/app' },
-    ...(user?.account_type === 'guide' || user?.account_type === 'service' ? [
-        { id: 'dashboard', icon: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>, label: 'Dash', path: '/app/dashboard' }
+    ...(user?.account_type === 'guide' ? [
+        { id: 'dashboard', icon: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>, label: 'Dash', path: '/app/dashboard' }
     ] : []),
     { id: 'alerts', icon: () => (
         <span className="relative">
@@ -32,9 +32,11 @@ const BottomNav = ({ onPanelItemClick, selectedNavItemId, showSidePanel }) => {
              )}
         </span>
     ), label: 'Alerts', panelId: 11 },
+    { id: 'bookings', icon: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>, label: 'Bookings', path: '/app/bookings' },
     { id: 'travelers', icon: SvgFellowTravelers, label: 'Travelers', path: '/app/travelers' },
     { id: 'messages', icon: SvgChats, label: 'Messages', path: '/app/messages' },
-    { id: 'guides', icon: SvgNewGuides, label: 'Guides', path: '/app/guides' },
+    { id: 'experiences', icon: SvgNewGuides, label: 'Exp', path: '/app/experiences' },
+    { id: 'essentials', icon: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>, label: 'Essentials', path: '/app/essentials' },
     { id: 'promotions', icon: SvgPromotions, label: 'Deals', path: '/app/promotions' },
     { id: 'settings', icon: SvgSettings, label: 'Settings', path: '/app/settings' },
   ];
@@ -98,7 +100,7 @@ const BottomNav = ({ onPanelItemClick, selectedNavItemId, showSidePanel }) => {
               </button>
 
               {/* Role-Specific Actions */}
-              {(user?.account_type === 'guide' || user?.account_type === 'service') && (
+              {user?.account_type === 'guide' && (
                 <>
                     <button
                         onClick={() => handleCreateAction('/app/dashboard')}
@@ -111,27 +113,25 @@ const BottomNav = ({ onPanelItemClick, selectedNavItemId, showSidePanel }) => {
                     </button>
 
                     <button
-                        onClick={() => handleCreateAction('/create-service')}
+                        onClick={() => handleCreateAction('/app/create-service')}
                         className="flex flex-col items-center justify-center py-4 px-2 rounded-[1.5rem] bg-indigo-500/10 hover:bg-indigo-500/20 active:scale-95 transition-all group"
                     >
                         <div className="w-10 h-10 bg-indigo-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/30 mb-2 group-hover:scale-110 transition-transform">
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
                         </div>
-                        <span className="font-bold text-[9px] text-indigo-500 uppercase tracking-widest text-center">Post Service</span>
+                        <span className="font-bold text-[9px] text-indigo-500 uppercase tracking-widest text-center">Post Listing</span>
+                    </button>
+
+                    <button
+                        onClick={() => handleCreateAction('/create-promotion')}
+                        className="flex flex-col items-center justify-center py-4 px-2 rounded-[1.5rem] bg-purple-500/10 hover:bg-purple-500/20 active:scale-95 transition-all group"
+                    >
+                        <div className="w-10 h-10 bg-purple-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-purple-500/30 mb-2 group-hover:scale-110 transition-transform">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" /></svg>
+                        </div>
+                        <span className="font-bold text-[9px] text-purple-500 uppercase tracking-widest text-center">Post Deal</span>
                     </button>
                 </>
-              )}
-
-              {user?.account_type === 'service' && (
-                <button
-                    onClick={() => handleCreateAction('/create-promotion')}
-                    className="flex flex-col items-center justify-center py-4 px-2 rounded-[1.5rem] bg-purple-500/10 hover:bg-purple-500/20 active:scale-95 transition-all group"
-                >
-                    <div className="w-10 h-10 bg-purple-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-purple-500/30 mb-2 group-hover:scale-110 transition-transform">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" /></svg>
-                    </div>
-                    <span className="font-bold text-[9px] text-purple-500 uppercase tracking-widest text-center">Post Deal</span>
-                </button>
               )}
             </div>
             

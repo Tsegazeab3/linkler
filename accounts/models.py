@@ -5,7 +5,6 @@ class CustomUser(AbstractUser):
     ACCOUNT_TYPE_CHOICES = (
         ('traveller', 'Travellers'),
         ('guide', 'Guides'),
-        ('service', 'Services'),
     )
 
     VERIFICATION_STATUS_CHOICES = (
@@ -51,8 +50,8 @@ class CustomUser(AbstractUser):
         if not self.onboarding_completed:
             missing.append('onboarding_questionnaire')
 
-        # Guides and Services need more professional details
-        if self.account_type in ['guide', 'service']:
+        # Guides need more professional details
+        if self.account_type == 'guide':
             if not self.profile_picture: missing.append('profile_picture')
             if not self.bio: missing.append('bio')
             if not self.country: missing.append('country')
@@ -128,13 +127,27 @@ class Follow(models.Model):
 
 class Experience(models.Model):
     """
-    Represents an experience (tour, service, activity) offered by a Guide or Service Provider.
+    Represents an experience (tour, service, activity) offered by a Guide.
     """
+    LISTING_TYPE_CHOICES = (
+        ('experience', 'Experience (Fun)'),
+        ('service', 'Service (Essentials)'),
+    )
+
     EXPERIENCE_CATEGORIES = (
-        ('Cultural', 'Cultural'),
+        # Fun / Leisure
         ('Adventure', 'Adventure'),
-        ('Food', 'Food'),
+        ('Culture', 'Culture'),
+        ('Nightlife', 'Nightlife'),
+        ('History', 'History'),
         ('Nature', 'Nature'),
+        ('Gastronomy', 'Gastronomy'),
+        # Essentials / Utility
+        ('Transportation', 'Transportation'),
+        ('Housing', 'Housing'),
+        ('Documentation', 'Documentation'),
+        ('Connectivity', 'Connectivity'),
+        ('Local Support', 'Local Support'),
         ('Other', 'Other'),
     )
     REGION_CHOICES = (
@@ -150,8 +163,9 @@ class Experience(models.Model):
         CustomUser,
         on_delete=models.CASCADE,
         related_name='experiences',
-        limit_choices_to={'account_type__in': ['guide', 'service']}
+        limit_choices_to={'account_type': 'guide'}
     )
+    listing_type = models.CharField(max_length=20, choices=LISTING_TYPE_CHOICES, default='experience')
     title = models.CharField(max_length=200)
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
@@ -189,26 +203,41 @@ class ExperienceImage(models.Model):
         super().save(*args, **kwargs)
 
     def optimize_image(self, image_field):
-        img = Image.open(image_field)
-        
-        # Convert to RGB if necessary (e.g. for PNG with transparency)
-        if img.mode != 'RGB':
-            img = img.convert('RGB')
-        
-        # Resize if too large
-        max_size = (1200, 1200)
-        if img.height > max_size[1] or img.width > max_size[0]:
-            img.thumbnail(max_size, Image.LANCZOS)
-        
-        # Compress
-        output = BytesIO()
-        img.save(output, format='JPEG', quality=85, optimize=True)
-        output.seek(0)
-        
-        return InMemoryUploadedFile(
-            output, 'ImageField', f"{image_field.name.split('.')[0]}.jpg",
-            'image/jpeg', sys.getsizeof(output), None
-        )
+        if not image_field:
+            return None
+
+        # Check if the input is already a string URL (common in seeding)
+        if isinstance(image_field, str) and (image_field.startswith('http://') or image_field.startswith('https://')):
+            return image_field
+
+        # Check if it's a File object with a name that is a URL
+        name = getattr(image_field, 'name', '')
+        if name.startswith('http://') or name.startswith('https://'):
+            return image_field
+
+        try:
+            img = Image.open(image_field)
+
+            # Convert to RGB if necessary (e.g. for PNG with transparency)
+            if img.mode != 'RGB':
+                img = img.convert('RGB')
+
+            # Resize if too large
+            max_size = (1200, 1200)
+            if img.height > max_size[1] or img.width > max_size[0]:
+                img.thumbnail(max_size, Image.LANCZOS)
+
+            # Compress
+            output = BytesIO()
+            img.save(output, format='JPEG', quality=85, optimize=True)
+            output.seek(0)
+
+            # Change the filename extension to jpg
+            name = image_field.name.split('.')[0] + '.jpg'
+            return ContentFile(output.read(), name=name)
+        except Exception as e:
+            print(f"Image optimization failed: {e}")
+            return image_field
 
     def __str__(self):
         return f"Image for {self.experience.title}"
@@ -246,7 +275,7 @@ class ProviderReview(models.Model):
         CustomUser, 
         on_delete=models.CASCADE, 
         related_name='provider_reviews',
-        limit_choices_to={'account_type__in': ['guide', 'service']}
+        limit_choices_to={'account_type': 'guide'}
     )
     user = models.ForeignKey(
         CustomUser, 
@@ -287,7 +316,7 @@ class Booking(models.Model):
     )
     
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='user_bookings')
-    provider = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='provider_bookings', limit_choices_to={'account_type__in': ['guide', 'service']})
+    provider = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='provider_bookings', limit_choices_to={'account_type': 'guide'})
     experience = models.ForeignKey(Experience, on_delete=models.SET_NULL, null=True, blank=True, related_name='bookings')
     source_post = models.ForeignKey('posts.Post', on_delete=models.SET_NULL, null=True, blank=True, related_name='generated_bookings')
     booking_date = models.DateField()
@@ -306,7 +335,7 @@ class Booking(models.Model):
 
     def clean(self):
         from django.core.exceptions import ValidationError
-        if self.provider.account_type in ['guide', 'service'] and self.provider.verification_status != 'verified':
+        if self.provider.account_type == 'guide' and self.provider.verification_status != 'verified':
             raise ValidationError("This provider is not yet verified and cannot accept bookings.")
 
 class Notification(models.Model):

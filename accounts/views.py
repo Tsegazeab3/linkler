@@ -104,9 +104,12 @@ class ExperienceListCreateView(generics.ListCreateAPIView):
         country = self.request.query_params.get('country', '')
         search = self.request.query_params.get('search', '')
         user_filter = self.request.query_params.get('user', '')
+        listing_type = self.request.query_params.get('listing_type', '')
 
         if user_filter:
             queryset = queryset.filter(user__username=user_filter)
+        if listing_type:
+            queryset = queryset.filter(listing_type=listing_type)
         if category:
             queryset = queryset.filter(category=category)
         if region:
@@ -472,7 +475,7 @@ class BookingViewSet(viewsets.ModelViewSet):
                 type=f'booking_{booking.status}',
                 title=f'Booking {booking.status.capitalize()}',
                 message=f'Your booking for {booking.booking_date} with {booking.provider.username} has been {booking.status}.',
-                link='/app/settings' # Or wherever they see their bookings
+                link='/app/bookings'
             )
 
 class GuideDashboardStatsView(generics.GenericAPIView):

@@ -1,12 +1,23 @@
 import React from 'react';
-import { useOutletContext } from 'react-router-dom';
+import { useOutletContext, Link, useNavigate } from 'react-router-dom';
 import { createDM } from '../services/api';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 const ExperiencePreviewCard = ({ experience }) => {
-  const { id, title, description, price, currency, location, country, region, duration, images, user, user_username, rating, review_count } = experience;
+  const { id, title, description, price, currency, location, country, region, duration, images, user, user_username, rating, review_count, listing_type, category } = experience;
   const { handleOpenChat } = useOutletContext();
+  const navigate = useNavigate();
+
+  const handleCardClick = () => {
+    navigate(`/app/${listing_type === 'service' ? 'essentials' : 'experiences'}/${id}`);
+  };
+
+  const getMediaUrl = (url) => {
+    if (!url) return null;
+    if (url.startsWith('http')) return url;
+    return `http://localhost:8000${url}`;
+  };
 
   const handleChat = async (e) => {
     e.preventDefault(); e.stopPropagation();
@@ -18,14 +29,25 @@ const ExperiencePreviewCard = ({ experience }) => {
     }
   };
 
-  const displayImage = images && images.length > 0 
+  const displayImage = getMediaUrl(images && images.length > 0 
     ? images[0].image 
-    : 'https://images.unsplash.com/photo-1530789253388-582c481c54b0?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80';
+    : 'https://images.unsplash.com/photo-1530789253388-582c481c54b0?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80');
 
   return (
-    <Card className="rounded-[20px] overflow-hidden group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border-ui-border/50">
+    <Card 
+        onClick={handleCardClick}
+        className="rounded-[20px] overflow-hidden group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border-ui-border/50 cursor-pointer"
+    >
       <div className="relative h-48 bg-ui-bg-alt">
         <img src={displayImage} alt={title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+        
+        {/* Listing Type Badge */}
+        <div className="absolute top-3 left-3">
+            <div className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest shadow-lg backdrop-blur-md border ${listing_type === 'service' ? 'bg-indigo-500/90 text-white border-indigo-400' : 'bg-brand/90 text-white border-brand-light'}`}>
+                {listing_type === 'service' ? '🛠️ Essential' : '🏹 Experience'}
+            </div>
+        </div>
+
         <div className="absolute top-3 right-3 translate-x-12 group-hover:translate-x-0 transition-transform duration-300">
           <Button 
             size="icon"
@@ -70,7 +92,7 @@ const ExperiencePreviewCard = ({ experience }) => {
             {currency === 'USD' ? '$' : currency}{price}
           </p>
           <div className="flex items-center text-[10px] font-bold text-ui-muted">
-            by <span className="ml-1 text-indigo-600">@{user_username}</span>
+            by <span className="ml-1 text-brand hover:underline">@{user_username}</span>
           </div>
         </div>
       </CardContent>

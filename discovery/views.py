@@ -1,14 +1,18 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from .models import Promotion
+from django.db import models
+from .models import Promotion, PromotionImage
 from .serializers import PromotionSerializer
 
 class PromotionListCreateView(generics.ListCreateAPIView):
     serializer_class = PromotionSerializer
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        images_data = self.request.FILES.getlist('images')
+        promotion = serializer.save(user=self.request.user)
+        for image_data in images_data:
+            PromotionImage.objects.create(promotion=promotion, image=image_data)
 
     def get_queryset(self):
         queryset = Promotion.objects.all()

@@ -21,10 +21,50 @@ const CreateExperiencePage = () => {
     country: '',
     region: 'Europe',
     duration: '',
-    category: 'Cultural',
+    category: 'Adventure',
+    listing_type: 'experience'
   });
+
+  const funCategories = ['Adventure', 'Culture', 'Nightlife', 'History', 'Nature', 'Gastronomy'];
+  const essentialCategories = ['Transportation', 'Housing', 'Documentation', 'Connectivity', 'Local Support'];
   
-  const [images, setImages] = useState([]);
+  const activeCategories = values.listing_type === 'experience' ? funCategories : essentialCategories;
+
+  // Set default category when listing type changes
+  useEffect(() => {
+    const defaultCat = values.listing_type === 'experience' ? 'Adventure' : 'Transportation';
+    handleChange({ target: { name: 'category', value: defaultCat } });
+  }, [values.listing_type]);
+  
+  const [orderedMedia, setOrderedMedia] = useState([]);
+  const [draggedIndex, setDragIndex] = useState(null);
+  const fileInputRef = React.useRef(null);
+
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    const newItems = files.map(file => ({
+      file: file,
+      preview: URL.createObjectURL(file)
+    }));
+    setOrderedMedia(prev => [...prev, ...newItems]);
+  };
+
+  const removeMediaItem = (index) => {
+    setOrderedMedia(prev => prev.filter((_, i) => i !== index));
+  };
+
+  // Drag and Drop Logic
+  const onDragStart = (index) => setDragIndex(index);
+  const onDragOver = (e) => e.preventDefault();
+  const onDrop = (index) => {
+    if (draggedIndex === null) return;
+    const items = [...orderedMedia];
+    const draggedItem = items[draggedIndex];
+    items.splice(draggedIndex, 1);
+    items.splice(index, 0, draggedItem);
+    setOrderedMedia(items);
+    setDragIndex(null);
+  };
 
   useEffect(() => {
     import('../services/api').then(({ getExperienceCategories, getExperienceRegions }) => {
@@ -61,8 +101,9 @@ const CreateExperiencePage = () => {
       data.append(key, values[key]);
     });
     
-    images.forEach(image => {
-      data.append('images', image);
+    // Add images in the current order
+    orderedMedia.forEach((item, idx) => {
+        data.append('images', item.file);
     });
 
     try {
@@ -98,12 +139,12 @@ const CreateExperiencePage = () => {
           </svg>
         </button>
 
-        <div className="text-center mb-6">
-          <h1 className="text-3xl font-bold text-indigo-600">
-            Create Experience
+        <div className="text-center mb-10">
+          <h1 className="text-3xl font-black italic uppercase tracking-tighter text-brand leading-none">
+            List Your Offering
           </h1>
-          <p className="text-ui-muted mt-2 text-sm">
-            List a new service or tour for travellers.
+          <p className="text-ui-muted mt-3 text-xs font-black uppercase tracking-[0.2em]">
+            Share an experience or essential service.
           </p>
         </div>
 
@@ -113,38 +154,74 @@ const CreateExperiencePage = () => {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="title" className="block text-sm font-medium text-ui-text-secondary">Title</label>
-            <input
-              type="text"
-              name="title"
-              id="title"
-              value={values.title}
-              onChange={handleChange}
-              placeholder="e.g. Historic Walking Tour of Dubai"
-              className="mt-1 block w-full border border-ui-border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-ui-bg-alt text-ui-text-main"
-              required
-            />
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Listing Type Toggle */}
+          <div className="flex bg-ui-bg-alt p-1 rounded-2xl border border-ui-border">
+            <button
+              type="button"
+              onClick={() => handleChange({ target: { name: 'listing_type', value: 'experience' } })}
+              className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${values.listing_type === 'experience' ? 'bg-brand text-white shadow-lg' : 'text-ui-muted hover:text-ui-text-main'}`}
+            >
+              🏹 Experience
+            </button>
+            <button
+              type="button"
+              onClick={() => handleChange({ target: { name: 'listing_type', value: 'service' } })}
+              className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${values.listing_type === 'service' ? 'bg-brand text-white shadow-lg' : 'text-ui-muted hover:text-ui-text-main'}`}
+            >
+              🛠️ Essential Service
+            </button>
           </div>
 
           <div>
-            <label htmlFor="description" className="block text-sm font-medium text-ui-text-secondary">Description</label>
-            <textarea
-              name="description"
-              id="description"
-              rows="3"
-              value={values.description}
-              onChange={handleChange}
-              className="mt-1 block w-full border border-ui-border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-ui-bg-alt text-ui-text-main"
-              placeholder="Describe what makes this experience special..."
-              required
-            ></textarea>
+            <label htmlFor="category" className="block text-[10px] font-black uppercase tracking-widest text-ui-muted ml-1 mb-3">Primary Category</label>
+            <div className="flex flex-wrap gap-2">
+                {activeCategories.map(cat => (
+                    <button
+                        key={cat}
+                        type="button"
+                        onClick={() => handleChange({ target: { name: 'category', value: cat } })}
+                        className={`px-4 py-2 rounded-full border-2 text-[10px] font-black uppercase tracking-widest transition-all ${values.category === cat ? 'border-brand bg-brand/5 text-brand shadow-md border-brand/20' : 'border-ui-border text-ui-muted hover:bg-ui-bg-alt'}`}
+                    >
+                        {cat}
+                    </button>
+                ))}
+            </div>
+          </div>
+
+          <div className="space-y-4">
+              <div>
+                <label htmlFor="title" className="block text-[10px] font-black uppercase tracking-widest text-ui-muted ml-1 mb-2">Headline</label>
+                <input
+                  type="text"
+                  name="title"
+                  id="title"
+                  value={values.title}
+                  onChange={handleChange}
+                  placeholder={values.listing_type === 'experience' ? "e.g. Historic Walking Tour of Dubai" : "e.g. Airport Transfer & SIM Setup"}
+                  className="h-12 w-full rounded-xl bg-ui-bg-alt border-ui-border px-4 font-bold text-ui-text-main"
+                  required
+                />
+              </div>
+
+              <div>
+                <label htmlFor="description" className="block text-[10px] font-black uppercase tracking-widest text-ui-muted ml-1 mb-2">The Details</label>
+                <textarea
+                  name="description"
+                  id="description"
+                  rows="3"
+                  value={values.description}
+                  onChange={handleChange}
+                  className="w-full rounded-xl bg-ui-bg-alt border-ui-border p-4 font-medium text-ui-text-secondary italic"
+                  placeholder="Describe your offering..."
+                  required
+                ></textarea>
+              </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="price" className="block text-sm font-medium text-ui-text-secondary">Price</label>
+              <label htmlFor="price" className="block text-[10px] font-black uppercase tracking-widest text-ui-muted ml-1 mb-2">Price</label>
               <input
                 type="number"
                 name="price"
@@ -152,18 +229,18 @@ const CreateExperiencePage = () => {
                 value={values.price}
                 onChange={handleChange}
                 placeholder="0.00"
-                className="mt-1 block w-full border border-ui-border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-ui-bg-alt text-ui-text-main"
+                className="h-12 w-full rounded-xl bg-ui-bg-alt border-ui-border px-4 font-bold text-ui-text-main shadow-inner focus-visible:ring-brand"
                 required
               />
             </div>
             <div>
-              <label htmlFor="currency" className="block text-sm font-medium text-ui-text-secondary">Currency</label>
+              <label htmlFor="currency" className="block text-[10px] font-black uppercase tracking-widest text-ui-muted ml-1 mb-2">Currency</label>
               <select
                 name="currency"
                 id="currency"
                 value={values.currency}
                 onChange={handleChange}
-                className="mt-1 block w-full border border-ui-border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-ui-bg-alt text-ui-text-main"
+                className="h-12 w-full rounded-xl bg-ui-bg-alt border-ui-border px-4 font-bold text-ui-text-main shadow-inner focus-visible:ring-brand"
               >
                 <option value="USD">USD</option>
                 <option value="EUR">EUR</option>
@@ -175,71 +252,58 @@ const CreateExperiencePage = () => {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="location" className="block text-sm font-medium text-ui-text-secondary">Location</label>
+              <label htmlFor="location" className="block text-[10px] font-black uppercase tracking-widest text-ui-muted ml-1 mb-2">Specific Area</label>
               <input
                 type="text"
                 name="location"
                 id="location"
                 value={values.location}
                 onChange={handleChange}
-                placeholder="e.g. Old Dubai"
-                className="mt-1 block w-full border border-ui-border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-ui-bg-alt text-ui-text-main"
+                placeholder="e.g. Marina / Downtown"
+                className="h-12 w-full rounded-xl bg-ui-bg-alt border-ui-border px-4 font-bold text-ui-text-main shadow-inner focus-visible:ring-brand"
                 required
               />
             </div>
             <div>
-              <label htmlFor="duration" className="block text-sm font-medium text-ui-text-secondary">Duration</label>
+              <label htmlFor="duration" className="block text-[10px] font-black uppercase tracking-widest text-ui-muted ml-1 mb-2">
+                {values.listing_type === 'experience' ? 'Duration' : 'Processing Time'} 
+                {values.listing_type === 'service' && <span className="opacity-50 lowercase font-medium ml-1">(optional)</span>}
+              </label>
               <input
                 type="text"
                 name="duration"
                 id="duration"
                 value={values.duration}
                 onChange={handleChange}
-                placeholder="e.g. 3 hours"
-                className="mt-1 block w-full border border-ui-border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-ui-bg-alt text-ui-text-main"
-                required
+                placeholder={values.listing_type === 'experience' ? "e.g. 3 hours" : "e.g. 2-3 days"}
+                className="h-12 w-full rounded-xl bg-ui-bg-alt border-ui-border px-4 font-bold text-ui-text-main shadow-inner focus-visible:ring-brand"
+                required={values.listing_type === 'experience'}
               />
             </div>
           </div>
 
-          <div>
-            <label htmlFor="category" className="block text-sm font-medium text-ui-text-secondary">Category</label>
-            <select
-              name="category"
-              id="category"
-              value={values.category}
-              onChange={handleChange}
-              className="mt-1 block w-full border border-ui-border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-ui-bg-alt text-ui-text-main"
-              required
-            >
-              {categories.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
-          </div>
-
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="country" className="block text-sm font-medium text-ui-text-secondary">Country</label>
+              <label htmlFor="country" className="block text-[10px] font-black uppercase tracking-widest text-ui-muted ml-1 mb-2">Country</label>
               <input
                 type="text"
                 name="country"
                 id="country"
                 value={values.country}
                 onChange={handleChange}
-                placeholder="e.g. France"
-                className="mt-1 block w-full border border-ui-border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-ui-bg-alt text-ui-text-main"
+                placeholder="e.g. UAE"
+                className="h-12 w-full rounded-xl bg-ui-bg-alt border-ui-border px-4 font-bold text-ui-text-main"
                 required
               />
             </div>
             <div>
-              <label htmlFor="region" className="block text-sm font-medium text-ui-text-secondary">Region</label>
+              <label htmlFor="region" className="block text-[10px] font-black uppercase tracking-widest text-ui-muted ml-1 mb-2">Region</label>
               <select
                 name="region"
                 id="region"
                 value={values.region}
                 onChange={handleChange}
-                className="mt-1 block w-full border border-ui-border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-ui-bg-alt text-ui-text-main"
+                className="h-12 w-full rounded-xl bg-ui-bg-alt border-ui-border px-4 font-bold text-ui-text-main"
                 required
               >
                 {regions.map(reg => (
@@ -250,27 +314,59 @@ const CreateExperiencePage = () => {
           </div>
 
           <div>
-            <label htmlFor="image" className="block text-sm font-medium text-ui-text-secondary">Experience Images (Multiple)</label>
+            <label className="block text-[10px] font-black uppercase tracking-widest text-ui-muted ml-1 mb-4">Visual Gallery</label>
+            <div className="grid grid-cols-3 gap-3 mb-4">
+                {orderedMedia.map((item, index) => (
+                    <div 
+                        key={index} 
+                        draggable
+                        onDragStart={() => onDragStart(index)}
+                        onDragOver={onDragOver}
+                        onDrop={() => onDrop(index)}
+                        className={`relative aspect-square rounded-2xl overflow-hidden border-2 cursor-move transition-all group ${draggedIndex === index ? 'opacity-30 scale-95' : 'opacity-100 hover:border-brand/40 shadow-sm'}`}
+                    >
+                        <img src={item.preview} className="w-full h-full object-cover" alt="" />
+                        <button 
+                            type="button"
+                            onClick={() => removeMediaItem(index)}
+                            className="absolute top-1.5 right-1.5 p-1 bg-error/90 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity active:scale-90"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                    </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="aspect-square rounded-2xl border-2 border-dashed border-ui-border bg-ui-bg-alt flex flex-col items-center justify-center text-ui-muted hover:border-brand/40 hover:text-brand transition-all hover:bg-brand/5 group"
+                >
+                  <div className="w-8 h-8 rounded-full bg-ui-white flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                  </div>
+                  <span className="text-[8px] font-black uppercase mt-2">Add Photo</span>
+                </button>
+            </div>
             <input
               type="file"
-              name="images"
-              id="image"
-              onChange={handleImageChange}
-              accept="image/*"
               multiple
-              className="mt-1 block w-full text-sm text-ui-text-secondary file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+              accept="image/*"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              className="hidden"
             />
-            {images.length > 0 && (
-              <p className="text-xs text-ui-muted mt-1">{images.length} images selected</p>
+            {orderedMedia.length > 0 && (
+              <p className="text-[10px] font-black uppercase tracking-widest text-brand mt-1 ml-1">{orderedMedia.length} files attached</p>
             )}
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 mt-6"
+            className="w-full flex justify-center py-5 px-4 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] text-white bg-brand hover:bg-brand-hover shadow-2xl shadow-brand/20 transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 mt-8"
           >
-            {loading ? 'Creating...' : 'Create Experience'}
+            {loading ? 'Processing...' : `List ${values.listing_type === 'experience' ? 'Experience' : 'Essential'}`}
           </button>
         </form>
       </div>

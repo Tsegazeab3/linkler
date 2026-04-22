@@ -61,9 +61,18 @@ class Command(BaseCommand):
         }
         regions_list = list(region_countries.keys())
 
+        # Professional images sets
+        experience_images = [
+            "https://images.unsplash.com/photo-1530789253388-582c481c54b0",
+            "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9",
+            "https://images.unsplash.com/photo-1502602898657-3e91760cbb34",
+            "https://images.unsplash.com/photo-1493246507139-91e8bef99c02",
+            "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800"
+        ]
+
         # 1. Create Users
         users = []
-        account_types = ['traveller', 'guide', 'service']
+        account_types = ['traveller', 'guide']
         
         profile_images = [
             "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80",
@@ -119,16 +128,17 @@ class Command(BaseCommand):
         
         self.stdout.write('Created follows.')
 
-        # 3. Create Experiences (only for guides and services)
-        guides_and_services = [u for u in users if u.account_type in ['guide', 'service']]
-        if guides_and_services:
+        # 3. Create Experiences (only for guides)
+        guides = [u for u in users if u.account_type == 'guide']
+        if guides:
             for i in range(num_users):
-                guide = random.choice(guides_and_services)
+                guide = random.choice(guides)
                 selected_region = random.choice(regions_list)
                 selected_country = random.choice(region_countries[selected_region])
                 
                 exp = Experience.objects.create(
                     user=guide,
+                    listing_type=random.choice(['experience', 'service']),
                     title=fake.sentence(nb_words=4),
                     description=fake.paragraph(),
                     price=random.randint(10, 500),
@@ -137,7 +147,12 @@ class Command(BaseCommand):
                     country=selected_country,
                     region=selected_region,
                     duration=f"{random.randint(1, 8)} hours",
-                    category=random.choice(['Cultural', 'Adventure', 'Food', 'Nature', 'Other'])
+                    category=random.choice(['Adventure', 'Culture', 'Nightlife', 'Housing', 'Transportation'])
+                )
+
+                ExperienceImage.objects.create(
+                    experience=exp,
+                    image=random.choice(experience_images)
                 )
                 
                 # Add reviews

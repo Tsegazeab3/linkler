@@ -68,12 +68,21 @@ const CheckoutPage = () => {
                         <p className="text-[10px] font-black uppercase tracking-widest text-ui-muted mb-2">Next Steps</p>
                         <p className="text-xs text-ui-text-main leading-relaxed">The provider will review your request and confirm shortly. You can track the status in your messages or dashboard.</p>
                     </div>
-                    <Button 
-                        onClick={() => navigate('/app/messages')}
-                        className="w-full py-6 rounded-[1.5rem] bg-brand hover:bg-brand-hover font-bold text-sm uppercase tracking-widest shadow-xl"
-                    >
-                        Go to Messages
-                    </Button>
+                    <div className="flex flex-col gap-3">
+                        <Button 
+                            onClick={() => navigate('/app')}
+                            className="w-full py-6 rounded-[1.5rem] bg-brand hover:bg-brand-hover text-white font-black text-xs uppercase tracking-widest shadow-xl transition-all hover:scale-105"
+                        >
+                            Return Home
+                        </Button>
+                        <Button 
+                            variant="ghost"
+                            onClick={() => navigate('/app/messages')}
+                            className="w-full py-4 rounded-[1.5rem] text-ui-muted font-bold text-[10px] uppercase tracking-widest hover:text-brand transition-colors"
+                        >
+                            View Booking Messages
+                        </Button>
+                    </div>
                 </div>
             </div>
         );

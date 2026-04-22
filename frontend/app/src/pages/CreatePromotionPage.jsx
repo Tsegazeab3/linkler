@@ -19,7 +19,35 @@ const CreatePromotionPage = () => {
     off_percent: '',
     description: '',
   });
-  const [image, setImage] = useState(null);
+  const [orderedMedia, setOrderedMedia] = useState([]);
+  const [draggedIndex, setDragIndex] = useState(null);
+  const fileInputRef = React.useRef(null);
+
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    const newItems = files.map(file => ({
+      file: file,
+      preview: URL.createObjectURL(file)
+    }));
+    setOrderedMedia(prev => [...prev, ...newItems]);
+  };
+
+  const removeMediaItem = (index) => {
+    setOrderedMedia(prev => prev.filter((_, i) => i !== index));
+  };
+
+  // Drag and Drop Logic
+  const onDragStart = (index) => setDragIndex(index);
+  const onDragOver = (e) => e.preventDefault();
+  const onDrop = (index) => {
+    if (draggedIndex === null) return;
+    const items = [...orderedMedia];
+    const draggedItem = items[draggedIndex];
+    items.splice(draggedIndex, 1);
+    items.splice(index, 0, draggedItem);
+    setOrderedMedia(items);
+    setDragIndex(null);
+  };
 
   useEffect(() => {
     import('../services/api').then(({ getPromotionCategories, getPromotionRegions }) => {
@@ -60,9 +88,11 @@ const CreatePromotionPage = () => {
     Object.keys(formData).forEach(key => {
       data.append(key, formData[key]);
     });
-    if (image) {
-      data.append('image', image);
-    }
+    
+    // Add images in the current order
+    orderedMedia.forEach((item, idx) => {
+        data.append('images', item.file);
+    });
 
     try {
       await createPromotion(data);
@@ -97,12 +127,12 @@ const CreatePromotionPage = () => {
           </svg>
         </button>
 
-        <div className="text-center mb-6">
-          <h1 className="text-3xl font-bold text-purple-600">
-            Post Promotion
+        <div className="text-center mb-10">
+          <h1 className="text-3xl font-black italic uppercase tracking-tighter text-brand leading-none">
+            Post a Deal
           </h1>
-          <p className="text-ui-muted mt-2 text-sm">
-            Share a special offer with the community.
+          <p className="text-ui-muted mt-3 text-xs font-black uppercase tracking-[0.2em]">
+            Share an exclusive offer with Linkler explorers.
           </p>
         </div>
 
@@ -112,9 +142,9 @@ const CreatePromotionPage = () => {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="title" className="block text-sm font-medium text-ui-text-secondary">Promotion Title</label>
+            <label htmlFor="title" className="block text-[10px] font-black uppercase tracking-widest text-ui-muted ml-1 mb-2">Deal Headline</label>
             <input
               type="text"
               name="title"
@@ -122,49 +152,49 @@ const CreatePromotionPage = () => {
               value={formData.title}
               onChange={handleChange}
               placeholder="e.g. 20% off Desert Safari"
-              className="mt-1 block w-full border border-ui-border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 bg-ui-bg-alt text-ui-text-main"
+              className="h-12 w-full rounded-xl bg-ui-bg-alt border-ui-border px-4 font-bold text-ui-text-main shadow-inner focus-visible:ring-brand"
               required
             />
           </div>
 
           <div>
-            <label htmlFor="category" className="block text-sm font-medium text-ui-text-secondary">Category</label>
-            <select
-              name="category"
-              id="category"
-              value={formData.category}
-              onChange={handleChange}
-              className="mt-1 block w-full border border-ui-border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 bg-ui-bg-alt text-ui-text-main"
-              required
-            >
-              {categories.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
+            <label className="block text-[10px] font-black uppercase tracking-widest text-ui-muted ml-1 mb-3">Category</label>
+            <div className="flex flex-wrap gap-2">
+                {categories.map(cat => (
+                    <button
+                        key={cat}
+                        type="button"
+                        onClick={() => handleChange({ target: { name: 'category', value: cat } })}
+                        className={`px-4 py-2 rounded-full border-2 text-[10px] font-black uppercase tracking-widest transition-all ${formData.category === cat ? 'border-brand bg-brand/5 text-brand shadow-md border-brand/20' : 'border-ui-border text-ui-muted hover:bg-ui-bg-alt'}`}
+                    >
+                        {cat}
+                    </button>
+                ))}
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="country" className="block text-sm font-medium text-ui-text-secondary">Country</label>
+              <label htmlFor="country" className="block text-[10px] font-black uppercase tracking-widest text-ui-muted ml-1 mb-2">Country</label>
               <input
                 type="text"
                 name="country"
                 id="country"
                 value={formData.country}
                 onChange={handleChange}
-                placeholder="e.g. France"
-                className="mt-1 block w-full border border-ui-border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 bg-ui-bg-alt text-ui-text-main"
+                placeholder="e.g. UAE"
+                className="h-12 w-full rounded-xl bg-ui-bg-alt border-ui-border px-4 font-bold text-ui-text-main shadow-inner focus-visible:ring-brand"
                 required
               />
             </div>
             <div>
-              <label htmlFor="region" className="block text-sm font-medium text-ui-text-secondary">Region</label>
+              <label htmlFor="region" className="block text-[10px] font-black uppercase tracking-widest text-ui-muted ml-1 mb-2">Region</label>
               <select
                 name="region"
                 id="region"
                 value={formData.region}
                 onChange={handleChange}
-                className="mt-1 block w-full border border-ui-border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 bg-ui-bg-alt text-ui-text-main"
+                className="h-12 w-full rounded-xl bg-ui-bg-alt border-ui-border px-4 font-bold text-ui-text-main shadow-inner focus-visible:ring-brand"
                 required
               >
                 {regions.map(reg => (
@@ -174,66 +204,100 @@ const CreatePromotionPage = () => {
             </div>
           </div>
 
-          <div>
-            <label htmlFor="company" className="block text-sm font-medium text-ui-text-secondary">Company Name</label>
-            <input
-              type="text"
-              name="company"
-              id="company"
-              value={formData.company}
-              onChange={handleChange}
-              placeholder="e.g. Desert Adventures Ltd."
-              className="mt-1 block w-full border border-ui-border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 bg-ui-bg-alt text-ui-text-main"
-              required
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="company" className="block text-[10px] font-black uppercase tracking-widest text-ui-muted ml-1 mb-2">Partner / Company</label>
+              <input
+                type="text"
+                name="company"
+                id="company"
+                value={formData.company}
+                onChange={handleChange}
+                placeholder="e.g. Desert Safari Ltd"
+                className="h-12 w-full rounded-xl bg-ui-bg-alt border-ui-border px-4 font-bold text-ui-text-main shadow-inner focus-visible:ring-brand"
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="off_percent" className="block text-[10px] font-black uppercase tracking-widest text-ui-muted ml-1 mb-2">Discount (%)</label>
+              <input
+                type="number"
+                name="off_percent"
+                id="off_percent"
+                value={formData.off_percent}
+                onChange={handleChange}
+                placeholder="e.g. 25"
+                className="h-12 w-full rounded-xl bg-ui-bg-alt border-ui-border px-4 font-bold text-ui-text-main shadow-inner focus-visible:ring-brand"
+                required
+              />
+            </div>
           </div>
 
           <div>
-            <label htmlFor="off_percent" className="block text-sm font-medium text-ui-text-secondary">Discount Percentage (%)</label>
-            <input
-              type="number"
-              name="off_percent"
-              id="off_percent"
-              value={formData.off_percent}
-              onChange={handleChange}
-              placeholder="e.g. 20"
-              className="mt-1 block w-full border border-ui-border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 bg-ui-bg-alt text-ui-text-main"
-              required
-            />
-          </div>
-
-          <div>
-            <label htmlFor="description" className="block text-sm font-medium text-ui-text-secondary">Description</label>
+            <label htmlFor="description" className="block text-[10px] font-black uppercase tracking-widest text-ui-muted ml-1 mb-2">Offer Details</label>
             <textarea
               name="description"
               id="description"
-              rows="4"
+              rows="3"
               value={formData.description}
               onChange={handleChange}
-              className="mt-1 block w-full border border-ui-border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 bg-ui-bg-alt text-ui-text-main"
-              placeholder="Provide details about the promotion..."
+              className="w-full rounded-xl bg-ui-bg-alt border-ui-border p-4 font-medium text-ui-text-secondary italic shadow-inner"
+              placeholder="What makes this deal special?..."
               required
             ></textarea>
           </div>
 
           <div>
-            <label htmlFor="image" className="block text-sm font-medium text-ui-text-secondary">Promotion Image</label>
+            <label className="block text-[10px] font-black uppercase tracking-widest text-ui-muted ml-1 mb-4">Visual Gallery</label>
+            <div className="grid grid-cols-3 gap-3 mb-4">
+                {orderedMedia.map((item, index) => (
+                    <div 
+                        key={index} 
+                        draggable
+                        onDragStart={() => onDragStart(index)}
+                        onDragOver={onDragOver}
+                        onDrop={() => onDrop(index)}
+                        className={`relative aspect-square rounded-2xl overflow-hidden border-2 cursor-move transition-all group ${draggedIndex === index ? 'opacity-30 scale-95' : 'opacity-100 hover:border-brand/40 shadow-sm'}`}
+                    >
+                        <img src={item.preview} className="w-full h-full object-cover" alt="" />
+                        <button 
+                            type="button"
+                            onClick={() => removeMediaItem(index)}
+                            className="absolute top-1.5 right-1.5 p-1 bg-error/90 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity active:scale-90"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                    </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="aspect-square rounded-2xl border-2 border-dashed border-ui-border bg-ui-bg-alt flex flex-col items-center justify-center text-ui-muted hover:border-brand/40 hover:text-brand transition-all hover:bg-brand/5 group"
+                >
+                  <div className="w-8 h-8 rounded-full bg-ui-white flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                  </div>
+                  <span className="text-[8px] font-black uppercase mt-2">Add Photo</span>
+                </button>
+            </div>
             <input
               type="file"
-              name="image"
-              id="image"
-              onChange={handleImageChange}
+              multiple
               accept="image/*"
-              className="mt-1 block w-full text-sm text-ui-text-secondary file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              className="hidden"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 mt-6"
+            className="w-full flex justify-center py-5 px-4 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] text-white bg-brand hover:bg-brand-hover shadow-2xl shadow-brand/20 transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 mt-8"
           >
-            {loading ? 'Posting...' : 'Post Promotion'}
+            {loading ? 'Processing...' : 'Share Special Offer'}
           </button>
         </form>
       </div>

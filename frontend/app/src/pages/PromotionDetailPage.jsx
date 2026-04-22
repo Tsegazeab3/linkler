@@ -4,6 +4,7 @@ import StarRating from '../components/StarRating';
 import { getPromotionDetail, addComment } from '../services/api';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ShieldCheck, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 
 const PromotionDetailPage = () => {
@@ -12,12 +13,27 @@ const PromotionDetailPage = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [newComment, setNewComment] = useState('');
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
     const getMediaUrl = (url) => {
         if (!url) return null;
         if (url.startsWith('http')) return url;
         return `http://localhost:8000${url}`;
     };
+
+    const allImages = React.useMemo(() => {
+        if (!promotion) return [];
+        // Support both old single image and new multiple images
+        const imgs = (promotion.images || []).map(i => getMediaUrl(i.image));
+        if (promotion.image && !imgs.includes(getMediaUrl(promotion.image))) {
+            imgs.unshift(getMediaUrl(promotion.image));
+        }
+        if (imgs.length === 0) imgs.push('https://images.unsplash.com/photo-1530789253388-582c481c54b0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1200&q=80');
+        return imgs;
+    }, [promotion]);
+
+    const nextImage = () => setCurrentImageIndex((prev) => (prev + 1) % allImages.length);
+    const prevImage = () => setCurrentImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
 
     const handleBookNow = () => {
         toast.success("Redirecting to partner site...", {
@@ -71,11 +87,33 @@ const PromotionDetailPage = () => {
             <div className="max-w-5xl mx-auto">
                 <h1 className="text-4xl font-bold text-ui-text-main">{promotion.title}</h1>
                 <p className="text-xl text-ui-text-secondary mb-6 font-medium tracking-tight uppercase tracking-widest">{promotion.company}</p>
-                <div className="w-full h-[400px] bg-ui-bg-alt rounded-3xl shadow-2xl mb-12 border-4 border-ui-white overflow-hidden flex items-center justify-center">
-                    {promotion.image ? (
-                        <img src={getMediaUrl(promotion.image)} alt={promotion.title} className="w-full h-full object-cover" />
-                    ) : (
-                        <ShieldCheck className="w-24 h-24 text-ui-muted opacity-20" />
+                
+                {/* Visual Gallery */}
+                <div className="relative w-full h-[400px] bg-ui-bg-alt rounded-3xl shadow-2xl mb-12 border-4 border-ui-white overflow-hidden group">
+                    <img 
+                        src={allImages[currentImageIndex]} 
+                        alt={promotion.title} 
+                        className="w-full h-full object-cover transition-transform duration-700" 
+                    />
+                    
+                    {allImages.length > 1 && (
+                        <>
+                            <button onClick={prevImage} className="absolute left-6 top-1/2 -translate-y-1/2 p-4 bg-ui-white/90 backdrop-blur-md rounded-2xl shadow-xl opacity-0 group-hover:opacity-100 transition-all hover:bg-ui-white active:scale-90 z-10">
+                                <ChevronLeft className="w-6 h-6 text-ui-text-main" />
+                            </button>
+                            <button onClick={nextImage} className="absolute right-6 top-1/2 -translate-y-1/2 p-4 bg-ui-white/90 backdrop-blur-md rounded-2xl shadow-xl opacity-0 group-hover:opacity-100 transition-all hover:bg-ui-white active:scale-90 z-10">
+                                <ChevronRight className="w-6 h-6 text-ui-text-main" />
+                            </button>
+                            <div className="absolute bottom-8 right-8 bg-ui-text-main/80 backdrop-blur-md text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest z-10">
+                                {currentImageIndex + 1} / {allImages.length}
+                            </div>
+                        </>
+                    )}
+                    
+                    {allImages.length === 0 && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <ShieldCheck className="w-24 h-24 text-ui-muted opacity-20" />
+                        </div>
                     )}
                 </div>
                 

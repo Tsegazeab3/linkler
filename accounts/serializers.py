@@ -45,9 +45,21 @@ class ProviderReviewSerializer(serializers.ModelSerializer):
         read_only_fields = ('user',)
 
 class ExperienceImageSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+
     class Meta:
         model = ExperienceImage
         fields = ('id', 'image')
+
+    def get_image(self, obj):
+        if not obj.image:
+            return None
+        image_str = str(obj.image)
+        if image_str.startswith('http://') or image_str.startswith('https://'):
+            return image_str
+        if hasattr(obj.image, 'url'):
+            return obj.image.url
+        return image_str
 
 class ExperienceSerializer(serializers.ModelSerializer):
     user_username = serializers.ReadOnlyField(source='user.username')
@@ -56,16 +68,29 @@ class ExperienceSerializer(serializers.ModelSerializer):
     review_count = serializers.SerializerMethodField()
     bookings_count = serializers.SerializerMethodField()
     total_earnings = serializers.SerializerMethodField()
+    user_booking = serializers.SerializerMethodField()
 
     class Meta:
         model = Experience
         fields = (
-            'id', 'user', 'user_username', 'title', 'description', 
+            'id', 'user', 'user_username', 'listing_type', 'title', 'description', 
             'price', 'currency', 'location', 'country', 'region', 
             'duration', 'images', 'category', 'rating', 'review_count', 
-            'bookings_count', 'total_earnings', 'created_at'
+            'bookings_count', 'total_earnings', 'user_booking', 'created_at'
         )
         read_only_fields = ('user',)
+
+    def get_user_booking(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            booking = obj.bookings.filter(user=request.user).first()
+            if booking:
+                return {
+                    'id': booking.id,
+                    'status': booking.status,
+                    'date': booking.booking_date
+                }
+        return None
 
     def get_bookings_count(self, obj):
         return obj.bookings.count()
@@ -138,20 +163,19 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_rating(self, obj):
         from django.db.models import Avg
-        if obj.account_type in ['guide', 'service']:
+        if obj.account_type == 'guide':
             avg = obj.provider_reviews.aggregate(Avg('rating'))['rating__avg']
             return round(avg, 1) if avg else 0.0
         return 0.0
 
     def get_review_count(self, obj):
-        if obj.account_type in ['guide', 'service']:
+        if obj.account_type == 'guide':
             return obj.provider_reviews.count()
         return 0
 
     def get_profile_picture(self, obj):
         if not obj.profile_picture:
             return None
-        # Check if the stored name is already a full URL
         if str(obj.profile_picture).startswith('http'):
             return str(obj.profile_picture)
         if hasattr(obj.profile_picture, 'url'):
