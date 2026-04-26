@@ -7,6 +7,7 @@ import BottomNav from './components/BottomNav';
 import SearchModal from './components/SearchModal';
 import CreateGroupModal from './components/CreateGroupModal';
 import GroupSearchModal from './components/GroupSearchModal';
+import Walkthrough from './components/Walkthrough';
 import { Toaster } from "@/components/ui/sonner";
 import { DataProvider } from './context/DataContext';
 
@@ -20,6 +21,20 @@ function App() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isGroupSearchOpen, setIsGroupSearchOpen] = useState(false);
   const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
+  const [showWalkthrough, setShowWalkthrough] = useState(false);
+
+  useEffect(() => {
+    const hasSeen = localStorage.getItem('linkler_has_seen_walkthrough');
+    if (!hasSeen && (location.pathname === '/app' || location.pathname === '/app/')) {
+      const timer = setTimeout(() => setShowWalkthrough(true), 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [location.pathname]);
+
+  const handleWalkthroughComplete = () => {
+    setShowWalkthrough(false);
+    localStorage.setItem('linkler_has_seen_walkthrough', 'true');
+  };
 
   useEffect(() => {
     const handleOpenGroupModal = () => setIsGroupModalOpen(true);
@@ -142,6 +157,7 @@ function App() {
                 Linkler
               </h1>
               <button
+                id="walkthrough-search-mobile"
                 onClick={() => setIsSearchOpen(true)}
                 className="w-10 h-10 flex items-center justify-center rounded-full bg-ui-bg-alt text-ui-text-secondary active:scale-95 transition-transform"
               >
@@ -169,6 +185,8 @@ function App() {
         onClose={() => setIsGroupModalOpen(false)} 
         onSuccess={handleGroupCreated}
       />
+
+      {showWalkthrough && <Walkthrough onComplete={handleWalkthroughComplete} />}
 
       {isHome && <FloatingPlusButton />}
 

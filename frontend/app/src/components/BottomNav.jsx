@@ -149,6 +149,7 @@ const BottomNav = ({ onPanelItemClick, selectedNavItemId, showSidePanel }) => {
       {isAuthenticated && isHome && (
         <div className="mb-2">
             <button
+                id="walkthrough-plus-mobile"
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                 className={`bg-brand text-white rounded-full w-16 h-16 shadow-[0_10px_30px_rgba(37,99,235,0.4)] border-4 border-ui-white active:scale-90 transition-all flex items-center justify-center ${isMenuOpen ? 'rotate-45 bg-ui-text-main shadow-none' : ''}`}
             >
@@ -171,6 +172,7 @@ const BottomNav = ({ onPanelItemClick, selectedNavItemId, showSidePanel }) => {
             return (
               <button
                 key={item.id}
+                id={`walkthrough-${item.label.toLowerCase().replace(/\s+/g, '-')}-mobile`}
                 onClick={() => handleNavClick(item)}
                 className={`flex flex-col items-center justify-center min-w-[48px] h-full transition-all shrink-0 ${isActive ? 'text-brand' : 'text-ui-muted'}`}
               >

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import PromotionCard from '../components/PromotionCard';
 import PromotionFilter from '../components/PromotionFilter';
 import FilterComponent from '../components/FilterComponent';
-import { getPromotions } from '../services/api';
+import { getPromotions, getPromotionCategories, getPromotionRegions } from '../services/api';
 
 const PromotionsPage = () => {
     const [promotions, setPromotions] = useState([]);
@@ -34,10 +34,8 @@ const PromotionsPage = () => {
     });
 
     useEffect(() => {
-        import('../services/api').then(({ getPromotionCategories, getPromotionRegions }) => {
-            getPromotionCategories().then(res => setCategories(res.data));
-            getPromotionRegions().then(res => setRegions(res.data));
-        });
+        getPromotionCategories().then(res => setCategories(res.data));
+        getPromotionRegions().then(res => setRegions(res.data));
     }, []);
 
     useEffect(() => {

@@ -9,7 +9,8 @@ import {
     deletePostsBatch,
     updatePost,
     getFollowers,
-    getFollowing
+    getFollowing,
+    deleteService
 } from '../services/api';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -29,6 +30,7 @@ import {
     Settings, 
     Lock, 
     Globe, 
+    Compass,
     Users as UsersIcon,
     MoreVertical,
     CheckCircle2,
@@ -161,7 +163,8 @@ const UserProfilePage = () => {
         setFollowListLoading(true);
         try {
             const res = type === 'followers' ? await getFollowers(username) : await getFollowing(username);
-            setFollowList(res.data);
+            const data = Array.isArray(res.data) ? res.data : (res.data.results || []);
+            setFollowList(data);
         } catch (err) {
             console.error(err);
             toast.error(`Failed to load ${type}`);
@@ -509,16 +512,14 @@ const UserProfilePage = () => {
                                                         >
                                                             <Edit3 className="w-3.5 h-3.5" />
                                                         </button>
-                                                        <button 
-                                                            onClick={async () => {
-                                                                if(window.confirm("Delete this service?")) {
-                                                                    const { deleteService } = await import('../services/api');
-                                                                    await deleteService(exp.id);
-                                                                    setExperiences(prev => prev.filter(e => e.id !== exp.id));
-                                                                    toast.success("Service deleted");
-                                                                }
-                                                            }}
-                                                            className="p-2 bg-white/90 backdrop-blur-md rounded-xl text-error shadow-lg hover:bg-error hover:text-white transition-all"
+                                                        <button
+                                                           onClick={async () => {
+                                                               if(window.confirm("Delete this service?")) {
+                                                                   await deleteService(exp.id);
+                                                                   setExperiences(prev => prev.filter(e => e.id !== exp.id));
+                                                                   toast.success("Service deleted");
+                                                               }
+                                                           }}                                                            className="p-2 bg-white/90 backdrop-blur-md rounded-xl text-error shadow-lg hover:bg-error hover:text-white transition-all"
                                                         >
                                                             <Trash2 className="w-3.5 h-3.5" />
                                                         </button>

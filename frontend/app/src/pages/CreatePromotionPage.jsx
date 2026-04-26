@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-import { createPromotion } from '../services/api';
+import { createPromotion, getPromotionCategories, getPromotionRegions } from '../services/api';
 import LocationAutocomplete from '../components/LocationAutocomplete';
 
 const CreatePromotionPage = () => {
@@ -64,10 +64,8 @@ const CreatePromotionPage = () => {
   };
 
   useEffect(() => {
-    import('../services/api').then(({ getPromotionCategories, getPromotionRegions }) => {
-      getPromotionCategories().then(res => setCategories(res.data));
-      getPromotionRegions().then(res => setRegions(res.data));
-    });
+    getPromotionCategories().then(res => setCategories(res.data));
+    getPromotionRegions().then(res => setRegions(res.data));
     document.body.style.overflow = 'hidden';
     setShow(true);
 

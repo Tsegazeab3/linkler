@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useData } from '../context/DataContext';
+import { getNotifications, markNotificationRead } from '../services/api';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -148,22 +149,23 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
 
   const fetchNotifications = async () => {
     setLoadingLoadingNotifications(true);
-    import('../services/api').then(async ({ getNotifications }) => {
-        try {
-            const res = await getNotifications();
-            setNotifications(Array.isArray(res.data) ? res.data : (res.data.results || []));
-        } catch (err) { console.error(err); }
-        finally { setLoadingLoadingNotifications(false); }
-    });
+    try {
+      const res = await getNotifications();
+      setNotifications(Array.isArray(res.data) ? res.data : (res.data.results || []));
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingLoadingNotifications(false);
+    }
   };
 
   const handleMarkRead = async (id) => {
-    import('../services/api').then(async ({ markNotificationRead }) => {
-        try {
-            await markNotificationRead(id);
-            setNotifications(notifications.map(n => n.id === id ? { ...n, is_read: true } : n));
-        } catch (err) { console.error(err); }
-    });
+    try {
+      await markNotificationRead(id);
+      setNotifications(notifications.map(n => n.id === id ? { ...n, is_read: true } : n));
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const totalUnread = Array.isArray(conversations) ? conversations.reduce((acc, conv) => acc + (conv.unread_count || 0), 0) : 0;
@@ -189,8 +191,6 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
   const selectedNavItem = navItems.find(item => item.id === selectedNavItemId);
 
   const renderPanelContent = () => {
-    if (!selectedNavItem && selectedNavItemId !== 'user_profile' && selectedNavItemId !== 'peer_profile') return null;
-
     if (selectedNavItemId === 'peer_profile' && selectedUser) {
       return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
@@ -275,6 +275,8 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
         </div>
       );
     }
+
+    if (!selectedNavItem) return null;
 
     if (loadingConversations) {
       return (
@@ -469,7 +471,7 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
     const Icon = item.icon;
     const content = (
       <>
-        <span className="relative mb-0.5" id={`nav-${item.name.toLowerCase().replace(/\s+/g, '-')}`}>
+        <span className="relative mb-0.5" id={`walkthrough-${item.name.toLowerCase().replace(/\s+/g, '-')}`}>
           <Icon className="w-7 h-7" />
           {((item.name === 'Messages' || item.name === 'Groups') && totalUnread > 0) && (
             <span className="absolute -top-1 -right-1 flex items-center justify-center h-4 w-4 rounded-full bg-red-500 text-white text-[10px] font-bold border-2 border-[var(--color-linkler-bg)]">

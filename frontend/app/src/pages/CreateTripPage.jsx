@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-import { createTrip } from '../services/api';
+import { createTrip, getTripCategories, getTripRegions } from '../services/api';
 import LocationAutocomplete from '../components/LocationAutocomplete';
 
 const CreateTripPage = () => {
@@ -45,10 +45,8 @@ const CreateTripPage = () => {
   };
 
   useEffect(() => {
-    import('../services/api').then(({ getTripCategories, getTripRegions }) => {
-      getTripCategories().then(res => setCategories(res.data));
-      getTripRegions().then(res => setRegions(res.data));
-    });
+    getTripCategories().then(res => setCategories(res.data));
+    getTripRegions().then(res => setRegions(res.data));
     document.body.style.overflow = 'hidden';
     setShow(true);
 

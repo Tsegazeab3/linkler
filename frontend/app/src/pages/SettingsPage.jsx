@@ -349,6 +349,25 @@ const SettingsPage = () => {
 
           <Card className="mt-8">
             <CardHeader>
+              <CardTitle>App Walkthrough</CardTitle>
+              <CardDescription>Need a refresher? Restart the interactive tour of Linkler.</CardDescription>
+            </CardHeader>
+            <CardContent>
+               <Button 
+                variant="outline" 
+                className="w-full h-12 rounded-xl font-bold border-brand/20 text-brand hover:bg-brand/5"
+                onClick={() => {
+                   localStorage.removeItem('linkler_has_seen_walkthrough');
+                   navigate('/app');
+                }}
+              >
+                Restart Walkthrough
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="mt-8">
+            <CardHeader>
               <CardTitle>Chat Preferences</CardTitle>
               <CardDescription>Choose how chats open by default on larger screens.</CardDescription>
             </CardHeader>

@@ -4,7 +4,7 @@ import FilterComponent from '../components/FilterComponent';
 import GuidePreviewCard from '../components/GuidePreviewCard';
 import ExperiencePreviewCard from '../components/ExperiencePreviewCard';
 import LeftSidebarFilter from '../components/LeftSidebarFilter';
-import { getGuides, getExperiences } from '../services/api';
+import { getGuides, getExperiences, getExperienceCategories, getExperienceRegions } from '../services/api';
 
 const ExperiencesPage = () => {
   const [items, setItems] = useState([]);
@@ -40,11 +40,8 @@ const ExperiencesPage = () => {
   });
 
   useEffect(() => {
-    const api = import('../services/api');
-    api.then(({ getExperienceCategories, getExperienceRegions }) => {
-        getExperienceCategories().then(res => setCategories(res.data));
-        getExperienceRegions().then(res => setRegions(res.data));
-    });
+    getExperienceCategories().then(res => setCategories(res.data));
+    getExperienceRegions().then(res => setRegions(res.data));
   }, []);
 
   useEffect(() => {

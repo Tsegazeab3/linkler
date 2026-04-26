@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-import { createExperience } from '../services/api';
+import { createExperience, getExperienceCategories, getExperienceRegions } from '../services/api';
 import { useForm } from '../hooks/useForm';
 import LocationAutocomplete from '../components/LocationAutocomplete';
 
@@ -88,10 +88,8 @@ const CreateExperiencePage = () => {
   };
 
   useEffect(() => {
-    import('../services/api').then(({ getExperienceCategories, getExperienceRegions }) => {
-      getExperienceCategories().then(res => setCategories(res.data));
-      getExperienceRegions().then(res => setRegions(res.data));
-    });
+    getExperienceCategories().then(res => setCategories(res.data));
+    getExperienceRegions().then(res => setRegions(res.data));
     document.body.style.overflow = 'hidden';
     setShow(true);
 
