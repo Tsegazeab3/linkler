@@ -41,7 +41,7 @@ const IndexPage = () => {
   }
 
   return (
-    <div className="flex-grow p-2 lg:p-4 overflow-x-hidden">
+    <div className="flex-grow p-2 lg:p-4 overflow-x-hidden" id="main-feed">
       <div className="max-w-sm mx-auto space-y-4">
         {posts.length > 0 ? (
           <>

@@ -1,5 +1,8 @@
 import random
+import os
+import ujson
 import requests
+from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.core.files.base import ContentFile
 from discovery.models import Promotion
@@ -10,21 +13,36 @@ fake = Faker()
 class Command(BaseCommand):
     help = 'Seeds the database with diverse promotions for every category'
 
+    def _load_locations(self):
+        countries_path = os.path.join(settings.BASE_DIR, 'discovery/data/countries_full.json')
+        cities_path = os.path.join(settings.BASE_DIR, 'discovery/data/cities.json')
+        
+        with open(countries_path, 'r') as f:
+            countries = ujson.load(f)
+        with open(cities_path, 'r') as f:
+            cities = ujson.load(f)
+            
+        return countries, cities
+
+    def _get_random_location(self, countries, cities):
+        gcc_codes = ['SA', 'AE', 'QA', 'OM', 'BH', 'KW']
+        if random.random() < 0.8:
+            country_code = random.choice(gcc_codes)
+        else:
+            country_code = random.choice([c['cca2'] for c in countries])
+            
+        country_obj = next((c for c in countries if c['cca2'] == country_code), countries[0])
+        country_name = country_obj.get('name', {}).get('common', 'Unknown')
+        region = country_obj.get('region', 'Middle East')
+        
+        return country_name, region
+
     def handle(self, *args, **options):
         self.stdout.write('Seeding promotions...')
         
-        categories = ['Hotels', 'Restaurants', 'Bars', 'Travel', 'Activities']
+        countries_json, cities_json = self._load_locations()
         
-        region_countries = {
-            'Africa': ['Senegal', 'Nigeria', 'Kenya', 'South Africa', 'Egypt', 'Morocco'],
-            'Asia': ['Japan', 'China', 'India', 'Thailand', 'Vietnam', 'Indonesia'],
-            'Europe': ['France', 'UK', 'Italy', 'Germany', 'Spain', 'Greece'],
-            'North America': ['USA', 'Canada', 'Mexico'],
-            'South America': ['Brazil', 'Argentina', 'Colombia', 'Peru', 'Chile'],
-            'Oceania': ['Australia', 'New Zealand', 'Fiji'],
-            'Middle East': ['UAE', 'Saudi Arabia', 'Jordan', 'Qatar', 'Oman'],
-        }
-        regions_list = list(region_countries.keys())
+        promotion_categories = [cat[0] for cat in Promotion.PROMOTION_CATEGORIES]
 
         deals_data = {
             'Hotels': [
@@ -51,25 +69,29 @@ class Command(BaseCommand):
                 {'title': 'Guided Scuba Diving', 'company': 'Deep Blue Divers', 'off': 20, 'desc': 'Discover the vibrant underwater world with our expert diving instructors.'},
                 {'title': 'Mountain Biking Expedition', 'company': 'Peak Performance', 'off': 15, 'desc': 'Tackle challenging trails and enjoy breathtaking scenery on two wheels.'},
                 {'title': 'Cooking Class: Asian Fusion', 'company': 'Chef\'s Table', 'off': 30, 'desc': 'Learn to prepare delicious, modern Asian-inspired dishes from a professional chef.'},
+            ],
+            'Shopping': [
+                {'title': 'Souk Al-Zal Experience', 'company': 'Old Riyadh Tours', 'off': 20, 'desc': 'Personal shopper for the best carpets and antiques.'},
+                {'title': 'Dubai Mall VIP Access', 'company': 'Luxury Concierge', 'off': 15, 'desc': 'Exclusive lounge access and personal style consultant.'}
+            ],
+            'Safari': [
+                {'title': 'Red Dunes Adventure', 'company': 'Desert Kings', 'off': 30, 'desc': 'Dune bashing, camel riding and a traditional dinner under the stars.'}
             ]
         }
 
-        # Unsplash random image URLs based on keywords
-        image_keywords = {
-            'Hotels': 'hotel,resort,luxury-stay',
-            'Restaurants': 'restaurant,food,gourmet',
-            'Bars': 'bar,cocktail,nightlife',
-            'Travel': 'travel,airplane,passport',
-            'Activities': 'adventure,hiking,diving'
-        }
+        # Unsplash stable images
+        image_pool = [
+            "https://images.unsplash.com/photo-1530789253388-582c481c54b0",
+            "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9",
+            "https://images.unsplash.com/photo-1516483638261-f4dbaf036963",
+            "https://images.unsplash.com/photo-1507525428034-b723cf961d3e",
+            "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800"
+        ]
 
         for category, deals in deals_data.items():
+            if category not in promotion_categories: continue
             for deal in deals:
-                random_id = random.randint(1, 1000)
-                image_url = f"https://source.unsplash.com/featured/800x600?{image_keywords[category]}&sig={random_id}"
-                
-                selected_region = random.choice(regions_list)
-                selected_country = random.choice(region_countries[selected_region])
+                c_name, region = self._get_random_location(countries_json, cities_json)
 
                 promotion = Promotion(
                     category=category,
@@ -77,22 +99,13 @@ class Command(BaseCommand):
                     company=deal['company'],
                     off_percent=deal['off'],
                     description=deal['desc'],
-                    region=selected_region,
-                    country=selected_country,
-                    rating=round(random.uniform(3.8, 5.0), 1)
+                    region=region,
+                    country=c_name,
+                    rating=round(random.uniform(3.8, 5.0), 1),
+                    image=random.choice(image_pool) + "?auto=format&fit=crop&w=800&q=80"
                 )
-
-                # Try to download and save the image
-                try:
-                    response = requests.get(image_url, timeout=10)
-                    if response.status_code == 200:
-                        file_name = f"{category.lower()}_{random_id}.jpg"
-                        promotion.image.save(file_name, ContentFile(response.content), save=False)
-                        self.stdout.write(f"  Saved image for {deal['title']}")
-                except Exception as e:
-                    self.stdout.write(self.style.WARNING(f"  Could not download image for {deal['title']}: {e}"))
                 
                 promotion.save()
-                self.stdout.write(self.style.SUCCESS(f"  Created promotion: {deal['title']} in {category} ({selected_country})"))
+                self.stdout.write(self.style.SUCCESS(f"  Created promotion: {deal['title']} in {category} ({c_name})"))
 
         self.stdout.write(self.style.SUCCESS('Successfully seeded promotions!'))

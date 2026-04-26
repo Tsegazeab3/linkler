@@ -1,4 +1,5 @@
 import React from 'react';
+import LocationAutocomplete from './LocationAutocomplete';
 
 const PromotionFilter = ({ 
   activeCategory = '', 
@@ -18,6 +19,16 @@ const PromotionFilter = ({
       onChange('');
     } else {
       onChange(item);
+    }
+  };
+
+  const handleLocationSelect = (e) => {
+    if (!onCountryChange) return;
+    const loc = e.target.locationData;
+    if (loc) {
+        onCountryChange(loc.type === 'country' ? loc.name : loc.country_name);
+    } else {
+        onCountryChange(e.target.value);
     }
   };
 
@@ -109,14 +120,20 @@ const PromotionFilter = ({
 
       {onCountryChange && (
         <div className="p-4 rounded-3xl shadow-sm bg-ui-white border border-ui-border">
-          <h3 className="text-lg font-bold mb-4 text-ui-text-main">Country Search</h3>
-          <input 
-            type="text"
-            placeholder="Search country..."
-            className="w-full px-4 py-2.5 rounded-xl text-sm border border-ui-border bg-ui-bg-alt focus:outline-none focus:ring-2 focus:ring-brand/20 transition-all"
+          <h3 className="text-lg font-bold mb-4 text-ui-text-main">Location</h3>
+          <LocationAutocomplete
             value={activeCountry}
-            onChange={(e) => onCountryChange(e.target.value)}
+            onChange={handleLocationSelect}
+            placeholder="Search country..."
           />
+          {activeCountry && (
+            <button 
+                onClick={() => onCountryChange('')}
+                className="mt-2 text-[10px] font-black uppercase text-brand hover:underline"
+            >
+                Clear Location
+            </button>
+          )}
         </div>
       )}
       

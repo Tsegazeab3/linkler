@@ -22,7 +22,11 @@ const ExperiencesPage = () => {
     'Verified': false
   });
 
-  const funCategories = ['Adventure', 'Culture', 'Nightlife', 'History', 'Nature', 'Gastronomy'];
+  const funCategories = [
+    'Adventure', 'Culture', 'Nightlife', 'History', 'Nature', 'Gastronomy',
+    'Shopping & Souks', 'Religious & Heritage', 'Desert & Safari', 'Coastal & Marine',
+    'Luxury & VIP', 'Wellness & Spa', 'Sports & Events'
+  ];
 
   const toggleQuickFilter = (name) => {
     setQuickFilters(prev => ({ ...prev, [name]: !prev[name] }));
@@ -37,8 +41,8 @@ const ExperiencesPage = () => {
 
   useEffect(() => {
     const api = import('../services/api');
-    api.then(({ getExperienceRegions }) => {
-        setCategories(funCategories);
+    api.then(({ getExperienceCategories, getExperienceRegions }) => {
+        getExperienceCategories().then(res => setCategories(res.data));
         getExperienceRegions().then(res => setRegions(res.data));
     });
   }, []);

@@ -7,6 +7,14 @@ class Promotion(models.Model):
         ('Bars', 'Bars'),
         ('Travel', 'Travel'),
         ('Activities', 'Activities'),
+        ('Shopping', 'Shopping'),
+        ('Religious', 'Religious'),
+        ('Safari', 'Safari'),
+        ('Coastal', 'Coastal'),
+        ('Luxury', 'Luxury'),
+        ('Wellness', 'Wellness'),
+        ('Sports', 'Sports'),
+        ('Other', 'Other'),
     )
     REGION_CHOICES = (
         ('Africa', 'Africa'),

@@ -137,6 +137,7 @@ export const getExperiences = (search = '', category = '', region = '', country 
 };
 export const getExperienceCategories = () => api.get('accounts/experiences/categories/');
 export const getExperienceRegions = () => api.get('accounts/experiences/regions/');
+export const searchLocations = (query) => api.get(`promotions/locations/search/?q=${encodeURIComponent(query)}`);
 export const getExperienceDetail = (id) => api.get(`accounts/experiences/${id}/`);
 export const createExperience = (data) => api.post('accounts/experiences/', data, {
   headers: { 'Content-Type': 'multipart/form-data' }

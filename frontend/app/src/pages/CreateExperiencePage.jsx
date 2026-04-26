@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { createExperience } from '../services/api';
 import { useForm } from '../hooks/useForm';
+import LocationAutocomplete from '../components/LocationAutocomplete';
 
 const CreateExperiencePage = () => {
   const navigate = useNavigate();
@@ -19,14 +20,34 @@ const CreateExperiencePage = () => {
     currency: 'USD',
     location: '',
     country: '',
-    region: 'Europe',
+    region: 'Middle East',
     duration: '',
     category: 'Adventure',
     listing_type: 'experience'
   });
 
-  const funCategories = ['Adventure', 'Culture', 'Nightlife', 'History', 'Nature', 'Gastronomy'];
+  const funCategories = [
+    'Adventure', 'Culture', 'Nightlife', 'History', 'Nature', 'Gastronomy',
+    'Shopping & Souks', 'Religious & Heritage', 'Desert & Safari', 'Coastal & Marine',
+    'Luxury & VIP', 'Wellness & Spa', 'Sports & Events'
+  ];
   const essentialCategories = ['Transportation', 'Housing', 'Documentation', 'Connectivity', 'Local Support'];
+
+  const handleLocationSelect = (e) => {
+    const loc = e.target.locationData;
+    if (loc) {
+        if (loc.type === 'country') {
+            handleChange({ target: { name: 'country', value: loc.name } });
+            handleChange({ target: { name: 'region', value: loc.region } });
+        } else if (loc.type === 'city') {
+            handleChange({ target: { name: 'location', value: loc.city } });
+            handleChange({ target: { name: 'country', value: loc.country_name } });
+            handleChange({ target: { name: 'region', value: loc.region } });
+        }
+    } else {
+        handleChange(e);
+    }
+  };
   
   const activeCategories = values.listing_type === 'experience' ? funCategories : essentialCategories;
 
@@ -283,19 +304,14 @@ const CreateExperiencePage = () => {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="country" className="block text-[10px] font-black uppercase tracking-widest text-ui-muted ml-1 mb-2">Country</label>
-              <input
-                type="text"
-                name="country"
-                id="country"
-                value={values.country}
-                onChange={handleChange}
-                placeholder="e.g. UAE"
-                className="h-12 w-full rounded-xl bg-ui-bg-alt border-ui-border px-4 font-bold text-ui-text-main"
-                required
-              />
-            </div>
+            <LocationAutocomplete
+              name="country"
+              label="Search Country / City"
+              value={values.country}
+              onChange={handleLocationSelect}
+              placeholder="e.g. Dubai or Saudi"
+              required
+            />
             <div>
               <label htmlFor="region" className="block text-[10px] font-black uppercase tracking-widest text-ui-muted ml-1 mb-2">Region</label>
               <select

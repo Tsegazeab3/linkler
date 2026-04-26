@@ -469,7 +469,7 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
     const Icon = item.icon;
     const content = (
       <>
-        <span className="relative mb-0.5">
+        <span className="relative mb-0.5" id={`nav-${item.name.toLowerCase().replace(/\s+/g, '-')}`}>
           <Icon className="w-7 h-7" />
           {((item.name === 'Messages' || item.name === 'Groups') && totalUnread > 0) && (
             <span className="absolute -top-1 -right-1 flex items-center justify-center h-4 w-4 rounded-full bg-red-500 text-white text-[10px] font-bold border-2 border-[var(--color-linkler-bg)]">

@@ -142,6 +142,13 @@ class Experience(models.Model):
         ('History', 'History'),
         ('Nature', 'Nature'),
         ('Gastronomy', 'Gastronomy'),
+        ('Shopping & Souks', 'Shopping & Souks'),
+        ('Religious & Heritage', 'Religious & Heritage'),
+        ('Desert & Safari', 'Desert & Safari'),
+        ('Coastal & Marine', 'Coastal & Marine'),
+        ('Luxury & VIP', 'Luxury & VIP'),
+        ('Wellness & Spa', 'Wellness & Spa'),
+        ('Sports & Events', 'Sports & Events'),
         # Essentials / Utility
         ('Transportation', 'Transportation'),
         ('Housing', 'Housing'),

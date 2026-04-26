@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { createPromotion } from '../services/api';
+import LocationAutocomplete from '../components/LocationAutocomplete';
 
 const CreatePromotionPage = () => {
   const navigate = useNavigate();
@@ -14,11 +15,24 @@ const CreatePromotionPage = () => {
     title: '',
     company: '',
     category: 'Hotels',
-    region: 'Europe',
+    region: 'Middle East',
     country: '',
     off_percent: '',
     description: '',
   });
+
+  const handleLocationSelect = (e) => {
+    const loc = e.target.locationData;
+    if (loc) {
+        setFormData(prev => ({
+            ...prev,
+            country: loc.type === 'country' ? loc.name : loc.country_name,
+            region: loc.region || prev.region
+        }));
+    } else {
+        setFormData(prev => ({ ...prev, country: e.target.value }));
+    }
+  };
   const [orderedMedia, setOrderedMedia] = useState([]);
   const [draggedIndex, setDragIndex] = useState(null);
   const fileInputRef = React.useRef(null);
@@ -174,19 +188,14 @@ const CreatePromotionPage = () => {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="country" className="block text-[10px] font-black uppercase tracking-widest text-ui-muted ml-1 mb-2">Country</label>
-              <input
-                type="text"
-                name="country"
-                id="country"
-                value={formData.country}
-                onChange={handleChange}
-                placeholder="e.g. UAE"
-                className="h-12 w-full rounded-xl bg-ui-bg-alt border-ui-border px-4 font-bold text-ui-text-main shadow-inner focus-visible:ring-brand"
-                required
-              />
-            </div>
+            <LocationAutocomplete
+              name="country"
+              label="Country"
+              value={formData.country}
+              onChange={handleLocationSelect}
+              placeholder="e.g. Saudi"
+              required
+            />
             <div>
               <label htmlFor="region" className="block text-[10px] font-black uppercase tracking-widest text-ui-muted ml-1 mb-2">Region</label>
               <select

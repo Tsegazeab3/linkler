@@ -4,6 +4,7 @@ import ActionButtons from '../components/ActionButtons';
 import FilterComponent from '../components/FilterComponent';
 import { getTrips } from '../services/api';
 import { MapPin, Compass } from 'lucide-react';
+import LocationAutocomplete from '../components/LocationAutocomplete';
 
 const FellowTravelersPage = () => {
   const [trips, setTrips] = useState([]);
@@ -12,6 +13,13 @@ const FellowTravelersPage = () => {
   const [fromCountry, setFromCountry] = useState('');
   const [toCountry, setToCountry] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+
+  const handleLocationSelect = (type, e) => {
+    const loc = e.target.locationData;
+    const value = loc ? (loc.type === 'city' ? loc.city : loc.name) : e.target.value;
+    if (type === 'from') setFromCountry(value);
+    else setToCountry(value);
+  };
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [quickFilters, setQuickFilters] = useState({
     'Top Rated': false,
@@ -93,28 +101,18 @@ const FellowTravelersPage = () => {
         <div className="w-full mb-8 max-w-2xl mx-auto space-y-4">
           <div className="flex flex-col sm:flex-row gap-4">
              <div className="flex-1 relative group">
-                <input 
-                  type="text" 
-                  placeholder="From (Origin)..." 
+                <LocationAutocomplete
                   value={fromCountry}
-                  onChange={(e) => setFromCountry(e.target.value)}
-                  className="w-full h-14 rounded-2xl border-ui-border bg-ui-white pl-12 pr-4 shadow-sm focus:outline-none focus:ring-2 focus:ring-brand/20 transition-all text-sm font-bold"
+                  onChange={(e) => handleLocationSelect('from', e)}
+                  placeholder="From (Origin)..."
                 />
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-ui-muted group-focus-within:text-brand transition-colors">
-                  <MapPin className="w-5 h-5" />
-                </div>
              </div>
              <div className="flex-1 relative group">
-                <input 
-                  type="text" 
-                  placeholder="To (Destination)..." 
+                <LocationAutocomplete
                   value={toCountry}
-                  onChange={(e) => setToCountry(e.target.value)}
-                  className="w-full h-14 rounded-2xl border-ui-border bg-ui-white pl-12 pr-4 shadow-sm focus:outline-none focus:ring-2 focus:ring-brand/20 transition-all text-sm font-bold"
+                  onChange={(e) => handleLocationSelect('to', e)}
+                  placeholder="To (Destination)..."
                 />
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-ui-muted group-focus-within:text-brand transition-colors">
-                  <Compass className="w-5 h-5" />
-                </div>
              </div>
           </div>
 

@@ -98,6 +98,7 @@ const FloatingPlusButton = () => {
 
                 {/* Main FAB */}
                 <button
+                    id="floating-plus-button"
                     onClick={() => setIsOpen(!isOpen)}
                     className=" text-ui-text-main  rounded-full w-14 h-14 flex items-center justify-center  transition-transform transform"
                     aria-expanded={isOpen}

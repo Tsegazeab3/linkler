@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { createTrip } from '../services/api';
+import LocationAutocomplete from '../components/LocationAutocomplete';
 
 const CreateTripPage = () => {
   const navigate = useNavigate();
@@ -14,13 +15,34 @@ const CreateTripPage = () => {
     origin: '',
     destination: '',
     destination_country: '',
-    region: 'Europe',
+    region: 'Middle East',
     category: 'Adventure',
     start_date: '',
     end_date: '',
     message: '',
   });
   const [image, setImage] = useState(null);
+
+  const handleLocationSelect = (field, e) => {
+    const loc = e.target.locationData;
+    if (loc) {
+        if (field === 'destination') {
+            setTripData(prev => ({
+                ...prev,
+                destination: loc.type === 'city' ? loc.city : loc.name,
+                destination_country: loc.type === 'city' ? loc.country_name : loc.name,
+                region: loc.region || prev.region
+            }));
+        } else {
+            setTripData(prev => ({
+                ...prev,
+                origin: loc.type === 'city' ? loc.city : loc.name
+            }));
+        }
+    } else {
+        setTripData(prev => ({ ...prev, [field]: e.target.value }));
+    }
+  };
 
   useEffect(() => {
     import('../services/api').then(({ getTripCategories, getTripRegions }) => {
@@ -111,32 +133,22 @@ const CreateTripPage = () => {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="origin" className="block text-sm font-medium text-ui-text-secondary">Origin</label>
-              <input
-                type="text"
-                name="origin"
-                id="origin"
-                value={tripData.origin}
-                onChange={handleChange}
-                placeholder="e.g. Dubai"
-                className="mt-1 block w-full border border-ui-border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-brand focus:border-brand bg-ui-bg-alt text-ui-text-main"
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor="destination" className="block text-sm font-medium text-ui-text-secondary">Destination</label>
-              <input
-                type="text"
-                name="destination"
-                id="destination"
-                value={tripData.destination}
-                onChange={handleChange}
-                placeholder="e.g. Muscat"
-                className="mt-1 block w-full border border-ui-border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-brand focus:border-brand bg-ui-bg-alt text-ui-text-main"
-                required
-              />
-            </div>
+            <LocationAutocomplete
+              name="origin"
+              label="Origin"
+              value={tripData.origin}
+              onChange={(e) => handleLocationSelect('origin', e)}
+              placeholder="e.g. Dubai"
+              required
+            />
+            <LocationAutocomplete
+              name="destination"
+              label="Destination"
+              value={tripData.destination}
+              onChange={(e) => handleLocationSelect('destination', e)}
+              placeholder="e.g. Riyadh"
+              required
+            />
           </div>
 
           <div>
@@ -146,7 +158,7 @@ const CreateTripPage = () => {
               id="category"
               value={tripData.category}
               onChange={handleChange}
-              className="mt-1 block w-full border border-ui-border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-brand focus:border-brand bg-ui-bg-alt text-ui-text-main"
+              className="mt-1 block w-full border border-ui-border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-brand focus:border-brand bg-ui-bg-alt text-ui-text-main font-bold"
               required
             >
               {categories.map(cat => (
@@ -164,8 +176,9 @@ const CreateTripPage = () => {
                 id="destination_country"
                 value={tripData.destination_country}
                 onChange={handleChange}
-                placeholder="e.g. UAE"
-                className="mt-1 block w-full border border-ui-border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-brand focus:border-brand bg-ui-bg-alt text-ui-text-main"
+                placeholder="Select destination above"
+                readOnly
+                className="mt-1 block w-full border border-ui-border rounded-md shadow-sm py-2 px-3 bg-ui-bg-alt text-ui-text-main font-bold opacity-70"
                 required
               />
             </div>
@@ -176,7 +189,7 @@ const CreateTripPage = () => {
                 id="region"
                 value={tripData.region}
                 onChange={handleChange}
-                className="mt-1 block w-full border border-ui-border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-brand focus:border-brand bg-ui-bg-alt text-ui-text-main"
+                className="mt-1 block w-full border border-ui-border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-brand focus:border-brand bg-ui-bg-alt text-ui-text-main font-bold"
                 required
               >
                 {regions.map(reg => (

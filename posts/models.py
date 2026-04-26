@@ -123,6 +123,13 @@ class Trip(models.Model):
         ('Food', 'Food'),
         ('Nature', 'Nature'),
         ('Business', 'Business'),
+        ('Shopping', 'Shopping'),
+        ('Religious', 'Religious'),
+        ('Safari', 'Safari'),
+        ('Coastal', 'Coastal'),
+        ('Luxury', 'Luxury'),
+        ('Wellness', 'Wellness'),
+        ('Sports', 'Sports'),
         ('Other', 'Other'),
     )
     REGION_CHOICES = (
