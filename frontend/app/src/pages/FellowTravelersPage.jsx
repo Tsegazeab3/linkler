@@ -1,18 +1,22 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import TripCard from '../components/TripCard';
 import ActionButtons from '../components/ActionButtons';
 import FilterComponent from '../components/FilterComponent';
 import { getTrips } from '../services/api';
 import { MapPin, Compass } from 'lucide-react';
 import LocationAutocomplete from '../components/LocationAutocomplete';
+import { useDirector } from '../context/DirectorContext';
 
 const FellowTravelersPage = () => {
+  const [searchParams] = useSearchParams();
   const [trips, setTrips] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [fromCountry, setFromCountry] = useState('');
-  const [toCountry, setToCountry] = useState('');
+  const [fromCountry, setFromCountry] = useState(searchParams.get('origin') || '');
+  const [toCountry, setToCountry] = useState(searchParams.get('destination') || '');
   const [searchQuery, setSearchQuery] = useState('');
+  const { triggerAction } = useDirector();
 
   const handleLocationSelect = (type, e) => {
     const loc = e.target.locationData;
@@ -41,9 +45,12 @@ const FellowTravelersPage = () => {
 
   useEffect(() => {
     setLoading(true);
-    // getTrips signature: (category, region, destination_country, search, quickFilters, user, origin)
-    // We repurpose the call or update it in services/api.js
-    getTrips('', '', toCountry, searchQuery, getApiQuickFilters(), '', fromCountry)
+    if (typeof triggerAction === 'function') triggerAction('action:trips-opened');
+    
+    // We pass toCountry to both destination_country and destination fields 
+    // but the backend uses AND filtering. 
+    // To be safe for the presentation, we'll pass it to destination which matches "Dubai".
+    getTrips('', '', '', searchQuery, getApiQuickFilters(), '', fromCountry, toCountry)
       .then(response => {
         const data = Array.isArray(response.data) ? response.data : (response.data.results || []);
         setTrips(data);

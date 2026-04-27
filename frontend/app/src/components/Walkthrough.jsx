@@ -1,54 +1,11 @@
-import React, { useState, useEffect, useLayoutEffect } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Button } from './ui/button';
+import { useDirector } from '../context/DirectorContext';
 
-const steps = [
-  {
-    targetId: null, // Centered welcome
-    title: 'Welcome to Linkler!',
-    description: 'The social platform for travelers and local guides. Let\'s show you around.',
-    image: '/logo.png'
-  },
-  {
-    targetId: 'walkthrough-home',
-    mobileTargetId: 'walkthrough-home-mobile',
-    title: 'Your Feed',
-    description: 'See the latest posts from travelers and guides around the world.',
-    position: 'right',
-    mobilePosition: 'top'
-  },
-  {
-    targetId: 'walkthrough-search',
-    mobileTargetId: 'walkthrough-search-mobile',
-    title: 'Discover',
-    description: 'Find fellow travelers, groups, and exciting experiences.',
-    position: 'right',
-    mobilePosition: 'bottom'
-  },
-  {
-    targetId: 'walkthrough-plus',
-    mobileTargetId: 'walkthrough-plus-mobile',
-    title: 'Create Content',
-    description: 'Share your own travel stories or create new trips and groups.',
-    position: 'left',
-    mobilePosition: 'top'
-  },
-  {
-    targetId: 'walkthrough-messages',
-    mobileTargetId: 'walkthrough-messages-mobile',
-    title: 'Stay Connected',
-    description: 'Chat with your friends and travel partners in real-time.',
-    position: 'right',
-    mobilePosition: 'top'
-  }
-];
-
-const Walkthrough = ({ onComplete }) => {
-  const [currentStep, setCurrentStep] = useState(0);
+const Walkthrough = () => {
+  const { isActive, currentAction, setSpotlightRect, messages, isWide } = useDirector();
   const [targetRect, setTargetRect] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
-
-  const step = steps[currentStep];
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 1024);
@@ -58,130 +15,138 @@ const Walkthrough = ({ onComplete }) => {
 
   useLayoutEffect(() => {
     const updateRect = () => {
-      const id = isMobile ? (step.mobileTargetId || step.targetId) : step.targetId;
-      if (!id) {
+      if (!isActive || !currentAction?.target) {
         setTargetRect(null);
+        setSpotlightRect(null);
         return;
       }
-      const el = document.getElementById(id);
+      
+      let targetId = currentAction.target;
+      let el = null;
+      if (isMobile) {
+          el = document.getElementById(`${targetId}-mobile`);
+      }
+      if (!el) {
+          el = document.getElementById(targetId) || 
+               document.querySelector(`[id*="${targetId}"]`) || 
+               document.querySelector(`[data-walkthrough="${targetId}"]`);
+      }
+      
       if (el) {
-        setTargetRect(el.getBoundingClientRect());
+        const rect = el.getBoundingClientRect();
+        if (targetId === 'main-feed') {
+           const screenWidth = window.innerWidth;
+           const sideNavWidth = isMobile ? 0 : 80;
+           setTargetRect({
+              left: sideNavWidth + (screenWidth - sideNavWidth) / 4,
+              top: 100,
+              width: (screenWidth - sideNavWidth) / 2,
+              height: window.innerHeight - 200,
+              right: sideNavWidth + (screenWidth - sideNavWidth) * 0.75,
+              bottom: window.innerHeight - 100
+           });
+        } else {
+           setTargetRect(rect);
+        }
+        setSpotlightRect(rect);
+        if (currentAction.zoom) {
+           el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
       } else {
         setTargetRect(null);
+        setSpotlightRect(null);
       }
     };
 
-    const timer = setTimeout(updateRect, 100);
+    const timer = setTimeout(updateRect, 500); 
     window.addEventListener('resize', updateRect);
     window.addEventListener('scroll', updateRect, true);
-    
     return () => {
       clearTimeout(timer);
       window.removeEventListener('resize', updateRect);
       window.removeEventListener('scroll', updateRect, true);
     };
-  }, [currentStep, step.targetId, step.mobileTargetId, isMobile]);
+    }, [isActive, currentAction, isMobile, setSpotlightRect]);
 
-  const handleNext = () => {
-    if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
-    } else {
-      onComplete();
-    }
-  };
+  if (!isActive || isWide || !targetRect) return null;
 
-  const handleSkip = () => {
-    onComplete();
-  };
-
-  // Tooltip position calculation
-  const tooltipStyle = {
-    position: 'fixed',
-    zIndex: 10001,
-  };
-
-  if (!targetRect) {
-    // Center of screen
-    tooltipStyle.left = '50%';
-    tooltipStyle.top = '50%';
-    tooltipStyle.transform = 'translate(-50%, -50%)';
+  const centerY = targetRect.top + (targetRect.height / 2);
+  const isTargetOnLeft = targetRect.left < 250;
+  
+  let mascotX, labelX, arrowRotation;
+  if (isTargetOnLeft) {
+      mascotX = targetRect.right + 20;
+      labelX = mascotX + 110;
+      arrowRotation = 'rotate-180';
   } else {
-    const pos = isMobile ? step.mobilePosition : step.position;
-
-    if (pos === 'right') {
-      tooltipStyle.left = targetRect.right + 20;
-      tooltipStyle.top = Math.max(20, Math.min(window.innerHeight - 200, targetRect.top));
-    } else if (pos === 'left') {
-      tooltipStyle.right = window.innerWidth - targetRect.left + 20;
-      tooltipStyle.top = Math.max(20, Math.min(window.innerHeight - 200, targetRect.top));
-    } else if (pos === 'bottom') {
-      tooltipStyle.left = Math.max(20, Math.min(window.innerWidth - 300, targetRect.left));
-      tooltipStyle.top = targetRect.bottom + 20;
-    } else if (pos === 'top') {
-      tooltipStyle.left = Math.max(20, Math.min(window.innerWidth - 300, targetRect.left));
-      tooltipStyle.bottom = (window.innerHeight - targetRect.top) + 20;
-    }
-    
-    // Safety check for off-screen
-    if (parseInt(tooltipStyle.top) > window.innerHeight - 100) {
-        tooltipStyle.top = window.innerHeight - 250;
-    }
+      mascotX = targetRect.left - 120;
+      labelX = mascotX - 260;
+      arrowRotation = 'rotate-0';
   }
 
-  return createPortal(
-    <div className="fixed inset-0 z-[10000] pointer-events-none">
-      {/* Dark Overlay */}
-      <div 
-        className="absolute inset-0 bg-black/60 pointer-events-auto transition-all duration-300"
-        style={targetRect ? {
-          clipPath: `polygon(
-            0% 0%, 0% 100%, 
-            ${targetRect.left - 5}px 100%, 
-            ${targetRect.left - 5}px ${targetRect.top - 5}px, 
-            ${targetRect.right + 5}px ${targetRect.top - 5}px, 
-            ${targetRect.right + 5}px ${targetRect.bottom + 5}px, 
-            ${targetRect.left - 5}px ${targetRect.bottom + 5}px, 
-            ${targetRect.left - 5}px 100%, 
-            100% 100%, 100% 0%
-          )`
-        } : {}}
-      />
+  if (mascotX < 10) mascotX = 10;
+  if (mascotX > window.innerWidth - 110) mascotX = window.innerWidth - 110;
+  if (labelX < 10) labelX = 10;
+  if (labelX > window.innerWidth - 310) labelX = window.innerWidth - 310;
 
-      {/* Tooltip */}
+  const linklerMessage = messages.filter(m => m.sender === 'linkler').pop()?.text || "";
+
+  return createPortal(
+    <div className="fixed inset-0 z-[10000] pointer-events-none overflow-hidden">
+      {currentAction?.zoom && (
+        <div 
+          className="absolute z-[9999] rounded-xl transition-all duration-700 pointer-events-none scale-110"
+          style={{
+            left: targetRect.left - 10,
+            top: targetRect.top - 10,
+            width: targetRect.width + 20,
+            height: targetRect.height + 20,
+            boxShadow: '0 0 0 9999px rgba(0,0,0,0.7), 0 0 40px var(--color-brand)',
+            border: '4px solid var(--color-brand)'
+          }}
+        />
+      )}
+
+      {currentAction?.zoom && (
+        <div 
+            className={`absolute z-[10002] transition-all duration-700 ${arrowRotation}`}
+            style={{
+                left: isTargetOnLeft ? targetRect.right + 5 : targetRect.left - 45,
+                top: centerY - 20
+            }}
+        >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-brand animate-pulse drop-shadow-[0_0_10px_white]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={4}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+            </svg>
+        </div>
+      )}
+
       <div 
-        className="bg-ui-white p-6 rounded-2xl shadow-2xl w-[280px] lg:w-80 pointer-events-auto animate-in fade-in zoom-in duration-300 border border-ui-border"
-        style={tooltipStyle}
+        className="absolute z-[10002] transition-all duration-700 flex items-center"
+        style={{
+            left: labelX,
+            top: centerY - 40,
+            width: '300px'
+        }}
       >
-        {step.image && (
-          <div className="mb-4 flex justify-center">
-            <img src={step.image} alt="Mascot" className="w-24 h-24 object-contain animate-bounce" />
-          </div>
-        )}
-        <div className="mb-4">
-          <h4 className="text-xl font-bold text-brand mb-1">{step.title}</h4>
-          <p className="text-ui-text-secondary text-sm leading-relaxed">{step.description}</p>
+        <div className="relative bg-white text-ui-text-main p-4 rounded-3xl shadow-2xl border-4 border-brand animate-in fade-in zoom-in duration-500">
+           <p className="text-sm font-black italic uppercase tracking-tighter leading-tight">
+              {linklerMessage}
+           </p>
+           <div className={`absolute top-1/2 -translate-y-1/2 w-6 h-6 bg-white border-brand border-b-4 border-r-4 rotate-45 ${isTargetOnLeft ? '-left-3 border-l-4 border-t-4 border-b-0 border-r-0' : '-right-3'}`} />
         </div>
-        
-        <div className="flex justify-between items-center">
-          <button 
-            onClick={handleSkip}
-            className="text-xs text-ui-muted hover:text-ui-text-main font-bold uppercase tracking-wider transition-colors"
-          >
-            Skip
-          </button>
-          <Button onClick={handleNext} size="sm" className="px-6 font-bold">
-            {currentStep === steps.length - 1 ? 'Finish' : 'Next'}
-          </Button>
-        </div>
-        
-        <div className="mt-6 flex gap-1.5">
-          {steps.map((_, i) => (
-            <div 
-              key={i} 
-              className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${i === currentStep ? 'bg-brand scale-x-110' : 'bg-ui-bg-alt'}`}
-            />
-          ))}
-        </div>
+      </div>
+
+      <div 
+        className="absolute z-[10001] transition-all duration-1000 ease-in-out"
+        style={{
+          left: mascotX,
+          top: centerY - 50,
+          width: '100px',
+          height: '100px'
+        }}
+      >
+        <img src="/logo.png" alt="Mascot" className="w-full h-full object-contain filter drop-shadow-[0_0_20px_white] animate-pulse" />
       </div>
     </div>,
     document.body

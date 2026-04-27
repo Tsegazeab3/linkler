@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { getBookings, createDM } from '../services/api';
+import { getBookings, createDM, updateBookingStatus, reportUser } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useOutletContext, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { 
     Calendar as CalendarIcon, 
     ChevronLeft, 
@@ -15,7 +16,9 @@ import {
     Clock, 
     CheckCircle2,
     XCircle,
-    Loader2
+    Loader2,
+    AlertTriangle,
+    Trash2
 } from "lucide-react";
 import { toast } from 'sonner';
 
@@ -28,6 +31,13 @@ const BookingsPage = () => {
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState(null);
     const [isDetailOpen, setIsDetailOpen] = useState(false);
+    
+    // Reporting state
+    const [isReportOpen, setIsReportOpen] = useState(false);
+    const [reportUserId, setReportUserId] = useState(null);
+    const [reportUsername, setReportUsername] = useState("");
+    const [reportReason, setReportReason] = useState("");
+    const [reporting, setReporting] = useState(false);
 
     const getMediaUrl = (url) => {
         if (!url) return null;
@@ -58,6 +68,40 @@ const BookingsPage = () => {
             if (handleOpenChat) handleOpenChat(res.data, 'dm');
         } catch (err) {
             console.error(err);
+        }
+    };
+
+    const handleCancel = async (bookingId) => {
+        if (!window.confirm("Are you sure you want to cancel this booking?")) return;
+        try {
+            await updateBookingStatus(bookingId, 'cancelled');
+            toast.success("Booking cancelled");
+            fetchBookings();
+        } catch (err) {
+            console.error(err);
+            toast.error("Failed to cancel booking");
+        }
+    };
+
+    const handleReportInit = (providerId, username) => {
+        setReportUserId(providerId);
+        setReportUsername(username);
+        setIsReportOpen(true);
+    };
+
+    const handleReportSubmit = async () => {
+        if (!reportReason.trim()) return toast.error("Please provide a reason");
+        setReporting(true);
+        try {
+            await reportUser(reportUserId, reportReason);
+            toast.success("Report submitted. Thank you.");
+            setIsReportOpen(false);
+            setReportReason("");
+        } catch (err) {
+            console.error(err);
+            toast.error("Failed to submit report");
+        } finally {
+            setReporting(false);
         }
     };
 
@@ -160,7 +204,7 @@ const BookingsPage = () => {
                                             if (expId) {
                                                 navigate(`/app/${type}/${expId}`);
                                             } else {
-                                                navigate(`/app/guides/${booking.provider?.username}`);
+                                                navigate(`/app/guides/${booking.provider_details?.username}`);
                                             }
                                         }}
                                         className="rounded-3xl border border-ui-border shadow-md bg-ui-white overflow-hidden hover:shadow-xl transition-all group cursor-pointer"
@@ -169,10 +213,10 @@ const BookingsPage = () => {
                                             <div className="flex justify-between items-start">
                                                 <div className="flex items-center gap-3">
                                                     <Avatar className="w-10 h-10 border border-ui-border">
-                                                        <AvatarFallback className="bg-brand-light text-brand font-black">{booking.provider?.username?.charAt(0).toUpperCase()}</AvatarFallback>
+                                                        <AvatarFallback className="bg-brand-light text-brand font-black">{booking.provider_details?.username?.charAt(0).toUpperCase()}</AvatarFallback>
                                                     </Avatar>
                                                     <div>
-                                                        <p className="text-xs font-black uppercase tracking-tight text-ui-text-main group-hover:text-brand transition-colors">@{booking.provider?.username}</p>
+                                                        <p className="text-xs font-black uppercase tracking-tight text-ui-text-main group-hover:text-brand transition-colors">@{booking.provider_details?.username}</p>
                                                         <p className="text-[9px] font-bold text-ui-muted uppercase">{booking.experience_details?.title || 'Private Service'}</p>
                                                     </div>
                                                 </div>
@@ -184,19 +228,39 @@ const BookingsPage = () => {
                                                     {booking.status}
                                                 </div>
                                             </div>
-                                            <div className="flex items-center gap-4 pt-4 border-t border-ui-border/50">
+                                            <div className="flex items-center gap-2 pt-4 border-t border-ui-border/50">
                                                 <div className="flex items-center gap-1.5 text-[10px] font-bold text-ui-text-secondary">
                                                     <CalendarIcon className="w-3.5 h-3.5 text-brand" />
                                                     {booking.booking_date}
                                                 </div>
-                                                <Button 
-                                                    variant="ghost" 
-                                                    size="sm" 
-                                                    className="h-8 ml-auto text-[9px] font-black uppercase tracking-widest hover:text-brand"
-                                                    onClick={(e) => { e.stopPropagation(); handleChat(booking.provider.id); }}
-                                                >
-                                                    <MessageCircle className="w-3.5 h-3.5 mr-1.5" /> Chat
-                                                </Button>
+                                                <div className="ml-auto flex gap-2">
+                                                    <Button 
+                                                        variant="ghost" 
+                                                        size="sm" 
+                                                        className="h-8 text-[9px] font-black uppercase tracking-widest hover:text-brand"
+                                                        onClick={(e) => { e.stopPropagation(); handleChat(booking.provider); }}
+                                                    >
+                                                        <MessageCircle className="w-3.5 h-3.5 mr-1.5" /> Chat
+                                                    </Button>
+                                                    {booking.status !== 'cancelled' && (
+                                                        <Button 
+                                                            variant="ghost" 
+                                                            size="sm" 
+                                                            className="h-8 text-[9px] font-black uppercase tracking-widest hover:text-error text-error/60"
+                                                            onClick={(e) => { e.stopPropagation(); handleCancel(booking.id); }}
+                                                        >
+                                                            <Trash2 className="w-3.5 h-3.5 mr-1.5" /> Cancel
+                                                        </Button>
+                                                    )}
+                                                    <Button 
+                                                        variant="ghost" 
+                                                        size="sm" 
+                                                        className="h-8 text-[9px] font-black uppercase tracking-widest hover:text-warning text-warning/60"
+                                                        onClick={(e) => { e.stopPropagation(); handleReportInit(booking.provider, booking.provider_details?.username); }}
+                                                    >
+                                                        <AlertTriangle className="w-3.5 h-3.5 mr-1.5" /> Report
+                                                    </Button>
+                                                </div>
                                             </div>
                                         </div>
                                     </Card>
@@ -218,23 +282,59 @@ const BookingsPage = () => {
                     <div className="space-y-4 mt-4">
                         {selectedDateBookings.length > 0 ? (
                             selectedDateBookings.map(b => (
-                                <div key={b.id} className="p-5 rounded-2xl bg-ui-bg-alt border border-ui-border flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <div className={`w-2 h-2 rounded-full ${b.status === 'confirmed' ? 'bg-success' : 'bg-warning'}`} />
-                                        <div>
-                                            <p className="font-bold text-sm text-ui-text-main">{b.experience_details?.title || 'Service'}</p>
-                                            <p className="text-[10px] text-ui-muted font-black uppercase tracking-widest">with @{b.provider?.username}</p>
+                                <div key={b.id} className="p-5 rounded-3xl bg-ui-bg-alt border border-ui-border space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className={`w-2 h-2 rounded-full ${b.status === 'confirmed' ? 'bg-success' : b.status === 'cancelled' ? 'bg-error' : 'bg-warning'}`} />
+                                            <div>
+                                                <p className="font-bold text-sm text-ui-text-main">{b.experience_details?.title || 'Service'}</p>
+                                                <p className="text-[10px] text-ui-muted font-black uppercase tracking-widest">with @{b.provider_details?.username}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-1">
+                                            <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full" onClick={() => { setIsDetailOpen(false); handleChat(b.provider); }}>
+                                                <MessageCircle className="w-4 h-4 text-brand" />
+                                            </Button>
+                                            {b.status !== 'cancelled' && (
+                                                <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full text-error/60" onClick={() => handleCancel(b.id)}>
+                                                    <Trash2 className="w-4 h-4" />
+                                                </Button>
+                                            )}
+                                            <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full text-warning/60" onClick={() => handleReportInit(b.provider, b.provider_details?.username)}>
+                                                <AlertTriangle className="w-4 h-4" />
+                                            </Button>
                                         </div>
                                     </div>
-                                    <Button size="icon" variant="ghost" onClick={() => { setIsDetailOpen(false); handleChat(b.provider.id); }}>
-                                        <MessageCircle className="w-4 h-4 text-brand" />
-                                    </Button>
                                 </div>
                             ))
                         ) : (
                             <p className="text-center py-8 text-ui-muted font-medium italic text-sm">No activity scheduled for this date.</p>
                         )}
                     </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Report Dialog */}
+            <Dialog open={isReportOpen} onOpenChange={setIsReportOpen}>
+                <DialogContent className="sm:max-w-md rounded-[2.5rem] p-8 border-none bg-ui-white shadow-2xl">
+                    <DialogHeader>
+                        <DialogTitle className="text-2xl font-black italic uppercase tracking-tighter text-error">Report @{reportUsername}</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 mt-4">
+                        <p className="text-sm text-ui-text-secondary font-medium">Please let us know why you are reporting this user. Our team will review your report.</p>
+                        <Textarea 
+                            placeholder="Reason for reporting..." 
+                            className="rounded-2xl border-2 border-ui-border min-h-[120px] focus:border-error transition-colors"
+                            value={reportReason}
+                            onChange={(e) => setReportReason(e.target.value)}
+                        />
+                    </div>
+                    <DialogFooter className="mt-6 flex gap-3">
+                        <Button variant="outline" className="rounded-xl flex-1 font-bold" onClick={() => setIsReportOpen(false)}>Cancel</Button>
+                        <Button variant="destructive" className="rounded-xl flex-1 font-bold bg-error hover:bg-error-hover" onClick={handleReportSubmit} disabled={reporting}>
+                            {reporting ? "Submitting..." : "Submit Report"}
+                        </Button>
+                    </DialogFooter>
                 </DialogContent>
             </Dialog>
         </div>

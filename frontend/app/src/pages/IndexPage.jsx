@@ -41,8 +41,8 @@ const IndexPage = () => {
   }
 
   return (
-    <div className="flex-grow p-2 lg:p-4 overflow-x-hidden" id="main-feed">
-      <div className="max-w-sm mx-auto space-y-4">
+    <div className="flex-grow p-2 lg:p-4 overflow-x-hidden">
+      <div className="max-w-sm mx-auto space-y-4" id="main-feed">
         {posts.length > 0 ? (
           <>
             {posts.map(post => (
@@ -63,6 +63,8 @@ const IndexPage = () => {
                 userProfilePic={post.author?.profile_picture}
                 isFollowing={post.author?.is_following}
                 userBio={post.author?.bio || ''}
+                country={post.country}
+                region={post.region}
               />
             ))}
             

@@ -1,4 +1,4 @@
-import { StrictMode } from 'react';
+import { StrictMode, lazy, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
   BrowserRouter,
@@ -9,35 +9,38 @@ import {
 } from 'react-router-dom';
 import './index.css';
 import App from './App.jsx';
-import LandingPage from './pages/LandingPage.jsx';
-import SignInPage from './pages/SignInPage.jsx';
-import SignUpPage from './pages/SignUpPage.jsx';
-import ProfileCompletionPage from './pages/ProfileCompletionPage.jsx';
-import IndexPage from './pages/IndexPage.jsx';
-import FellowTravelersPage from './pages/FellowTravelersPage.jsx';
-import ExperiencesPage from './pages/ExperiencesPage.jsx';
-import EssentialsPage from './pages/EssentialsPage.jsx';
-import ExperienceDetailPage from './pages/ExperienceDetailPage.jsx';
-import BookingsPage from './pages/BookingsPage.jsx';
-import GuideDetailPage from './pages/GuideDetailPage.jsx';
-import PostDetailPage from './pages/PostDetailPage.jsx';
-import UserProfilePage from './pages/UserProfilePage.jsx';
-import CreateTripPage from './pages/CreateTripPage.jsx';
-import CreateExperiencePage from './pages/CreateExperiencePage.jsx';
-import CreatePromotionPage from './pages/CreatePromotionPage.jsx';
-import PromotionsPage from './pages/PromotionsPage.jsx';
-import PromotionDetailPage from './pages/PromotionDetailPage';
-import GuideDashboardPage from './pages/GuideDashboardPage';
-import CheckoutPage from './pages/CheckoutPage';
-import TravelerOnboardingPage from './pages/TravelerOnboardingPage';
-import GuideVerificationPage from './pages/GuideVerificationPage';
 
-import ChatPage from './pages/ChatPage.jsx';
-import MessagesPage from './pages/MessagesPage.jsx';
-import SettingsPage from './pages/SettingsPage.jsx';
-import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx';
-import ResetPasswordPage from './pages/ResetPasswordPage.jsx';
-import CreatePostModal from './components/CreatePostModal.jsx';
+// Lazy load pages
+const LandingPage = lazy(() => import('./pages/LandingPage.jsx'));
+const SignInPage = lazy(() => import('./pages/SignInPage.jsx'));
+const SignUpPage = lazy(() => import('./pages/SignUpPage.jsx'));
+const ProfileCompletionPage = lazy(() => import('./pages/ProfileCompletionPage.jsx'));
+const IndexPage = lazy(() => import('./pages/IndexPage.jsx'));
+const FellowTravelersPage = lazy(() => import('./pages/FellowTravelersPage.jsx'));
+const ExperiencesPage = lazy(() => import('./pages/ExperiencesPage.jsx'));
+const EssentialsPage = lazy(() => import('./pages/EssentialsPage.jsx'));
+const ExperienceDetailPage = lazy(() => import('./pages/ExperienceDetailPage.jsx'));
+const BookingsPage = lazy(() => import('./pages/BookingsPage.jsx'));
+const GuideDetailPage = lazy(() => import('./pages/GuideDetailPage.jsx'));
+const PostDetailPage = lazy(() => import('./pages/PostDetailPage.jsx'));
+const UserProfilePage = lazy(() => import('./pages/UserProfilePage.jsx'));
+const CreateTripPage = lazy(() => import('./pages/CreateTripPage.jsx'));
+const CreateExperiencePage = lazy(() => import('./pages/CreateExperiencePage.jsx'));
+const CreatePromotionPage = lazy(() => import('./pages/CreatePromotionPage.jsx'));
+const PromotionsPage = lazy(() => import('./pages/PromotionsPage.jsx'));
+const PromotionDetailPage = lazy(() => import('./pages/PromotionDetailPage'));
+const GuideDashboardPage = lazy(() => import('./pages/GuideDashboardPage'));
+const CheckoutPage = lazy(() => import('./pages/CheckoutPage'));
+const TravelerOnboardingPage = lazy(() => import('./pages/TravelerOnboardingPage'));
+const GuideVerificationPage = lazy(() => import('./pages/GuideVerificationPage'));
+
+const ChatPage = lazy(() => import('./pages/ChatPage.jsx'));
+const MessagesPage = lazy(() => import('./pages/MessagesPage.jsx'));
+const SettingsPage = lazy(() => import('./pages/SettingsPage.jsx'));
+const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage.jsx'));
+const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage.jsx'));
+const CreatePostModal = lazy(() => import('./components/CreatePostModal.jsx'));
+
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { DataProvider } from './context/DataContext';
@@ -46,6 +49,12 @@ import AuthGuard from './components/AuthGuard';
 function NotFound() {
   return <h1>404 - Not Found</h1>;
 }
+
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-ui-bg">
+    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-brand"></div>
+  </div>
+);
 
 // Logic to handle the root path based on auth status
 function HomeRedirect() {
@@ -72,7 +81,7 @@ function AppRouter() {
   const background = location.state?.background;
 
   return (
-    <>
+    <Suspense fallback={<PageLoader />}>
       <Routes location={background || location}>
         <Route path="/" element={<HomeRedirect />} />
         <Route path="/signin" element={<SignInPage />} />
@@ -109,15 +118,17 @@ function AppRouter() {
       </Routes>
 
       {background && (
-        <Routes>
-          <Route path="/app/posts/:postId" element={<AuthGuard><PostDetailPage /></AuthGuard>} />
-          <Route path="/create" element={<AuthGuard><CreatePostModal /></AuthGuard>} />
-          <Route path="/create-trip" element={<AuthGuard><CreateTripPage /></AuthGuard>} />
-          <Route path="/create-service" element={<AuthGuard><CreateExperiencePage /></AuthGuard>} />
-          <Route path="/create-promotion" element={<AuthGuard><CreatePromotionPage /></AuthGuard>} />
-        </Routes>
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            <Route path="/app/posts/:postId" element={<AuthGuard><PostDetailPage /></AuthGuard>} />
+            <Route path="/create" element={<AuthGuard><CreatePostModal /></AuthGuard>} />
+            <Route path="/create-trip" element={<AuthGuard><CreateTripPage /></AuthGuard>} />
+            <Route path="/create-service" element={<AuthGuard><CreateExperiencePage /></AuthGuard>} />
+            <Route path="/create-promotion" element={<AuthGuard><CreatePromotionPage /></AuthGuard>} />
+          </Routes>
+        </Suspense>
       )}
-    </>
+    </Suspense>
   );
 }
 

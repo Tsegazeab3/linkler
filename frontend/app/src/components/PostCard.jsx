@@ -6,8 +6,9 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Heart, MessageCircle, Send, Bookmark, Share2 } from "lucide-react";
+import { Heart, MessageCircle, Send, Bookmark, Share2, Compass, MapPin, Tag } from "lucide-react";
 import CommentSection from './CommentSection';
+import { useDirector } from '../context/DirectorContext';
 
 const PostCard = ({
   id,
@@ -25,6 +26,8 @@ const PostCard = ({
   userProfilePic,
   isFollowing: initialIsFollowing,
   userBio,
+  country,
+  region,
 }) => {
   const { user } = useAuth();
   const [isCaptionExpanded, setIsCaptionExpanded] = useState(false);
@@ -40,6 +43,7 @@ const PostCard = ({
   const { handleOpenChat } = useOutletContext();
   const navigate = useNavigate();
   const location = useLocation();
+  const { triggerAction } = useDirector();
 
   const getMediaUrl = (url) => {
     if (!url) return null;
@@ -87,6 +91,9 @@ const PostCard = ({
 
     try {
       const res = await toggleLike(id);
+      if (res.data.is_liked && typeof triggerAction === 'function') {
+          triggerAction('action:post-liked');
+      }
       setLiked(res.data.is_liked);
       setLikes(res.data.likes_count);
     } catch (err) {
@@ -127,6 +134,32 @@ const PostCard = ({
 
   const handleOpenDetail = () => {
     navigate(`/app/posts/${id}`, { state: { background: location } });
+  };
+
+  const handleSearchTrips = (e) => {
+    e.stopPropagation();
+    if (typeof triggerAction === 'function') triggerAction('action:trips-opened');
+    const params = new URLSearchParams();
+    // Pre-filling with specific presentation values
+    params.append('origin', 'Ras Al Khaimah');
+    params.append('destination', 'Dubai');
+    navigate(`/app/travelers?${params.toString()}`);
+  };
+
+  const handleSearchEssentials = (e) => {
+    e.stopPropagation();
+    const params = new URLSearchParams();
+    if (country) params.append('country', country);
+    if (region) params.append('region', region);
+    navigate(`/app/essentials?${params.toString()}`);
+  };
+
+  const handleSearchDeals = (e) => {
+    e.stopPropagation();
+    const params = new URLSearchParams();
+    if (country) params.append('country', country);
+    if (region) params.append('region', region);
+    navigate(`/app/promotions?${params.toString()}`);
   };
 
   // Determine aspect ratio class
@@ -213,7 +246,10 @@ const PostCard = ({
   };
 
   return (
-    <Card className="w-full max-w-sm mx-auto my-4 overflow-hidden border-border/50 shadow-sm hover:shadow-md transition-shadow">
+    <Card 
+      id={liked ? "post-card-liked" : ""}
+      className="w-full max-w-sm mx-auto my-4 overflow-hidden border-border/50 shadow-sm hover:shadow-md transition-shadow"
+    >
       {/* User Info Section */}
       <CardHeader className="flex flex-row items-center p-3 space-y-0">
         <Avatar className="w-10 h-10 mr-3 border border-border cursor-pointer" onClick={() => navigate(`/app/profile/${username}`)}>
@@ -253,8 +289,42 @@ const PostCard = ({
       </CardHeader>
 
       {/* Media Renderer */}
-      <CardContent className="p-0">
+      <CardContent className="p-0 relative group/media">
         {renderMedia()}
+        
+        {/* Floating Explore Buttons */}
+        {(country || region) && (
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex flex-col gap-3 opacity-0 group-hover/media:opacity-100 transition-opacity duration-300 z-10">
+            <Button 
+                id="post-search-trips"
+                variant="secondary" 
+                size="icon" 
+                className="w-10 h-10 rounded-full shadow-xl bg-white/90 backdrop-blur-sm border-brand/20 text-brand hover:bg-brand hover:text-white transition-all scale-90 hover:scale-110"
+                title={`Find travelers in ${country || region}`}
+                onClick={handleSearchTrips}
+            >
+                <Compass className="w-5 h-5" />
+            </Button>
+            <Button 
+                variant="secondary" 
+                size="icon" 
+                className="w-10 h-10 rounded-full shadow-xl bg-white/90 backdrop-blur-sm border-brand/20 text-accent-indigo hover:bg-accent-indigo hover:text-white transition-all scale-90 hover:scale-110"
+                title={`Essential services in ${country || region}`}
+                onClick={handleSearchEssentials}
+            >
+                <MapPin className="w-5 h-5" />
+            </Button>
+            <Button 
+                variant="secondary" 
+                size="icon" 
+                className="w-10 h-10 rounded-full shadow-xl bg-white/90 backdrop-blur-sm border-brand/20 text-success hover:bg-success hover:text-white transition-all scale-90 hover:scale-110"
+                title={`Deals in ${country || region}`}
+                onClick={handleSearchDeals}
+            >
+                <Tag className="w-5 h-5" />
+            </Button>
+          </div>
+        )}
       </CardContent>
 
       {/* Action Bar & Metadata */}

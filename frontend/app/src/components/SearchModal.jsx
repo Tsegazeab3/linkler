@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { searchUsers, followUser, unfollowUser } from '../services/api';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useDirector } from '../context/DirectorContext';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ function SearchModal({ isOpen, onClose }) {
   const debounceTimeout = useRef(null);
   const navigate = useNavigate();
   const { user } = useAuth(); // If we need to see if current user is the one in results
+  const { triggerAction } = useDirector();
 
   useEffect(() => {
     if (isOpen) {
@@ -42,6 +44,7 @@ function SearchModal({ isOpen, onClose }) {
     }
 
     debounceTimeout.current = setTimeout(() => {
+      if (typeof triggerAction === 'function') triggerAction('action:search-clicked');
       searchUsers(query)
         .then(response => {
           const data = Array.isArray(response.data) ? response.data : (response.data.results || []);

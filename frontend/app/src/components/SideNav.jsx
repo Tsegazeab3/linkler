@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useData } from '../context/DataContext';
 import { getNotifications, markNotificationRead } from '../services/api';
+import { useDirector } from '../context/DirectorContext';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -100,32 +101,11 @@ const EmptyState = ({ icon, title, desc, action }) => (
   </div>
 );
 
-const SearchBar = ({ placeholder, className = "", value, onChange }) => (
-  <div className={`relative ${className}`}>
-    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-      <svg className="h-4 w-4 text-ui-muted" viewBox="0 0 20 20" fill="currentColor">
-        <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
-      </svg>
-    </div>
-    <form onSubmit={(e) => e.preventDefault()}>
-      <Input
-        id={`search-${placeholder.replace(/\s+/g, '-').toLowerCase()}`}
-        name="search"
-        type="text"
-        className="pl-9 bg-ui-bg"
-        placeholder={placeholder}
-        value={value}
-        onChange={onChange}
-        autoComplete="off"
-      />
-    </form>
-  </div>
-);
-
 const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClick, onClosePanel, onOpenSearch, selectedUser }) => {
   const { user, logout, isAuthenticated } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { conversations, loadingConversations } = useData();
+  const { triggerAction } = useDirector();
   const location = useLocation();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
@@ -172,20 +152,20 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
   const unreadNotifications = user?.unread_notifications_count || notifications.filter(n => !n.is_read).length;
   
   const navItems = [
-    { id: 1, icon: SvgHome, name: 'Home', type: 'link', href: '/app' },
-    { id: 9, icon: SvgSearch, name: 'Search', type: 'button', onClick: onOpenSearch },
-    { id: 3, icon: SvgChats, name: 'Messages', type: 'panel' },
-    { id: 4, icon: SvgGroups, name: 'Groups', type: 'panel' },
-    { id: 11, icon: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>, name: 'Alerts', type: 'panel' },
-    { id: 13, icon: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>, name: 'My Bookings', type: 'link', href: '/app/bookings' },
+    { id: 1, icon: SvgHome, name: 'Home', type: 'link', href: '/app', walkthroughId: 'walkthrough-home' },
+    { id: 9, icon: SvgSearch, name: 'Search', type: 'button', onClick: onOpenSearch, walkthroughId: 'walkthrough-search' },
+    { id: 3, icon: SvgChats, name: 'Messages', type: 'panel', walkthroughId: 'walkthrough-messages' },
+    { id: 4, icon: SvgGroups, name: 'Groups', type: 'panel', walkthroughId: 'walkthrough-groups' },
+    { id: 11, icon: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>, name: 'Alerts', type: 'panel', walkthroughId: 'walkthrough-alerts' },
+    { id: 13, icon: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>, name: 'My Bookings', type: 'link', href: '/app/bookings', walkthroughId: 'walkthrough-my-bookings' },
     ...(user?.account_type === 'guide' ? [
-        { id: 10, icon: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>, name: 'Dashboard', type: 'link', href: '/app/dashboard' }
+        { id: 10, icon: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>, name: 'Dashboard', type: 'link', href: '/app/dashboard', walkthroughId: 'walkthrough-dashboard' }
     ] : []),
-    { id: 5, icon: SvgFellowTravelers, name: 'Fellow Travelers', type: 'link', href: '/app/travelers' },
-    { id: 6, icon: SvgNewGuides, name: 'Experiences', type: 'link', href: '/app/experiences' },
-    { id: 12, icon: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>, name: 'Essentials', type: 'link', href: '/app/essentials' },
-    { id: 7, icon: SvgPromotions, name: 'Deals', type: 'link', href: '/app/promotions' },
-    { id: 8, icon: SvgSettings, name: 'Settings', type: 'link', href: '/app/settings' },
+    { id: 5, icon: SvgFellowTravelers, name: 'Fellow Travelers', type: 'link', href: '/app/travelers', walkthroughId: 'walkthrough-fellow-travelers' },
+    { id: 6, icon: SvgNewGuides, name: 'Experiences', type: 'link', href: '/app/experiences', walkthroughId: 'walkthrough-experiences' },
+    { id: 12, icon: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>, name: 'Essentials', type: 'link', href: '/app/essentials', walkthroughId: 'walkthrough-essentials' },
+    { id: 7, icon: SvgPromotions, name: 'Deals', type: 'link', href: '/app/promotions', walkthroughId: 'walkthrough-deals' },
+    { id: 8, icon: SvgSettings, name: 'Settings', type: 'link', href: '/app/settings', walkthroughId: 'walkthrough-settings' },
   ];
   
   const selectedNavItem = navItems.find(item => item.id === selectedNavItemId);
@@ -301,12 +281,6 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
       case 'Messages':
         return (
           <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <SearchBar 
-              placeholder="Search messages..." 
-              className="mb-4" 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
             <PreviewList 
               items={filteredDMs} 
               renderItem={conv => <ChatPreview key={conv.id} conversation={conv} onSelect={() => onOpenChat(conv, 'dm')} />} 
@@ -344,12 +318,7 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
         return (
           <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
             <div className="flex gap-2 mb-4">
-                <SearchBar 
-                  placeholder="Search your groups..." 
-                  className="flex-1" 
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
+                <div className="flex-1" />
                 <Button 
                     variant="outline" 
                     size="icon" 
@@ -471,7 +440,7 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
     const Icon = item.icon;
     const content = (
       <>
-        <span className="relative mb-0.5" id={`walkthrough-${item.name.toLowerCase().replace(/\s+/g, '-')}`}>
+        <span className="relative mb-0.5">
           <Icon className="w-7 h-7" />
           {((item.name === 'Messages' || item.name === 'Groups') && totalUnread > 0) && (
             <span className="absolute -top-1 -right-1 flex items-center justify-center h-4 w-4 rounded-full bg-red-500 text-white text-[10px] font-bold border-2 border-[var(--color-linkler-bg)]">
@@ -496,10 +465,14 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
       const isLinkActive = location.pathname === item.href || 
                           (item.href !== '/app' && location.pathname.startsWith(item.href)) ||
                           (item.name === 'Settings' && location.pathname.includes('settings'));
-      const handleClick = item.name === 'Home' ? onClosePanel : null;
+      const handleClick = item.name === 'Home' ? () => {
+          if (onClosePanel) onClosePanel();
+          if (typeof triggerAction === 'function') triggerAction('action:home-clicked');
+      } : null;
       return (
         <Link
           to={item.href}
+          id={item.walkthroughId}
           onClick={handleClick}
           className={`${baseClasses} ${isLinkActive ? activeClasses : inactiveClasses}`}
         >
@@ -511,6 +484,7 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
     if (item.type === 'button' && item.onClick) {
       return (
         <button
+          id={item.walkthroughId}
           onClick={item.onClick}
           className={`${baseClasses} ${inactiveClasses}`}
           aria-label={item.name}
@@ -522,6 +496,7 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
 
     return (
       <button
+        id={item.walkthroughId}
         onClick={() => onPanelItemClick(item.id)}
         className={`${baseClasses} ${selectedNavItemId === item.id && showSidePanel ? activeClasses : inactiveClasses}`}
         aria-label={item.name}

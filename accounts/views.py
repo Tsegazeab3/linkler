@@ -2,12 +2,12 @@ from rest_framework import generics, status, viewsets
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.db.models import Q
-from .models import CustomUser, Follow, Experience, PasswordResetToken, ExperienceReview, ProviderReview, Booking, TravelerProfile, VerificationDocument, Notification, GuideAvailability
+from .models import CustomUser, Follow, Experience, PasswordResetToken, ExperienceReview, ProviderReview, Booking, TravelerProfile, VerificationDocument, Notification, GuideAvailability, Report
 from .serializers import (
     UserSerializer, ExperienceSerializer, 
     PasswordResetRequestSerializer, PasswordResetConfirmSerializer,
     ExperienceReviewSerializer, ProviderReviewSerializer,
-    BookingSerializer, TravelerProfileSerializer, VerificationDocumentSerializer, NotificationSerializer, GuideAvailabilitySerializer
+    BookingSerializer, TravelerProfileSerializer, VerificationDocumentSerializer, NotificationSerializer, GuideAvailabilitySerializer, ReportSerializer
 )
 
 
@@ -531,3 +531,11 @@ class VerificationDocumentUploadView(generics.CreateAPIView):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
         # Note: verification_status remains 'pending' until an admin reviews
+
+class ReportViewSet(viewsets.ModelViewSet):
+    queryset = Report.objects.all()
+    serializer_class = ReportSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(reporter=self.request.user)

@@ -8,7 +8,7 @@ from .views import (
     ExperienceRegionListView, GuideCountryListView, ExperienceDetailView,
     ExperienceReviewViewSet, ProviderReviewViewSet,
     BookingViewSet, GuideDashboardStatsView, GuideAvailabilityView,
-    TravelerOnboardingView, VerificationDocumentUploadView, NotificationViewSet
+    TravelerOnboardingView, VerificationDocumentUploadView, NotificationViewSet, ReportViewSet
 )
 
 router = DefaultRouter()
@@ -16,6 +16,7 @@ router.register('experience-reviews', ExperienceReviewViewSet)
 router.register('provider-reviews', ProviderReviewViewSet)
 router.register('bookings', BookingViewSet)
 router.register('notifications', NotificationViewSet)
+router.register('reports', ReportViewSet)
 
 urlpatterns = [
     path('availability-manage/<str:username>/', GuideAvailabilityView.as_view(), name='guide-availability'),

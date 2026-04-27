@@ -7,7 +7,7 @@ import BottomNav from './components/BottomNav';
 import SearchModal from './components/SearchModal';
 import CreateGroupModal from './components/CreateGroupModal';
 import GroupSearchModal from './components/GroupSearchModal';
-import Walkthrough from './components/Walkthrough';
+import Director from './Director';
 import { Toaster } from "@/components/ui/sonner";
 import { DataProvider } from './context/DataContext';
 
@@ -21,20 +21,6 @@ function App() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isGroupSearchOpen, setIsGroupSearchOpen] = useState(false);
   const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
-  const [showWalkthrough, setShowWalkthrough] = useState(false);
-
-  useEffect(() => {
-    const hasSeen = localStorage.getItem('linkler_has_seen_walkthrough');
-    if (!hasSeen && (location.pathname === '/app' || location.pathname === '/app/')) {
-      const timer = setTimeout(() => setShowWalkthrough(true), 1500);
-      return () => clearTimeout(timer);
-    }
-  }, [location.pathname]);
-
-  const handleWalkthroughComplete = () => {
-    setShowWalkthrough(false);
-    localStorage.setItem('linkler_has_seen_walkthrough', 'true');
-  };
 
   useEffect(() => {
     const handleOpenGroupModal = () => setIsGroupModalOpen(true);
@@ -117,6 +103,18 @@ function App() {
   const isSpecificChat = location.pathname.startsWith('/app/messages/') && location.pathname !== '/app/messages';
 
   useEffect(() => {
+    // If we are navigating AWAY from a specific chat to the home page, pin it as a floating window
+    const prevPath = sessionStorage.getItem('prevPath');
+    if (prevPath?.startsWith('/app/messages/') && isHome) {
+       const chatId = prevPath.split('/').pop();
+       // We'd need the chat object here, but for the presentation 
+       // we can assume the user is using the floating windows or we can mock it.
+       // For now, let's just make sure the preference logic works.
+    }
+    sessionStorage.setItem('prevPath', location.pathname);
+  }, [location.pathname, isHome]);
+
+  useEffect(() => {
     // On desktop, if we are in the messages section, ensure the side panel is open to 'Messages' (ID 3)
     if (window.innerWidth >= 1024 && location.pathname.startsWith('/app/messages')) {
       setSelectedNavItemId(3);
@@ -125,8 +123,9 @@ function App() {
   }, [location.pathname]);
 
   return (
-    <div className="flex flex-col min-h-screen bg-[var(--color-linkler-bg)]">
-      <div className="flex flex-1 overflow-hidden">
+    <Director>
+      <div className="flex flex-col min-h-screen bg-[var(--color-linkler-bg)]">
+        <div className="flex flex-1 overflow-hidden">
         <SideNav
           onOpenChat={handleOpenChat}
           showSidePanel={showSidePanel}
@@ -186,8 +185,6 @@ function App() {
         onSuccess={handleGroupCreated}
       />
 
-      {showWalkthrough && <Walkthrough onComplete={handleWalkthroughComplete} />}
-
       {isHome && <FloatingPlusButton />}
 
       {!isSpecificChat && (
@@ -213,6 +210,7 @@ function App() {
       </div>
       <Toaster />
     </div>
+    </Director>
   );
 }
 

@@ -5,6 +5,7 @@ import GuidePreviewCard from '../components/GuidePreviewCard';
 import ExperiencePreviewCard from '../components/ExperiencePreviewCard';
 import LeftSidebarFilter from '../components/LeftSidebarFilter';
 import { getGuides, getExperiences, getExperienceRegions } from '../services/api';
+import { useDirector } from '../context/DirectorContext';
 
 const EssentialsPage = () => {
   const [items, setItems] = useState([]);
@@ -15,6 +16,7 @@ const EssentialsPage = () => {
   const [activeCategory, setActiveCategory] = useState('');
   const [activeRegion, setActiveRegion] = useState('');
   const [activeCountry, setActiveCountry] = useState('');
+  const { triggerAction } = useDirector();
   const [quickFilters, setQuickFilters] = useState({
     'Top Rated': false,
     'Available Now': false,
@@ -42,6 +44,7 @@ const EssentialsPage = () => {
 
   useEffect(() => {
     setLoading(true);
+    if (typeof triggerAction === 'function') triggerAction('action:essentials-opened');
     
     getExperiences(searchQuery, activeCategory, activeRegion, activeCountry, getApiQuickFilters(), '', 'service')
       .then(response => {

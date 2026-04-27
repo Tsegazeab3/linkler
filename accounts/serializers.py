@@ -1,6 +1,12 @@
 from rest_framework import serializers
 from dj_rest_auth.registration.serializers import RegisterSerializer
-from .models import CustomUser, Experience, ExperienceImage, ExperienceReview, ProviderReview, Booking, TravelerProfile, VerificationDocument, Notification, GuideAvailability
+from .models import CustomUser, Experience, ExperienceImage, ExperienceReview, ProviderReview, Booking, TravelerProfile, VerificationDocument, Notification, GuideAvailability, Report
+
+class ReportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Report
+        fields = '__all__'
+        read_only_fields = ('reporter', 'created_at')
 
 class TravelerProfileSerializer(serializers.ModelSerializer):
     class Meta:

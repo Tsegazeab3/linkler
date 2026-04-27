@@ -1,5 +1,10 @@
 from django.contrib import admin
-from .models import CustomUser, Experience, Booking, Notification, TravelerProfile, VerificationDocument
+from .models import CustomUser, Experience, Booking, Notification, TravelerProfile, VerificationDocument, Report
+
+@admin.register(Report)
+class ReportAdmin(admin.ModelAdmin):
+    list_display = ('reporter', 'reported_user', 'created_at')
+    search_fields = ('reporter__username', 'reported_user__username', 'reason')
 
 @admin.register(CustomUser)
 class CustomUserAdmin(admin.ModelAdmin):

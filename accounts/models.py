@@ -382,5 +382,13 @@ class GuideAvailability(models.Model):
 
     def __str__(self):
         return f"{self.user.username} unavailable on {self.date}"
-        return f"{self.type} for {self.user.username} - {self.title}"
+
+class Report(models.Model):
+    reporter = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='reports_sent')
+    reported_user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='reports_received')
+    reason = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Report by {self.reporter.username} against {self.reported_user.username}"
 

@@ -111,8 +111,8 @@ const buildParams = (params) => {
 // Posts & Trips
 export const getPosts = (url = 'posts/') => api.get(url);
 export const getPost = (postId) => api.get(`posts/${postId}/`);
-export const getTrips = (category = '', region = '', destination_country = '', search = '', quickFilters = {}, user = '', origin = '') => {
-  const params = buildParams({ category, region, destination_country, search, user, origin, ...quickFilters });
+export const getTrips = (category = '', region = '', destination_country = '', search = '', quickFilters = {}, user = '', origin = '', destination = '') => {
+  const params = buildParams({ category, region, destination_country, search, user, origin, destination, ...quickFilters });
   return api.get(`posts/trips/${params}`);
 };
 export const getTripCategories = () => api.get('posts/trips/categories/');
@@ -220,6 +220,7 @@ export const followUser = (username) => api.post(`accounts/${username}/follow/`)
 export const unfollowUser = (username) => api.delete(`accounts/${username}/unfollow/`);
 export const getFollowers = (username) => api.get(`accounts/${username}/followers/`);
 export const getFollowing = (username) => api.get(`accounts/${username}/following/`);
+export const reportUser = (reportedUserId, reason) => api.post('accounts/reports/', { reported_user: reportedUserId, reason });
 
 // Post Interactions
 export const toggleLike = (postId) => api.post(`posts/${postId}/like/`);
