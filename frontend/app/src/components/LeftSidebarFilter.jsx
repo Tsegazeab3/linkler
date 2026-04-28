@@ -37,7 +37,7 @@ const LeftSidebarFilter = ({
 
   return (
     <div className="space-y-6 hidden lg:block">
-      <div className="p-5 rounded-3xl shadow-sm bg-ui-white border border-ui-border">
+      <div id="walkthrough-essentials-categories" className="p-5 rounded-3xl shadow-sm bg-ui-white border border-ui-border">
         <h3 className="text-lg font-bold mb-4 text-ui-text-main">Categories</h3>
         <div className="space-y-1 max-h-60 overflow-y-auto no-scrollbar">
           <button

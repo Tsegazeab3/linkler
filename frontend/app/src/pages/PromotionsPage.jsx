@@ -4,6 +4,7 @@ import PromotionCard from '../components/PromotionCard';
 import PromotionFilter from '../components/PromotionFilter';
 import FilterComponent from '../components/FilterComponent';
 import { getPromotions, getPromotionCategories, getPromotionRegions } from '../services/api';
+import { useDirector } from '../context/DirectorContext';
 
 const PromotionsPage = () => {
     const [promotions, setPromotions] = useState([]);
@@ -11,6 +12,7 @@ const PromotionsPage = () => {
     const [regions, setRegions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
+    const { triggerAction } = useDirector();
     const [activeCategory, setActiveCategory] = useState(''); // Single string
     const [activeRegion, setActiveRegion] = useState(''); // Single string
     const [activeCountry, setActiveCountry] = useState(''); // Single string
@@ -36,7 +38,10 @@ const PromotionsPage = () => {
     useEffect(() => {
         getPromotionCategories().then(res => setCategories(res.data));
         getPromotionRegions().then(res => setRegions(res.data));
-    }, []);
+        setTimeout(() => {
+            if (typeof triggerAction === 'function') triggerAction('action:deals-opened');
+        }, 100);
+    }, [triggerAction]);
 
     useEffect(() => {
         setLoading(true);

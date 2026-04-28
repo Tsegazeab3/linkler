@@ -194,6 +194,7 @@ import sys
 from PIL import Image
 from io import BytesIO
 from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.core.files.base import ContentFile
 
 class ExperienceImage(models.Model):
     experience = models.ForeignKey(Experience, on_delete=models.CASCADE, related_name='images')

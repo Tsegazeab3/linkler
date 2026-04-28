@@ -8,6 +8,7 @@ import { useDirector } from '../context/DirectorContext';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Plus } from "lucide-react";
 import SvgChats from './icons/Chats.jsx';
 import SvgHome from './icons/Home.jsx';
 import SvgSavedGuides from './icons/SavedGuides.jsx';
@@ -318,7 +319,13 @@ const SideNav = ({ onOpenChat, showSidePanel, selectedNavItemId, onPanelItemClic
         return (
           <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
             <div className="flex gap-2 mb-4">
-                <div className="flex-1" />
+                <Button 
+                    id="walkthrough-create-group"
+                    className="flex-1 rounded-xl font-bold bg-brand hover:bg-brand-hover text-white shadow-sm"
+                    onClick={() => window.dispatchEvent(new CustomEvent('open-create-group-modal'))}
+                >
+                    <Plus className="w-4 h-4 mr-2" /> New Group
+                </Button>
                 <Button 
                     variant="outline" 
                     size="icon" 

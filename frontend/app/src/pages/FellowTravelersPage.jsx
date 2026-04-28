@@ -4,7 +4,8 @@ import TripCard from '../components/TripCard';
 import ActionButtons from '../components/ActionButtons';
 import FilterComponent from '../components/FilterComponent';
 import { getTrips } from '../services/api';
-import { MapPin, Compass } from 'lucide-react';
+import { MapPin, Compass, Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import LocationAutocomplete from '../components/LocationAutocomplete';
 import { useDirector } from '../context/DirectorContext';
 
@@ -106,6 +107,17 @@ const FellowTravelersPage = () => {
     <div className="min-h-screen flex items-center justify-center p-4 lg:p-8">
       <div className='items-center flex flex-col w-full max-w-4xl'>
         <div className="w-full mb-8 max-w-2xl mx-auto space-y-4">
+          <div className="flex items-center justify-between mb-2">
+             <h2 className="text-xl font-black italic uppercase tracking-tighter text-ui-text-main">Find Travelers</h2>
+             <Button 
+                id="walkthrough-create-trip"
+                size="sm" 
+                className="rounded-full font-black uppercase tracking-tighter text-[10px] bg-brand hover:bg-brand-hover"
+                onClick={() => navigate('/create-trip', { state: { background: location } })}
+             >
+                <Plus className="w-4 h-4 mr-1" /> Create Trip
+             </Button>
+          </div>
           <div className="flex flex-col sm:flex-row gap-4">
              <div className="flex-1 relative group">
                 <LocationAutocomplete
@@ -145,7 +157,11 @@ const FellowTravelersPage = () => {
         ) : (
           <>
             <div className="w-full">
-               {formattedTrip && <TripCard trip={formattedTrip} isExpanded={isDetailsOpen} />}
+               {formattedTrip && (
+                 <div id="first-trip-card">
+                   <TripCard trip={formattedTrip} isExpanded={isDetailsOpen} />
+                 </div>
+               )}
             </div>
 
             <div className="mt-8 flex flex-col items-center">

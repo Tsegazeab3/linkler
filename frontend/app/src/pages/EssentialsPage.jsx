@@ -1,13 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import FilterComponent from '../components/FilterComponent';
 import GuidePreviewCard from '../components/GuidePreviewCard';
 import ExperiencePreviewCard from '../components/ExperiencePreviewCard';
 import LeftSidebarFilter from '../components/LeftSidebarFilter';
 import { getGuides, getExperiences, getExperienceRegions } from '../services/api';
 import { useDirector } from '../context/DirectorContext';
+import { useAuth } from '../context/AuthContext';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
 
 const EssentialsPage = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [items, setItems] = useState([]);
   const [categories, setCategories] = useState([]);
   const [regions, setRegions] = useState([]);
@@ -44,7 +50,9 @@ const EssentialsPage = () => {
 
   useEffect(() => {
     setLoading(true);
-    if (typeof triggerAction === 'function') triggerAction('action:essentials-opened');
+    setTimeout(() => {
+        if (typeof triggerAction === 'function') triggerAction('action:essentials-opened');
+    }, 100);
     
     getExperiences(searchQuery, activeCategory, activeRegion, activeCountry, getApiQuickFilters(), '', 'service')
       .then(response => {
@@ -61,9 +69,21 @@ const EssentialsPage = () => {
 
   return (
     <div className="min-h-screen p-4 lg:p-8">
-      <header className="mb-10">
-        <h1 className="text-5xl font-black italic uppercase tracking-tighter text-ui-text-main leading-none">Essentials</h1>
-        <p className="text-ui-muted font-black uppercase tracking-[0.3em] text-[10px] mt-3">Logistics, housing, and local support</p>
+      <header className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+            <h1 className="text-5xl font-black italic uppercase tracking-tighter text-ui-text-main leading-none">Essentials</h1>
+            <p className="text-ui-muted font-black uppercase tracking-[0.3em] text-[10px] mt-3">Logistics, housing, and local support</p>
+        </div>
+        {user?.account_type === 'guide' && (
+            <Button 
+                id="walkthrough-create-service"
+                size="sm" 
+                className="rounded-full font-black uppercase tracking-tighter text-[10px] bg-brand hover:bg-brand-hover shadow-lg"
+                onClick={() => navigate('/app/create-service', { state: { background: location } })}
+            >
+                <Plus className="w-4 h-4 mr-1" /> Post Service
+            </Button>
+        )}
       </header>
       
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -88,7 +108,7 @@ const EssentialsPage = () => {
         <div className="lg:col-span-3">
           <div className="flex flex-col space-y-8">
             {/* Top Search Bar */}
-            <div className="relative group max-w-2xl">
+            <div id="essentials-search-area" className="relative group max-w-2xl">
                 <input 
                   type="text" 
                   placeholder="Search housing, transport, or local support..." 

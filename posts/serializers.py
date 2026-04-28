@@ -162,6 +162,8 @@ class TripSerializer(serializers.ModelSerializer):
             'end_date',
             'message',
             'image',
+            'max_travelers',
+            'current_travelers',
             'created_at',
         ]
         read_only_fields = ['user', 'created_at']

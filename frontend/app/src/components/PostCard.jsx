@@ -74,6 +74,7 @@ const PostCard = ({
   const handleChat = async () => {
     try {
       const res = await createDM(userId);
+      if (typeof triggerAction === 'function') triggerAction('action:chat-opened');
       handleOpenChat(res.data, 'dm');
     } catch (err) {
       console.error('Chat error:', err);
@@ -366,8 +367,10 @@ const PostCard = ({
           </Button>
         </div>
 
-        <div className="text-sm font-semibold text-foreground px-0.5">
-          {likes} likes
+        <div className="flex items-center justify-between w-full">
+            <div className="text-sm font-semibold text-foreground px-0.5">
+                {likes} likes
+            </div>
         </div>
 
         {(caption && mediaUrl) && (

@@ -5,6 +5,7 @@ import GuidePreviewCard from '../components/GuidePreviewCard';
 import ExperiencePreviewCard from '../components/ExperiencePreviewCard';
 import LeftSidebarFilter from '../components/LeftSidebarFilter';
 import { getGuides, getExperiences, getExperienceCategories, getExperienceRegions } from '../services/api';
+import { useDirector } from '../context/DirectorContext';
 
 const ExperiencesPage = () => {
   const [items, setItems] = useState([]);
@@ -15,6 +16,7 @@ const ExperiencesPage = () => {
   const [activeCategory, setActiveCategory] = useState('');
   const [activeRegion, setActiveRegion] = useState('');
   const [activeCountry, setActiveCountry] = useState('');
+  const { triggerAction } = useDirector();
   const [quickFilters, setQuickFilters] = useState({
     'Top Rated': false,
     'Available Now': false,
@@ -40,9 +42,13 @@ const ExperiencesPage = () => {
   });
 
   useEffect(() => {
+    setCategories(funCategories);
     getExperienceCategories().then(res => setCategories(res.data));
     getExperienceRegions().then(res => setRegions(res.data));
-  }, []);
+    setTimeout(() => {
+        if (typeof triggerAction === 'function') triggerAction('action:experiences-opened');
+    }, 100);
+  }, [triggerAction]);
 
   useEffect(() => {
     setLoading(true);

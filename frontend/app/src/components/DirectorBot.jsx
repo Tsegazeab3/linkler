@@ -65,13 +65,7 @@ const DirectorBot = () => {
 
   // Pinned to Top Right
   const getPinnedPosition = () => {
-     switch(position) {
-        case 'tr': return 'top-6 right-6 lg:right-12';
-        case 'tl': return 'top-6 left-6 lg:left-24';
-        case 'br': return 'bottom-6 right-6 lg:right-12';
-        case 'bl': return 'bottom-6 left-6 lg:left-24';
-        default: return 'top-6 right-6 lg:right-12';
-     }
+     return 'top-6 right-6 lg:right-12';
   };
 
   const pinnedStyles = `fixed ${getPinnedPosition()} w-80 h-[450px] rounded-3xl`;

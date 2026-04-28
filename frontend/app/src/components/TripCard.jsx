@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { Link, useOutletContext, useNavigate } from 'react-router-dom';
 import { followUser, unfollowUser, createDM } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useDirector } from '../context/DirectorContext';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 
 const LocationPinIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 inline-block mr-1 text-ui-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -24,7 +26,13 @@ const InfoIcon = () => (
 );
 
 const TripCard = ({ trip, isExpanded }) => {
-  const { picture, name, username, bio, from, to, country, region, dates, message, id, user_id, is_following: initialIsFollowing, image: tripImage, category, verification_status } = trip;
+  const { 
+    picture, name, username, bio, from, to, country, region, dates, message, id, user_id, 
+    is_following: initialIsFollowing, image: tripImage, category, verification_status,
+    max_travelers, current_travelers 
+  } = trip;
+  
+  const seatsLeft = (max_travelers || 4) - (current_travelers || 1);
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
@@ -34,6 +42,8 @@ const TripCard = ({ trip, isExpanded }) => {
   const [mobileFocus, setMobileFocus] = useState('none'); // 'image', 'text', or 'none'
 
   const { handleOpenChat } = useOutletContext();
+  const { triggerAction } = useDirector();
+  const [isPending, setIsPending] = useState(false);
 
   const handleFollow = async (e) => {
     e.stopPropagation();
@@ -50,14 +60,10 @@ const TripCard = ({ trip, isExpanded }) => {
     }
   };
 
-  const handleChat = async (e) => {
+  const handleConnectRequest = async (e) => {
     e.stopPropagation();
-    try {
-      const res = await createDM(user_id);
-      handleOpenChat(res.data, 'dm');
-    } catch (err) {
-      console.error('Chat error:', err);
-    }
+    setIsPending(true);
+    if (typeof triggerAction === 'function') triggerAction('action:connect-requested');
   };
 
   const getMediaUrl = (url) => {
@@ -132,20 +138,16 @@ const TripCard = ({ trip, isExpanded }) => {
           )}
           
           {/* Action Overlay */}
-          <div className="absolute top-6 right-6 flex space-x-2 z-20">
+          <div className="absolute top-6 right-6 z-20">
             {user?.id !== user_id && (
-                <>
-                <button onClick={handleChat} className="p-3 bg-ui-white/95 backdrop-blur-md rounded-2xl shadow-xl hover:bg-ui-white transition-all active:scale-90 text-brand">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
-                </button>
-                <button onClick={handleFollow} className={`p-3 bg-ui-white/95 backdrop-blur-md rounded-2xl shadow-xl hover:bg-ui-white transition-all active:scale-90 ${isFollowing ? 'text-ui-muted' : 'text-brand'}`}>
-                    {isFollowing ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor"><path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" /></svg>
-                    ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
-                    )}
-                </button>
-                </>
+                <Button 
+                    id="trip-connect"
+                    onClick={handleConnectRequest}
+                    disabled={isPending}
+                    className={`px-6 py-3 rounded-full font-black uppercase tracking-tighter text-xs shadow-2xl transition-all active:scale-95 border-4 border-white ${isPending ? 'bg-ui-muted text-white cursor-default' : 'bg-brand text-white hover:bg-brand-hover'}`}
+                >
+                    {isPending ? 'Pending' : 'Connect'}
+                </Button>
             )}
           </div>
         </div>
@@ -183,9 +185,14 @@ const TripCard = ({ trip, isExpanded }) => {
               <div className="border-t border-ui-border pt-4 mt-auto flex flex-col gap-4">
                 <div className="flex justify-between items-center">
                   <h3 className="font-black text-[9px] uppercase tracking-[0.3em] text-ui-muted">Discovery</h3>
-                  <span className="text-[9px] font-black uppercase tracking-widest bg-brand/10 text-brand px-3 py-1 rounded-full border border-brand/20">
-                    {region} • {country}
-                  </span>
+                  <div className="flex gap-2">
+                    <span id="trip-seats-left" className="text-[9px] font-black uppercase tracking-widest bg-success/10 text-success px-3 py-1 rounded-full border border-success/20 animate-pulse">
+                        {seatsLeft > 0 ? `${seatsLeft} Seats Left` : 'Full'}
+                    </span>
+                    <span className="text-[9px] font-black uppercase tracking-widest bg-brand/10 text-brand px-3 py-1 rounded-full border border-brand/20">
+                        {region} • {country}
+                    </span>
+                  </div>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-3">
@@ -241,10 +248,7 @@ const TripCard = ({ trip, isExpanded }) => {
                           {bio || "Passionate traveler exploring the hidden gems of the world. Always looking for new adventures and cultural experiences."}
                       </p>
 
-                      <div className="flex gap-4">
-                          <button onClick={handleChat} className="px-10 py-4 bg-brand text-white rounded-[2rem] font-bold shadow-2xl shadow-brand/30 hover:bg-brand-hover transition-all active:scale-95 text-xs uppercase tracking-widest">Send Message</button>
-                          <button onClick={handleFollow} className={`px-10 py-4 rounded-[2rem] font-bold border-2 transition-all active:scale-95 text-xs uppercase tracking-widest ${isFollowing ? 'border-ui-border text-ui-muted' : 'border-brand text-brand hover:bg-brand/5'}`}>{isFollowing ? 'Following' : 'Follow Explorer'}</button>
-                      </div>
+                      {/* Unified Connect Button is already in the Action Overlay above */}
                   </div>
               </div>
 
@@ -309,12 +313,7 @@ const TripCard = ({ trip, isExpanded }) => {
                   </div>
                   
                   <div className="pb-6">
-                    <button 
-                        onClick={() => navigate(`/app/profile/${username}`)}
-                        className="w-full py-5 border-2 border-dashed border-ui-border rounded-[2.5rem] text-[10px] font-black uppercase tracking-[0.4em] text-ui-muted hover:border-brand/40 hover:text-brand transition-all active:scale-[0.98]"
-                    >
-                        Explore Full Profile History
-                    </button>
+                    {/* Simplified view for presentation */}
                   </div>
               </div>
             </div>

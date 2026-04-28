@@ -156,6 +156,8 @@ class Trip(models.Model):
     end_date = models.DateField()
     message = models.TextField()
     image = models.ImageField(upload_to='trip_images/', null=True, blank=True)
+    max_travelers = models.PositiveIntegerField(default=4, help_text="Maximum number of people for this trip")
+    current_travelers = models.PositiveIntegerField(default=1, help_text="Current number of people joined")
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
