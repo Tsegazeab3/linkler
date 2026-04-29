@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import FilterComponent from '../components/FilterComponent';
 import GuidePreviewCard from '../components/GuidePreviewCard';
 import ExperiencePreviewCard from '../components/ExperiencePreviewCard';
@@ -8,6 +9,7 @@ import { getGuides, getExperiences, getExperienceCategories, getExperienceRegion
 import { useDirector } from '../context/DirectorContext';
 
 const ExperiencesPage = () => {
+  const [searchParams] = useSearchParams();
   const [items, setItems] = useState([]);
   const [categories, setCategories] = useState([]);
   const [regions, setRegions] = useState([]);
@@ -15,7 +17,7 @@ const ExperiencesPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('');
   const [activeRegion, setActiveRegion] = useState('');
-  const [activeCountry, setActiveCountry] = useState('');
+  const [activeCountry, setActiveCountry] = useState(searchParams.get('destination') || '');
   const { triggerAction } = useDirector();
   const [quickFilters, setQuickFilters] = useState({
     'Top Rated': false,

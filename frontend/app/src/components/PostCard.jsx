@@ -149,17 +149,21 @@ const PostCard = ({
 
   const handleSearchEssentials = (e) => {
     e.stopPropagation();
+    if (typeof triggerAction === 'function') triggerAction('action:essentials-opened');
     const params = new URLSearchParams();
-    if (country) params.append('country', country);
-    if (region) params.append('region', region);
+    // Pre-filling with specific presentation values
+    params.append('origin', 'Ras Al Khaimah');
+    params.append('destination', 'Dubai');
     navigate(`/app/essentials?${params.toString()}`);
   };
 
   const handleSearchDeals = (e) => {
     e.stopPropagation();
+    if (typeof triggerAction === 'function') triggerAction('action:deals-opened');
     const params = new URLSearchParams();
-    if (country) params.append('country', country);
-    if (region) params.append('region', region);
+    // Pre-filling with specific presentation values
+    params.append('origin', 'Ras Al Khaimah');
+    params.append('destination', 'Dubai');
     navigate(`/app/promotions?${params.toString()}`);
   };
 
@@ -169,7 +173,7 @@ const PostCard = ({
   const renderMedia = () => {
     if (images && images.length > 0) {
       return (
-        <div className={`grid gap-0.5 w-full ${aspectRatioClass} cursor-zoom-in`} onClick={handleOpenDetail}>
+        <div className={`grid gap-0.5 w-full ${aspectRatioClass} cursor-pointer`} onClick={handleOpenDetail}>
           {images.length === 1 ? (
             <img src={getMediaUrl(images[0].image)} className="w-full h-full object-cover" loading="lazy" alt="" />
           ) : images.length === 2 ? (
@@ -204,7 +208,7 @@ const PostCard = ({
 
     if (mediaUrl) {
       return (
-        <div className={`relative w-full bg-muted ${aspectRatioClass} cursor-zoom-in`} onClick={handleOpenDetail}>
+        <div className={`relative w-full bg-muted ${aspectRatioClass} cursor-pointer`} onClick={handleOpenDetail}>
            {mediaType === 'image' && (
               <img
                 src={getMediaUrl(mediaUrl)}
@@ -227,7 +231,7 @@ const PostCard = ({
     if (caption) {
         /* Text-only Post Style */
         return (
-          <div className={`relative w-full bg-gradient-to-br from-brand-light to-accent-indigo/10 ${aspectRatioClass} cursor-zoom-in`} onClick={handleOpenDetail}>
+          <div className={`relative w-full bg-gradient-to-br from-brand-light to-accent-indigo/10 ${aspectRatioClass} cursor-pointer`} onClick={handleOpenDetail}>
             <div className="absolute inset-0 flex items-center justify-center p-8">
                <p className="text-lg md:text-xl text-ui-text-main font-medium italic text-center leading-relaxed">
                  {caption}
@@ -247,156 +251,155 @@ const PostCard = ({
   };
 
   return (
-    <Card 
-      id={liked ? "post-card-liked" : ""}
-      className="w-full max-w-sm mx-auto my-4 overflow-hidden border-border/50 shadow-sm hover:shadow-md transition-shadow"
-    >
-      {/* User Info Section */}
-      <CardHeader className="flex flex-row items-center p-3 space-y-0">
-        <Avatar className="w-10 h-10 mr-3 border border-border cursor-pointer" onClick={() => navigate(`/app/profile/${username}`)}>
-          <AvatarImage src={getMediaUrl(userProfilePic)} alt={`${username}'s profile`} className="object-cover" />
-          <AvatarFallback>{username?.charAt(0).toUpperCase()}</AvatarFallback>
-        </Avatar>
-          <div className="flex-grow min-w-0">
-          <div className="font-semibold text-sm md:text-base truncate leading-tight cursor-pointer" onClick={() => navigate(`/app/profile/${username}`)}>{username}</div>
-          {userBio && (
-            <p className="text-muted-foreground truncate text-xs mt-0.5 cursor-pointer" onClick={() => navigate(`/app/profile/${username}`)}>
-              {userBio}
-            </p>
-          )}
-        </div>
-        <div className="flex items-center space-x-2 ml-2 flex-shrink-0">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleChat}
-            className="h-8 w-8 rounded-full text-muted-foreground hover:text-primary transition-colors"
-            title="Start Chat"
-          >
-            <MessageCircle className="h-5 w-5" />
-          </Button>
-          {user?.id !== userId && (
-            <Button
-              variant={isFollowing ? "secondary" : "default"}
-              size="sm"
-              onClick={handleFollow}
-              disabled={followLoading}
-              className="h-8 text-xs font-bold rounded-full px-4 transition-all"
-            >
-              {isFollowing ? 'Following' : 'Follow'}
-            </Button>
-          )}
-        </div>
-      </CardHeader>
-
-      {/* Media Renderer */}
-      <CardContent className="p-0 relative group/media">
-        {renderMedia()}
-        
-        {/* Floating Explore Buttons */}
-        {(country || region) && (
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex flex-col gap-3 opacity-0 group-hover/media:opacity-100 transition-opacity duration-300 z-10">
-            <Button 
-                id="post-search-trips"
-                variant="secondary" 
-                size="icon" 
-                className="w-10 h-10 rounded-full shadow-xl bg-white/90 backdrop-blur-sm border-brand/20 text-brand hover:bg-brand hover:text-white transition-all scale-90 hover:scale-110"
-                title={`Find travelers in ${country || region}`}
-                onClick={handleSearchTrips}
-            >
-                <Compass className="w-5 h-5" />
-            </Button>
-            <Button 
-                variant="secondary" 
-                size="icon" 
-                className="w-10 h-10 rounded-full shadow-xl bg-white/90 backdrop-blur-sm border-brand/20 text-accent-indigo hover:bg-accent-indigo hover:text-white transition-all scale-90 hover:scale-110"
-                title={`Essential services in ${country || region}`}
-                onClick={handleSearchEssentials}
-            >
-                <MapPin className="w-5 h-5" />
-            </Button>
-            <Button 
-                variant="secondary" 
-                size="icon" 
-                className="w-10 h-10 rounded-full shadow-xl bg-white/90 backdrop-blur-sm border-brand/20 text-success hover:bg-success hover:text-white transition-all scale-90 hover:scale-110"
-                title={`Deals in ${country || region}`}
-                onClick={handleSearchDeals}
-            >
-                <Tag className="w-5 h-5" />
-            </Button>
-          </div>
-        )}
-      </CardContent>
-
-      {/* Action Bar & Metadata */}
-      <CardFooter className="flex flex-col items-start p-4 pt-2 gap-2">
-        <div className="flex items-center justify-between w-full">
-          <div className="flex space-x-1 -ml-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              className={`rounded-full transition-colors ${liked ? 'text-like hover:text-error-hover hover:bg-error-light' : 'text-muted-foreground hover:text-like'}`}
-              onClick={handleLike}
-            >
-              <Heart className={`w-6 h-6 ${liked ? 'fill-current' : ''}`} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className={`rounded-full transition-colors ${showComments ? 'text-comment bg-brand-light' : 'text-muted-foreground hover:text-comment hover:bg-brand-light'}`}
-              onClick={handleComment}
-            >
-              <MessageCircle className="w-6 h-6" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className={`rounded-full text-muted-foreground hover:text-accent-indigo hover:bg-accent-indigo/10 transition-colors`}
-              onClick={handleShare}
-            >
-              <Share2 className="w-6 h-6" />
-            </Button>
-          </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className={`rounded-full -mr-2 transition-colors ${saved ? 'text-save hover:text-success-hover hover:bg-success-light' : 'text-muted-foreground hover:text-save'}`}
-            onClick={handleSave}
-          >
-            <Bookmark className={`w-6 h-6 ${saved ? 'fill-current' : ''}`} />
-          </Button>
-        </div>
-
-        <div className="flex items-center justify-between w-full">
-            <div className="text-sm font-semibold text-foreground px-0.5">
-                {likes} likes
-            </div>
-        </div>
-
-        {(caption && mediaUrl) && (
-          <div className="text-sm text-foreground/90 w-full px-0.5 mb-1">
-            <p className={isCaptionExpanded ? '' : 'line-clamp-2'}>
-              <span className="font-bold mr-1.5 hover:underline cursor-pointer" onClick={() => navigate(`/app/profile/${username}`)}>{username}</span>
-              {caption}
-            </p>
-            {caption.length > 80 && (
-              <button
-                onClick={() => setIsCaptionExpanded(!isCaptionExpanded)}
-                className="text-primary hover:text-primary/80 text-xs mt-1 font-bold transition-colors"
-              >
-                {isCaptionExpanded ? 'Show less' : 'Read more'}
-              </button>
+    <div className="relative w-full max-w-sm mx-auto my-4 group/postcard">
+      <Card className="w-full overflow-hidden border-border/50 shadow-sm hover:shadow-md transition-shadow">
+        {/* User Info Section */}
+        <CardHeader className="flex flex-row items-center p-3 space-y-0">
+          <Avatar className="w-10 h-10 mr-3 border border-border cursor-pointer" onClick={() => navigate(`/app/profile/${username}`)}>
+            <AvatarImage src={getMediaUrl(userProfilePic)} alt={`${username}'s profile`} className="object-cover" />
+            <AvatarFallback>{username?.charAt(0).toUpperCase()}</AvatarFallback>
+          </Avatar>
+            <div className="flex-grow min-w-0">
+            <div className="font-semibold text-sm md:text-base truncate leading-tight cursor-pointer" onClick={() => navigate(`/app/profile/${username}`)}>{username}</div>
+            {userBio && (
+              <p className="text-muted-foreground truncate text-xs mt-0.5 cursor-pointer" onClick={() => navigate(`/app/profile/${username}`)}>
+                {userBio}
+              </p>
             )}
           </div>
-        )}
+          <div className="flex items-center space-x-2 ml-2 flex-shrink-0">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleChat}
+              className="h-8 w-8 rounded-full text-muted-foreground hover:text-primary transition-colors"
+              title="Start Chat"
+            >
+              <MessageCircle className="h-5 w-5" />
+            </Button>
+            {user?.id !== userId && (
+              <Button
+                variant={isFollowing ? "secondary" : "default"}
+                size="sm"
+                onClick={handleFollow}
+                disabled={followLoading}
+                className="h-8 text-xs font-bold rounded-full px-4 transition-all"
+              >
+                {isFollowing ? 'Following' : 'Follow'}
+              </Button>
+            )}
+          </div>
+        </CardHeader>
 
-        {showComments && <CommentSection postId={id} />}
+        {/* Media Renderer */}
+        <CardContent className="p-0 relative group/media flex">
+          {renderMedia()}
+        </CardContent>
 
-        <div className="text-[11px] text-muted-foreground mt-1 tracking-wide uppercase px-0.5">
-          {timestamp}
+        {/* Action Bar & Metadata */}
+        <CardFooter className="flex flex-col items-start p-4 pt-2 gap-2">
+          <div className="flex items-center justify-between w-full">
+            <div className="flex space-x-1 -ml-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                className={`rounded-full transition-colors ${liked ? 'text-like hover:text-error-hover hover:bg-error-light' : 'text-muted-foreground hover:text-like'}`}
+                onClick={handleLike}
+              >
+                <Heart className={`w-6 h-6 ${liked ? 'fill-current' : ''}`} />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={`rounded-full transition-colors ${showComments ? 'text-comment bg-brand-light' : 'text-muted-foreground hover:text-comment hover:bg-brand-light'}`}
+                onClick={handleComment}
+              >
+                <MessageCircle className="w-6 h-6" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={`rounded-full text-muted-foreground hover:text-accent-indigo hover:bg-accent-indigo/10 transition-colors`}
+                onClick={handleShare}
+              >
+                <Share2 className="w-6 h-6" />
+              </Button>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              className={`rounded-full -mr-2 transition-colors ${saved ? 'text-save hover:text-success-hover hover:bg-success-light' : 'text-muted-foreground hover:text-save'}`}
+              onClick={handleSave}
+            >
+              <Bookmark className={`w-6 h-6 ${saved ? 'fill-current' : ''}`} />
+            </Button>
+          </div>
+
+          <div className="flex items-center justify-between w-full">
+              <div className="text-sm font-semibold text-foreground px-0.5">
+                  {likes} likes
+              </div>
+          </div>
+
+          {(caption && mediaUrl) && (
+            <div className="text-sm text-foreground/90 w-full px-0.5 mb-1">
+              <p className={isCaptionExpanded ? '' : 'line-clamp-2'}>
+                <span className="font-bold mr-1.5 hover:underline cursor-pointer" onClick={() => navigate(`/app/profile/${username}`)}>{username}</span>
+                {caption}
+              </p>
+              {caption.length > 80 && (
+                <button
+                  onClick={() => setIsCaptionExpanded(!isCaptionExpanded)}
+                  className="text-primary hover:text-primary/80 text-xs mt-1 font-bold transition-colors"
+                >
+                  {isCaptionExpanded ? 'Show less' : 'Read more'}
+                </button>
+              )}
+            </div>
+          )}
+
+          {showComments && <CommentSection postId={id} />}
+
+          <div className="text-[11px] text-muted-foreground mt-1 tracking-wide uppercase px-0.5">
+            {timestamp}
+          </div>
+        </CardFooter>
+      </Card>
+
+      {/* Explore Meta-Data Buttons - Vertical on the right, outside the post */}
+      {(country || region) && (
+        <div className="absolute -right-14 top-1/2 -translate-y-1/2 flex flex-col gap-4 z-10 pointer-events-auto">
+          <Button 
+              id={liked ? "post-search-trips" : undefined}
+              variant="secondary" 
+              size="icon" 
+              className="w-12 h-12 rounded-full shadow-xl bg-white border-2 border-brand/20 text-brand hover:bg-brand hover:text-white transition-all hover:scale-110"
+              title={`Find travelers in ${country || region}`}
+              onClick={handleSearchTrips}
+          >
+              <Compass className="w-6 h-6" />
+          </Button>
+          <Button 
+              variant="secondary" 
+              size="icon" 
+              className="w-12 h-12 rounded-full shadow-xl bg-white border-2 border-accent-indigo/20 text-accent-indigo hover:bg-accent-indigo hover:text-white transition-all hover:scale-110"
+              title={`Essential services in ${country || region}`}
+              onClick={handleSearchEssentials}
+          >
+              <MapPin className="w-6 h-6" />
+          </Button>
+          <Button 
+              variant="secondary" 
+              size="icon" 
+              className="w-12 h-12 rounded-full shadow-xl bg-white border-2 border-success/20 text-success hover:bg-success hover:text-white transition-all hover:scale-110"
+              title={`Deals in ${country || region}`}
+              onClick={handleSearchDeals}
+          >
+              <Tag className="w-6 h-6" />
+          </Button>
         </div>
-      </CardFooter>
-    </Card>
+      )}
+    </div>
   );
 };
 

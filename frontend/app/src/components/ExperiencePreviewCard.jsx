@@ -35,6 +35,7 @@ const ExperiencePreviewCard = ({ experience }) => {
 
   return (
     <Card 
+        id={user_username === 'dubai_expert_guide' ? 'walkthrough-hassan-card' : undefined}
         onClick={handleCardClick}
         className="rounded-[20px] overflow-hidden group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border-ui-border/50 cursor-pointer"
     >

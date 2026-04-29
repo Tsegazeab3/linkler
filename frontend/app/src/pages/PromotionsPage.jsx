@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import PromotionCard from '../components/PromotionCard';
 import PromotionFilter from '../components/PromotionFilter';
 import FilterComponent from '../components/FilterComponent';
@@ -7,6 +8,7 @@ import { getPromotions, getPromotionCategories, getPromotionRegions } from '../s
 import { useDirector } from '../context/DirectorContext';
 
 const PromotionsPage = () => {
+    const [searchParams] = useSearchParams();
     const [promotions, setPromotions] = useState([]);
     const [categories, setCategories] = useState([]);
     const [regions, setRegions] = useState([]);
@@ -15,7 +17,7 @@ const PromotionsPage = () => {
     const { triggerAction } = useDirector();
     const [activeCategory, setActiveCategory] = useState(''); // Single string
     const [activeRegion, setActiveRegion] = useState(''); // Single string
-    const [activeCountry, setActiveCountry] = useState(''); // Single string
+    const [activeCountry, setActiveCountry] = useState(searchParams.get('destination') || ''); // Single string
     const [quickFilters, setQuickFilters] = useState({
         'Top Rated': false,
         'Available Now': false,

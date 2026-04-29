@@ -111,7 +111,7 @@ const TripCard = ({ trip, isExpanded }) => {
             <img
                 src={getMediaUrl(tripImage)}
                 alt={`${name}'s trip`}
-                className="w-full h-full object-cover md:cursor-zoom-in"
+                className="w-full h-full object-cover cursor-pointer"
                 onClick={(e) => {
                     if (window.innerWidth >= 768 && !isExpanded) {
                         setIsZoomed(true);
@@ -122,7 +122,7 @@ const TripCard = ({ trip, isExpanded }) => {
             <img
                 src={getMediaUrl(picture)}
                 alt={`${name}'s profile`}
-                className="w-full h-full object-cover md:cursor-zoom-in"
+                className="w-full h-full object-cover cursor-pointer"
                 onClick={(e) => {
                     if (window.innerWidth >= 768 && !isExpanded) {
                         setIsZoomed(true);
@@ -301,9 +301,14 @@ const TripCard = ({ trip, isExpanded }) => {
                   <div>
                       <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-ui-muted mb-8">Shared Moments</h4>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                          {[1, 2, 3, 4].map(i => (
+                          {[
+                              "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=400",
+                              "https://images.unsplash.com/photo-1518684079-3c830dcef090?w=400",
+                              "https://images.unsplash.com/photo-1526495124232-a02eebba821b?w=400",
+                              "https://images.unsplash.com/photo-1582719471384-894fbb16e074?w=400"
+                          ].map((url, i) => (
                               <div key={i} className="aspect-square rounded-[2rem] bg-ui-bg-alt overflow-hidden group/item relative cursor-pointer shadow-xl border border-ui-border/50">
-                                  <img src={`https://images.unsplash.com/photo-${1500000000000 + i*9000}?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80`} className="w-full h-full object-cover transition-transform duration-700 group-hover/item:scale-110" alt="" />
+                                  <img src={url} className="w-full h-full object-cover transition-transform duration-700 group-hover/item:scale-110" alt="" />
                                   <div className="absolute inset-0 bg-brand/20 opacity-0 group-hover/item:opacity-100 transition-opacity flex items-center justify-center">
                                       <svg className="w-8 h-8 text-white fill-current" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
                                   </div>

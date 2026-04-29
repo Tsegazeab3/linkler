@@ -180,15 +180,12 @@ function App() {
       <GroupSearchModal isOpen={isGroupSearchOpen} onClose={() => setIsGroupSearchOpen(false)} />
       
       <CreateGroupModal 
-        isOpen={isGroupModalOpen} 
-        onClose={() => setIsGroupModalOpen(false)} 
-        onSuccess={handleGroupCreated}
+          isOpen={isGroupModalOpen} 
+          onClose={() => setIsGroupModalOpen(false)} 
+          onSuccess={handleGroupCreated}
       />
 
-      {isHome && <FloatingPlusButton />}
-
-      {!isSpecificChat && (
-        <BottomNav
+      {!isSpecificChat && (        <BottomNav
           onPanelItemClick={handlePanelItemClick}
           selectedNavItemId={selectedNavItemId}
           showSidePanel={showSidePanel}

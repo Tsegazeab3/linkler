@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { useDirector } from '../context/DirectorContext';
 
 const Walkthrough = () => {
-  const { isActive, currentAction, setSpotlightRect, messages, isWide } = useDirector();
+  const { isActive, currentAction, setSpotlightRect, messages, isWide, currentStep } = useDirector();
   const [targetRect, setTargetRect] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
 
@@ -58,7 +58,7 @@ const Walkthrough = () => {
       }
     };
 
-    const timer = setTimeout(updateRect, 500); 
+    const timer = setTimeout(updateRect, 100); 
     window.addEventListener('resize', updateRect);
     window.addEventListener('scroll', updateRect, true);
     return () => {
@@ -89,7 +89,7 @@ const Walkthrough = () => {
   if (labelX < 10) labelX = 10;
   if (labelX > window.innerWidth - 310) labelX = window.innerWidth - 310;
 
-  const linklerMessage = messages.filter(m => m.sender === 'linkler').pop()?.text || "";
+  const linklerMessage = currentStep?.linkler || "";
 
   return createPortal(
     <div className="fixed inset-0 z-[10000] pointer-events-none overflow-hidden">

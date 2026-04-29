@@ -12,10 +12,12 @@ import {
     ChevronLeft,
     CheckCircle2
 } from "lucide-react";
+import { useDirector } from '../context/DirectorContext';
 
 const CheckoutPage = () => {
     const location = useLocation();
     const navigate = useNavigate();
+    const { triggerAction } = useDirector();
     const { provider, experience, date } = location.state || {};
     const [loading, setLoading] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
@@ -43,6 +45,7 @@ const CheckoutPage = () => {
                 currency: experience?.currency || 'USD',
                 status: 'pending'
             });
+            if (typeof triggerAction === 'function') triggerAction('action:booking-sent');
             setIsSuccess(true);
             toast.success("Booking request placed!");
         } catch (err) {

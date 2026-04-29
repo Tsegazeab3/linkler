@@ -109,7 +109,9 @@ const SettingsPage = () => {
       setProfileImage(null); // Clear pending upload
     } catch (err) {
       console.error(err);
-      setMessage({ type: 'error', text: err.response?.data?.detail || 'Failed to update profile.' });
+      const errData = err.response?.data;
+      const errMsg = errData ? (typeof errData === 'object' ? JSON.stringify(errData) : errData) : 'Failed to update profile.';
+      setMessage({ type: 'error', text: errMsg });
     } finally {
       setLoading(false);
     }

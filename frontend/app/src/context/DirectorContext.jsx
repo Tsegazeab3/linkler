@@ -1,25 +1,26 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const script = [
   {
     id: 'step-0',
     trigger: null,
-    linkler: "Are you ready to explore?",
+    linkler: "Welcome to your profile, Tsegazeab! Ready to start your next big adventure?",
     nextUser: "know where",
-    action: { type: 'spotlight', target: 'main-feed', zoom: false }
+    action: { type: 'spotlight', target: null, zoom: false }
   },
   {
     id: 'step-1',
     trigger: "know where",
-    linkler: "I got you. Just press the home button.",
+    linkler: "I've got just the thing. Let's head over to your main feed for some inspiration.",
     nextUser: "(Press the Home button)",
     action: { type: 'spotlight', target: 'walkthrough-home', zoom: true }
   },
   {
     id: 'step-2',
     trigger: "action:home-clicked",
-    linkler: "Here is your feed. You can explore different places and see what others are up to.",
-    nextUser: "(Like a post about a country)",
+    linkler: "Here is your feed. Dubai? Great choice. It's beautiful this time of year. Take a look around!",
+    nextUser: "(Like the Dubai post)",
     action: { type: 'spotlight', target: null, zoom: false }
   },
   {
@@ -32,97 +33,106 @@ const script = [
   {
     id: 'step-4',
     trigger: "alone",
-    linkler: "I got you. Just press the compass button on this post.",
+    linkler: "I completely understand. Traveling is always better with company. Let's find you some travel partners heading that way.",
     nextUser: "(Press the Compass button on the post)",
     action: { type: 'spotlight', target: 'post-search-trips', zoom: true }
   },
   {
     id: 'step-5',
     trigger: "action:trips-opened",
-    linkler: "Plenty of travelers! Look at the seats available on these trips.",
+    linkler: "See? Plenty of people looking for companions. You can see how many spots are still available...",
     nextUser: null, 
-    autoNext: 3500,
+    autoNext: 3000,
     action: { type: 'spotlight', target: 'trip-seats-left', zoom: true }
   },
   {
     id: 'step-5-b',
     trigger: "auto",
-    linkler: "You can also post your own trip by pressing this button.",
+    linkler: "...and if you have a plan of your own, you can easily host a trip right here.",
     nextUser: null,
-    autoNext: 3500,
+    autoNext: 3000,
     action: { type: 'spotlight', target: 'walkthrough-create-trip', zoom: true }
   },
   {
     id: 'step-6',
     trigger: "auto",
-    linkler: "If you find what you like, just press Connect to reach out and request to join them.",
+    linkler: "Found a group you like? Just hit Connect to send them a request.",
     nextUser: "(Press the Connect button on a trip)",
     action: { type: 'spotlight', target: 'trip-connect', zoom: true }
   },
   {
     id: 'step-7',
     trigger: "action:connect-requested",
-    linkler: "Perfect! Once you send 'Connect', the owner will see your request. Once they click 'Accept', you're in!",
+    linkler: "Perfect! Your request is sent. Once they accept, you'll be able to chat and plan together. Safety first!",
     nextUser: "dubai",
     action: { type: 'spotlight', target: null, zoom: false }
   },
   {
     id: 'step-8',
     trigger: "dubai",
-    linkler: "Don't worry about it I got you. You can find essential services right here.",
+    linkler: "Dubai is incredible, but it's good to be prepared. Let's look at some essentials like housing and local rules.",
     nextUser: "(Press the Essentials button)",
     action: { type: 'spotlight', target: 'walkthrough-essentials', zoom: true }
   },
   {
     id: 'step-9',
     trigger: "action:essentials-opened",
-    linkler: "These are the filters. Whether you need transportation, housing, or local support, we have you covered.",
+    linkler: "We've got categories for everything—transport, stays, you name it. Take your pick.",
     nextUser: null,
-    autoNext: 4000,
+    autoNext: 3500,
     action: { type: 'spotlight', target: 'walkthrough-essentials-categories', zoom: true }
   },
   {
     id: 'step-9-b',
     trigger: "auto",
-    linkler: "If you're looking for something specific, you can also use our search bar here.",
+    linkler: "And if you need something really specific, our search is always ready to help.",
     nextUser: null,
-    autoNext: 4000,
+    autoNext: 3500,
     action: { type: 'spotlight', target: 'essentials-search-area', zoom: true }
   },
   {
     id: 'step-9-c',
     trigger: "auto",
-    linkler: "Local experts can also offer their services by pressing this button. Now, what else is on your mind?",
-    nextUser: "doing there",
+    linkler: "Are you a local expert? You can even list your own professional services here.",
+    nextUser: null,
+    autoNext: 3500,
     action: { type: 'spotlight', target: 'walkthrough-create-service', zoom: true }
+  },
+  {
+    id: 'step-10',
+    trigger: "auto",
+    linkler: "So, what's the next step on your journey?",
+    nextUser: "doing there",
+    action: { type: 'spotlight', target: null, zoom: false }
   },
   {
     id: 'step-11',
     trigger: "doing there",
-    linkler: "Matter of fact I do. You can find incredible local guides here to show you the way.",
-    nextUser: "(Press the Experiences button)",
-    action: { type: 'spotlight', target: 'walkthrough-experiences', zoom: true }
+    linkler: "Actually, we have local guides who can show you the side of the city most tourists never see. Check out Hassan!",
+    nextUser: "(Click on Hassan's card)",
+    action: { type: 'spotlight', target: 'walkthrough-hassan-card', zoom: true }
   },
   {
     id: 'step-12',
-    trigger: "action:experiences-opened",
-    linkler: "Scroll through them while I talk with my other guy.",
-    nextUser: "ripped off",
-    action: { type: 'spotlight', target: null, zoom: false }
+    trigger: "action:experiences-opened", // Wait for Hassan detail click
+    linkler: "Hassan is fully Verified by our team. Take a look at his reviews—travelers love his hidden gems tour.",
+    nextUser: "(Click Book Now)",
+    action: { type: 'spotlight', target: 'walkthrough-hassan-verified', zoom: true }
   },
   {
     id: 'step-13',
-    trigger: "ripped off",
-    linkler: "No need to worry. We curate the best local deals with verified pricing just for you.",
-    nextUser: "(Press the Deals button)",
-    action: { type: 'spotlight', target: 'walkthrough-deals', zoom: true }
+    trigger: "action:booking-sent",
+    linkler: "Booking request sent! While I go talk to my guy and get that sorted, why don't you check out some deals?",
+    nextUser: null,
+    autoNext: 4000,
+    action: { type: 'redirect', target: '/app/promotions' }
   },
   {
     id: 'step-14',
-    trigger: "action:deals-opened",
-    linkler: "Explore these exclusive offers and save on your journey! You can also create your own group here.",
-    nextUser: "(Press the Create Group button)",
-    action: { type: 'spotlight', target: 'walkthrough-create-group', zoom: true }
+    trigger: "auto",
+    linkler: "There we go! Hassan has accepted your request. Your real Dubai journey is officially on the books.",
+    nextUser: "End of Part 1",
+    action: { type: 'spotlight', target: null, zoom: false, notify: "Hassan has accepted your request!" }
   }
 ];
 
@@ -136,9 +146,9 @@ export const DirectorProvider = ({ children }) => {
   const [spotlightRect, setSpotlightRect] = useState(null);
   const [isTyping, setIsTyping] = useState(false);
   const [isWide, setIsWide] = useState(true);
+  const navigate = useNavigate();
 
   const startPresentation = useCallback(() => {
-    console.log("Presentation Starting...");
     setIsActive(true);
     setIsWide(true);
     setStepIndex(0);
@@ -158,13 +168,18 @@ export const DirectorProvider = ({ children }) => {
     const currentStep = script[stepIndex];
     if (!currentStep) return;
 
-    console.log(`Processing Message: "${text}" | Current Step: ${stepIndex}`);
-
     if (text === 'INTERNAL_NEXT') {
        const nextIndex = stepIndex + 1;
        if (nextIndex < script.length) {
          const nextStep = script[nextIndex];
          setStepIndex(nextIndex);
+         
+         if (nextStep.action?.type === 'redirect') {
+             navigate(nextStep.action.target);
+             setTimeout(() => processMessage('INTERNAL_NEXT'), 1000);
+             return;
+         }
+
          setIsTyping(true);
          setTimeout(() => {
             setMessages(prev => [...prev, { sender: 'linkler', text: nextStep.linkler, timestamp: new Date() }]);
@@ -183,7 +198,10 @@ export const DirectorProvider = ({ children }) => {
         setCurrentAction(null); 
     }
 
-    setMessages(prev => [...prev, { sender: 'person', text, timestamp: new Date() }]);
+    if (text !== 'INTERNAL_NEXT' && !isNextCmd) {
+        setMessages(prev => [...prev, { sender: 'person', text, timestamp: new Date() }]);
+    }
+    
     if (isWide) setIsWide(false);
 
     if ((currentStep.nextUser && cleanInput.includes(cleanTrigger)) || isNextCmd) {
@@ -197,10 +215,10 @@ export const DirectorProvider = ({ children }) => {
             setMessages(prev => [...prev, { sender: 'linkler', text: nextStep.linkler, timestamp: new Date() }]);
             setCurrentAction(nextStep.action);
             setIsTyping(false);
-         }, 2000);
+         }, 1200);
        }
     }
-  }, [isActive, stepIndex, isWide]);
+  }, [isActive, stepIndex, isWide, navigate]);
 
   const triggerAction = useCallback((actionId) => {
     if (!isActive) return;
@@ -232,6 +250,7 @@ export const DirectorProvider = ({ children }) => {
       currentAction,
       triggerAction,
       stepIndex,
+      currentStep: script[stepIndex],
       isTyping,
       isWide,
       setIsWide,

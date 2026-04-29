@@ -11,11 +11,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from 'sonner';
 import { ChevronLeft, ChevronRight, ShieldCheck, MapPin, Clock, Info } from 'lucide-react';
+import { useDirector } from '../context/DirectorContext';
 
 const ExperienceDetailPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
+    const { triggerAction } = useDirector();
     const [exp, setExp] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -40,6 +42,12 @@ const ExperienceDetailPage = () => {
             const res = await getExperienceDetail(id);
             setExp(res.data);
             
+            if (res.data.user_username === 'dubai_expert_guide') {
+                setTimeout(() => {
+                    if (typeof triggerAction === 'function') triggerAction('action:hassan-opened');
+                }, 500);
+            }
+
             const availRes = await getGuideAvailability(res.data.user_username);
             setAvailability(availRes.data.manual_availability || []);
             setBookedDates(availRes.data.booked_dates || []);
@@ -205,9 +213,42 @@ const ExperienceDetailPage = () => {
                             <div className="flex flex-wrap gap-4">
                                 <div className="flex items-center gap-2 text-xs font-bold text-ui-muted bg-ui-white px-4 py-2 rounded-full border border-ui-border"><MapPin className="w-4 h-4 text-brand" /> {exp.location}, {exp.country}</div>
                                 <div className="flex items-center gap-2 text-xs font-bold text-ui-muted bg-ui-white px-4 py-2 rounded-full border border-ui-border"><Clock className="w-4 h-4 text-brand" /> {exp.duration || 'Flexible Time'}</div>
-                                <div className="flex items-center gap-2 text-xs font-bold text-ui-muted bg-ui-white px-4 py-2 rounded-full border border-ui-border"><ShieldCheck className="w-4 h-4 text-brand" /> {exp.category}</div>
+                                <div 
+                                    id="walkthrough-hassan-verified"
+                                    className="flex items-center gap-2 text-xs font-bold text-success bg-success/5 px-4 py-2 rounded-full border border-success/20 shadow-sm"
+                                >
+                                    <ShieldCheck className="w-4 h-4 text-success" /> Verified Expert
+                                </div>
                             </div>
                             <p className="text-lg text-ui-text-secondary leading-relaxed font-medium italic">"{exp.description}"</p>
+                        </div>
+
+                        {/* Reviews Section */}
+                        <div id="walkthrough-hassan-reviews" className="bg-ui-white/50 backdrop-blur-sm rounded-[2.5rem] p-10 border border-ui-border shadow-sm space-y-8">
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-xl font-black italic uppercase tracking-tighter text-ui-text-main">Traveler Reviews</h3>
+                                <div className="flex items-center bg-warning/10 px-4 py-1.5 rounded-xl border border-warning/20">
+                                    <span className="text-warning mr-2">★</span>
+                                    <span className="font-black text-warning">4.9</span>
+                                </div>
+                            </div>
+
+                            <div className="space-y-6">
+                                <div className="p-6 bg-white rounded-3xl border border-ui-border shadow-sm space-y-4">
+                                    <div className="flex items-center gap-4">
+                                        <Avatar className="w-10 h-10 border border-ui-border">
+                                            <AvatarFallback className="bg-brand-light text-brand font-bold">A</AvatarFallback>
+                                        </Avatar>
+                                        <div>
+                                            <p className="text-sm font-bold">@traveler_ali</p>
+                                            <div className="flex gap-0.5 mt-0.5"><StarRating rating={5} size="xs" /></div>
+                                        </div>
+                                    </div>
+                                    <p className="text-sm text-ui-text-secondary italic font-medium leading-relaxed">
+                                        "Hassan is incredible! His hidden gems tour was the highlight of our trip. He knows all the spots that tourists usually miss. Truly an authentic experience."
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
 

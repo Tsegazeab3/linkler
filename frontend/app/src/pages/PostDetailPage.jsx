@@ -224,11 +224,11 @@ const PostDetailPage = () => {
     if (!post?.author?.id) return;
     try {
       if (isFollowing) {
-        await unfollowUser(post.author.id);
+        await unfollowUser(post.author.username);
         setIsFollowing(false);
         toast.info(`Unfollowed ${post.author.username}`);
       } else {
-        await followUser(post.author.id);
+        await followUser(post.author.username);
         setIsFollowing(true);
         toast.success(`Following ${post.author.username}`);
       }
