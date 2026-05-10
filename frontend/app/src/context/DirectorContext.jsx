@@ -114,7 +114,7 @@ const script = [
   },
   {
     id: 'step-12',
-    trigger: "action:experiences-opened", // Wait for Hassan detail click
+    trigger: "action:hassan-opened", // Wait for Hassan detail click
     linkler: "Hassan is fully Verified by our team. Take a look at his reviews—travelers love his hidden gems tour.",
     nextUser: "(Click Book Now)",
     action: { type: 'spotlight', target: 'walkthrough-hassan-verified', zoom: true }

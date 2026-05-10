@@ -93,14 +93,89 @@ class Command(BaseCommand):
         trip_categories = [cat[0] for cat in Trip.TRIP_CATEGORIES]
         promotion_categories = [cat[0] for cat in Promotion.PROMOTION_CATEGORIES]
 
-        # Professional images sets
-        experience_images = [
-            "https://images.unsplash.com/photo-1530789253388-582c481c54b0",
-            "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9",
-            "https://images.unsplash.com/photo-1516483638261-f4dbaf036963",
-            "https://images.unsplash.com/photo-1507525428034-b723cf961d3e",
-            "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800"
-        ]
+        # Category-specific image mapping for human-centric experiences
+        category_images = {
+            'Adventure': [
+                "https://images.unsplash.com/photo-1501503069356-3c6b82a17d89", # Mountain hiking
+                "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b", # Guide in mountains
+                "https://images.unsplash.com/photo-1533628635777-112b2239b1c7"  # Hiking group
+            ],
+            'Culture': [
+                "https://images.unsplash.com/photo-1527631746610-bca00a040d60", # City walk
+                "https://images.unsplash.com/photo-1518911710364-17ec553bde5d", # Local art
+                "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e"  # Traditional architecture
+            ],
+            'Nightlife': [
+                "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b", # Bar
+                "https://images.unsplash.com/photo-1470225620780-dba8ba36b745", # DJ/Club
+                "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad"  # City at night
+            ],
+            'History': [
+                "https://images.unsplash.com/photo-1461360228754-6e81c478c882", # Ancient ruins
+                "https://images.unsplash.com/photo-1503177119275-0aa32b3a9368", # Old temple
+                "https://images.unsplash.com/photo-1524396309943-e03f5ee0567a"  # Historic street
+            ],
+            'Nature': [
+                "https://images.unsplash.com/photo-1441974231531-c6227db76b6e", # Forest
+                "https://images.unsplash.com/photo-1470770841072-f978cf4d019e", # Landscape
+                "https://images.unsplash.com/photo-1447752875215-b2761acb3c5d"  # Park
+            ],
+            'Gastronomy': [
+                "https://images.unsplash.com/photo-1504674900247-0877df9cc836", # Food table
+                "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4", # People eating
+                "https://images.unsplash.com/photo-1493770348161-369560ae357d"  # Breakfast
+            ],
+            'Shopping & Souks': [
+                "https://images.unsplash.com/photo-1516321318423-f06f85e504b3", # Group shopping
+                "https://images.unsplash.com/photo-1473187983305-f615310e7daa", # Market
+                "https://images.unsplash.com/photo-1513161455039-b414915f277f"  # Boutique
+            ],
+            'Desert & Safari': [
+                "https://images.unsplash.com/photo-1506863530036-1efeddceb993", # Group in desert
+                "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf", # Car in desert
+                "https://images.unsplash.com/photo-1473580044384-7ba9967e16a0"  # Dunes
+            ],
+            'Coastal & Marine': [
+                "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1", # Boat trip
+                "https://images.unsplash.com/photo-1507525428034-b723cf961d3e", # Beach sunset
+                "https://images.unsplash.com/photo-1519046904884-53103b34b206"  # Shoreline
+            ],
+            'Luxury & VIP': [
+                "https://images.unsplash.com/photo-1566073771259-6a8506099945", # Hotel lobby
+                "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb", # Resort pool
+                "https://images.unsplash.com/photo-1571896349842-33c89424de2d"  # High-end stay
+            ],
+            'Wellness & Spa': [
+                "https://images.unsplash.com/photo-1544161515-4ae6b9d804ad", # Massage
+                "https://images.unsplash.com/photo-1540555700478-4be289fbecef", # Spa retreat
+                "https://images.unsplash.com/photo-1519823551278-64ac92734fb1"  # Yoga
+            ],
+            'Transportation': [
+                "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957", # Bus
+                "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf", # Car in desert
+                "https://images.unsplash.com/photo-1527239441953-caffd968d952"  # Friendly driver
+            ],
+            'Housing': [
+                "https://images.unsplash.com/photo-1560518883-ce09059eeffa", # Showing apartment
+                "https://images.unsplash.com/photo-1512917774080-9991f1c4c750", # Modern home
+                "https://images.unsplash.com/photo-1484154218962-a197022b5858"  # Interior
+            ],
+            'Documentation': [
+                "https://images.unsplash.com/photo-1521791136064-7986c2920216", # Handshake
+                "https://images.unsplash.com/photo-1554224155-1696413565d3", # Paperwork
+                "https://images.unsplash.com/photo-1450101499163-c8848c66ca85"  # Office
+            ],
+            'Connectivity': [
+                "https://images.unsplash.com/photo-1512428559087-560fa5ceab42", # Phone help
+                "https://images.unsplash.com/photo-1520333789090-1afc82db536a", # Friendly tech
+                "https://images.unsplash.com/photo-1562016600-ece13e8ba570"  # Router
+            ],
+            'Local Support': [
+                "https://images.unsplash.com/photo-1516321318423-f06f85e504b3", # Shopping help
+                "https://images.unsplash.com/photo-1556740738-b6a63e27c4df", # Assistant
+                "https://images.unsplash.com/photo-1552664730-d307ca884978"  # Meeting
+            ],
+        }
 
         # 1. Create Users
         users = []
@@ -161,29 +236,48 @@ class Command(BaseCommand):
 
         # 3. Create Experiences (only for guides)
         guides = [u for u in users if u.account_type == 'guide']
+        human_experience_titles = [
+            "My favorite hidden spots in the city",
+            "Join me for a local food crawl",
+            "The best sunset viewpoint I know",
+            "Learn traditional crafts with me",
+            "A morning walk through the old town",
+            "My secret desert camping spot",
+            "Let me show you the real nightlife",
+            "Photography walk through the souks",
+            "The most authentic coffee in town",
+            "A quiet escape to the mountains"
+        ]
+        
         if guides:
             for i in range(num_users):
                 guide = random.choice(guides)
                 c_name, city_name, region, c_code = self._get_random_location(countries_json, cities_json)
                 
+                category = random.choice(experience_categories)
                 exp = Experience.objects.create(
                     user=guide,
                     listing_type=random.choice(['experience', 'service']),
-                    title=fake.sentence(nb_words=4),
-                    description=fake.paragraph(),
+                    title=random.choice(human_experience_titles),
+                    description=f"Hi! I'm {guide.first_name or guide.username}. {fake.paragraph()}",
                     price=random.randint(10, 500),
                     currency='USD',
                     location=city_name,
                     country=c_name,
                     region=region,
                     duration=f"{random.randint(1, 8)} hours",
-                    category=random.choice(experience_categories)
+                    category=category
                 )
 
-                ExperienceImage.objects.create(
-                    experience=exp,
-                    image=random.choice(experience_images)
-                )
+                # Add 3-5 images for a rich gallery based on category
+                pool = category_images.get(category, category_images['Culture'])
+                num_imgs = min(len(pool), random.randint(3, 5))
+                selected_imgs = random.sample(pool, num_imgs)
+                for img_url in selected_imgs:
+                    ExperienceImage.objects.create(
+                        experience=exp,
+                        image=img_url
+                    )
                 
                 # Add reviews
                 travellers = [u for u in users if u != guide]

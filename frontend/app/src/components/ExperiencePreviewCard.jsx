@@ -63,9 +63,9 @@ const ExperiencePreviewCard = ({ experience }) => {
         </div>
       </div>
       <CardContent className="p-5">
-        <div className="flex justify-between items-start mb-1">
-          <h3 className="text-lg font-bold text-ui-text-main group-hover:text-brand transition-colors uppercase tracking-tight line-clamp-1">{title}</h3>
-          <div className="flex flex-col items-end gap-1">
+        <div className="flex justify-between items-start mb-1 gap-2">
+          <h3 className="text-lg font-bold text-ui-text-main group-hover:text-brand transition-colors uppercase tracking-tight line-clamp-1 flex-1">{title}</h3>
+          <div className="flex flex-col items-end gap-1 shrink-0">
             <div className="text-[10px] text-brand font-bold bg-brand-light px-2 py-1 rounded-md uppercase tracking-wider">
               {duration}
             </div>
@@ -78,14 +78,14 @@ const ExperiencePreviewCard = ({ experience }) => {
             </div>
           </div>
         </div>
-        <p className="text-xs font-semibold text-ui-muted mb-3 flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <p className="text-[10px] font-semibold text-ui-muted mb-3 flex items-center truncate">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
-            {region} • {country} • {location}
+            <span className="truncate">{region} • {country} • {location}</span>
         </p>
-        <p className="text-xs text-ui-text-secondary line-clamp-2 mb-4 h-8">
+        <p className="text-xs text-ui-text-secondary line-clamp-2 mb-4 h-9 overflow-hidden">
             {description}
         </p>
         <div className="flex items-center justify-between mt-auto pt-4 border-t border-ui-border">

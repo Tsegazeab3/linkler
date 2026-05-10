@@ -26,7 +26,7 @@ class CustomUser(AbstractUser):
     linkedin = models.URLField(blank=True)
     account_type = models.CharField(max_length=10, choices=ACCOUNT_TYPE_CHOICES, default='traveller')
     profile_picture = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
-    bio = models.TextField(max_length=80, blank=True)
+    bio = models.TextField(max_length=500, blank=True)
     opt_out_discovery = models.BooleanField(default=False, help_text="If true, the user will not appear in search or discovery algorithms.")
     show_followers_list = models.BooleanField(default=True, help_text="Whether other users can see this user's followers/following lists.")
     

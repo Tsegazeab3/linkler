@@ -55,47 +55,47 @@ class Command(BaseCommand):
             self.stdout.write(self.style.ERROR('No guides found. Run seed_data first.'))
             return
 
-        # Category specific images for variety
+        # Category specific images for variety - including people/faces for human connection
         images_map = {
             'Transportation': [
-                "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d",
-                "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957",
-                "https://images.unsplash.com/photo-1506012787146-f92b2d7d6d96"
+                "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957", # Bus
+                "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf", # Car in desert
+                "https://images.unsplash.com/photo-1527239441953-caffd968d952"  # Friendly driver
             ],
             'Housing': [
-                "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267",
-                "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688",
-                "https://images.unsplash.com/photo-1484154218962-a197022b5858"
+                "https://images.unsplash.com/photo-1560518883-ce09059eeffa", # Showing apartment
+                "https://images.unsplash.com/photo-1512917774080-9991f1c4c750", # Modern home
+                "https://images.unsplash.com/photo-1484154218962-a197022b5858"  # Interior
             ],
             'Documentation': [
-                "https://images.unsplash.com/photo-1568043210943-0e8aac4b9734",
-                "https://images.unsplash.com/photo-1554224155-1696413565d3",
-                "https://images.unsplash.com/photo-1450101499163-c8848c66ca85"
+                "https://images.unsplash.com/photo-1521791136064-7986c2920216", # Handshake/Help
+                "https://images.unsplash.com/photo-1554224155-1696413565d3", # Paperwork help
+                "https://images.unsplash.com/photo-1450101499163-c8848c66ca85"  # Office
             ],
             'Connectivity': [
-                "https://images.unsplash.com/photo-1562016600-ece13e8ba570",
-                "https://images.unsplash.com/photo-1512428559087-560fa5ceab42",
-                "https://images.unsplash.com/photo-1530789253388-582c481c54b0"
+                "https://images.unsplash.com/photo-1512428559087-560fa5ceab42", # Person with phone
+                "https://images.unsplash.com/photo-1520333789090-1afc82db536a", # Friendly tech help
+                "https://images.unsplash.com/photo-1562016600-ece13e8ba570"  # Router
             ],
             'Local Support': [
-                "https://images.unsplash.com/photo-1556740738-b6a63e27c4df",
-                "https://images.unsplash.com/photo-1516321318423-f06f85e504b3",
-                "https://images.unsplash.com/photo-1552664730-d307ca884978"
+                "https://images.unsplash.com/photo-1516321318423-f06f85e504b3", # Group shopping
+                "https://images.unsplash.com/photo-1556740738-b6a63e27c4df", # Assistant
+                "https://images.unsplash.com/photo-1552664730-d307ca884978"  # Meeting
             ]
         }
 
         essentials_data = [
-            {'category': 'Transportation', 'title': 'Premium Airport Transfer', 'description': 'Stress-free pickup from DXB or DWC in a luxury sedan.', 'price': 65, 'duration': '1.5 hours'},
-            {'category': 'Transportation', 'title': 'Private Desert Chauffeur', 'description': 'Full day private driver for your desert exploration.', 'price': 200, 'duration': '8 hours'},
-            {'category': 'Housing', 'title': 'Short-term Apartment Scouting', 'description': 'I will visit 5 apartments on your behalf.', 'price': 150, 'duration': '2 days'},
-            {'category': 'Housing', 'title': 'Relocation Consultant', 'description': 'Complete support for finding a home.', 'price': 450, 'duration': '1 week'},
-            {'category': 'Documentation', 'title': 'Golden Visa Assistance', 'description': 'Expert guidance through the UAE Golden Visa application.', 'price': 1200, 'duration': '30 days'},
-            {'category': 'Documentation', 'title': 'Emirates ID Fast-Track', 'description': 'I will manage your medical test and biometrics.', 'price': 80, 'duration': '3 days'},
-            {'category': 'Connectivity', 'title': 'Local Tech Setup', 'description': 'Get connected instantly with a SIM card.', 'price': 50, 'duration': '4 hours'},
-            {'category': 'Local Support', 'title': 'Personal Shopping Assistant', 'description': 'Expert guidance through the best souks.', 'price': 40, 'duration': '3 hours'},
-            {'category': 'Local Support', 'title': 'Medical System Navigator', 'description': 'Assistance with hospital appointments.', 'price': 35, 'duration': '2 hours'},
-            {'category': 'Local Support', 'title': 'Souk Exploration Expert', 'description': 'Navigating the old markets of Riyadh.', 'price': 55, 'duration': '4 hours'},
-            {'category': 'Connectivity', 'title': 'GCC Multi-SIM Setup', 'description': 'Connectivity across Saudi, UAE and Qatar.', 'price': 90, 'duration': '2 hours'},
+            {'category': 'Transportation', 'title': "I'll pick you up from the Airport", 'description': "Don't worry about taxis. I'll meet you at the arrivals hall and drive you straight to your stay in a comfortable, clean car.", 'price': 65, 'duration': '1.5 hours'},
+            {'category': 'Transportation', 'title': 'Private Desert Driver for your Group', 'description': "Need to go to the desert? I have a large 4x4 and I know the dunes better than anyone. Let me be your private driver for the day.", 'price': 200, 'duration': '8 hours'},
+            {'category': 'Housing', 'title': "I'll find you a great apartment", 'description': "Searching for a home from abroad is hard. I will visit 5 apartments on your behalf, take videos, and give you the real truth about the area.", 'price': 150, 'duration': '2 days'},
+            {'category': 'Housing', 'title': 'Move to Dubai with my help', 'description': "I've helped dozens of people relocate. From DEWA setup to finding a community that fits your vibe, I'm your relocation partner.", 'price': 450, 'duration': '1 week'},
+            {'category': 'Documentation', 'title': 'Get your Golden Visa easily', 'description': "The Golden Visa process can be confusing. I'll guide you through every document you need and make sure your application is perfect.", 'price': 1200, 'duration': '30 days'},
+            {'category': 'Documentation', 'title': "I'll help you with your Emirates ID", 'description': "Medical tests, biometrics, and card collection—I'll handle the appointments and go with you so you don't get lost.", 'price': 80, 'duration': '3 days'},
+            {'category': 'Connectivity', 'title': "I'll set up your local SIM & Wi-Fi", 'description': "Stay connected from minute one. I'll deliver a local SIM to your door and help you set up your home internet with the best provider.", 'price': 50, 'duration': '4 hours'},
+            {'category': 'Local Support', 'title': 'Personal Shopping with a Local', 'description': "Forget the tourist traps. I'll take you to the best souks and help you negotiate like a local for the best prices.", 'price': 40, 'duration': '3 hours'},
+            {'category': 'Local Support', 'title': "I'll help you with local Doctors", 'description': "If you're feeling unwell, I'll help you navigate the healthcare system and find the best specialist for your needs.", 'price': 35, 'duration': '2 hours'},
+            {'category': 'Local Support', 'title': 'The Real Riyadh Souk Tour', 'description': "Join me for a walk through the old markets of Riyadh. I'll introduce you to the shopkeepers and show you the hidden crafts.", 'price': 55, 'duration': '4 hours'},
+            {'category': 'Connectivity', 'title': 'Stay Connected across the GCC', 'description': "Traveling between Saudi, UAE and Qatar? I'll set up a multi-country SIM plan so you never lose connection.", 'price': 90, 'duration': '2 hours'},
         ]
 
         # Clear existing services to clean up visuals

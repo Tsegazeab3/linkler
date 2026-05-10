@@ -23,12 +23,24 @@ class UserShortSerializer(serializers.ModelSerializer):
     def get_profile_picture(self, obj):
         if not obj.profile_picture:
             return None
-        # Check if the stored name is already a full URL
-        if str(obj.profile_picture).startswith('http'):
-            return str(obj.profile_picture)
+        
+        # The value might be a FieldFile object or a string.
+        # We need to get the string representation of the path/URL.
+        try:
+            # If it's a FileField, .name gives the path/URL as stored in DB.
+            name = obj.profile_picture.name
+        except AttributeError:
+            # If it's already a string.
+            name = str(obj.profile_picture)
+
+        if name.startswith('http'):
+            return name
+        
+        # If it's a local file, generate the full URL.
         if hasattr(obj.profile_picture, 'url'):
             return obj.profile_picture.url
-        return str(obj.profile_picture)
+            
+        return None # Return None if we can't determine a valid URL
 
     def get_is_following(self, obj):
         request = self.context.get('request')

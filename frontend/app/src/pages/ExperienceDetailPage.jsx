@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useOutletContext, useNavigate, Link } from 'react-router-dom';
 import StarRating from '../components/StarRating';
+import ReviewModal from '../components/ReviewModal';
 import { getExperienceDetail, createDM, followUser, unfollowUser, getExperienceReviews, createExperienceReview, getGuideAvailability } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { Card, CardContent } from "@/components/ui/card";
@@ -19,6 +20,7 @@ const ExperienceDetailPage = () => {
     const { user } = useAuth();
     const { triggerAction } = useDirector();
     const [exp, setExp] = useState(null);
+    const [reviews, setReviews] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
@@ -27,6 +29,7 @@ const ExperienceDetailPage = () => {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [availability, setAvailability] = useState([]);
     const [currentMonth, setCurrentMonth] = useState(new Date());
+    const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
     const { handleOpenChat } = useOutletContext() || {};
 
     const getMediaUrl = (url) => {
@@ -48,6 +51,9 @@ const ExperienceDetailPage = () => {
                 }, 500);
             }
 
+            const reviewsRes = await getExperienceReviews(id);
+            setReviews(Array.isArray(reviewsRes.data) ? reviewsRes.data : (reviewsRes.data.results || []));
+
             const availRes = await getGuideAvailability(res.data.user_username);
             setAvailability(availRes.data.manual_availability || []);
             setBookedDates(availRes.data.booked_dates || []);
@@ -62,6 +68,19 @@ const ExperienceDetailPage = () => {
     useEffect(() => {
         fetchData();
     }, [id]);
+
+    const handleReviewSubmit = async (rating, comment) => {
+        try {
+            await createExperienceReview(id, rating, comment);
+            toast.success("Thank you! Your review has been submitted.");
+            // Refetch reviews to show the new one
+            const reviewsRes = await getExperienceReviews(id);
+            setReviews(Array.isArray(reviewsRes.data) ? reviewsRes.data : (reviewsRes.data.results || []));
+        } catch (err) {
+            console.error("Review submission failed:", err);
+            toast.error("Failed to submit review. Have you booked this experience before?");
+        }
+    };
 
     const handleBookNow = (dateStr) => {
         if (!user) {
@@ -227,27 +246,33 @@ const ExperienceDetailPage = () => {
                         <div id="walkthrough-hassan-reviews" className="bg-ui-white/50 backdrop-blur-sm rounded-[2.5rem] p-10 border border-ui-border shadow-sm space-y-8">
                             <div className="flex items-center justify-between">
                                 <h3 className="text-xl font-black italic uppercase tracking-tighter text-ui-text-main">Traveler Reviews</h3>
-                                <div className="flex items-center bg-warning/10 px-4 py-1.5 rounded-xl border border-warning/20">
-                                    <span className="text-warning mr-2">★</span>
-                                    <span className="font-black text-warning">4.9</span>
-                                </div>
+                                <Button size="sm" className="rounded-full font-black text-xs" onClick={() => setIsReviewModalOpen(true)}>Leave a Review</Button>
                             </div>
 
                             <div className="space-y-6">
-                                <div className="p-6 bg-white rounded-3xl border border-ui-border shadow-sm space-y-4">
-                                    <div className="flex items-center gap-4">
-                                        <Avatar className="w-10 h-10 border border-ui-border">
-                                            <AvatarFallback className="bg-brand-light text-brand font-bold">A</AvatarFallback>
-                                        </Avatar>
-                                        <div>
-                                            <p className="text-sm font-bold">@traveler_ali</p>
-                                            <div className="flex gap-0.5 mt-0.5"><StarRating rating={5} size="xs" /></div>
+                                {reviews.length > 0 ? (
+                                    reviews.map((review) => (
+                                        <div key={review.id} className="p-6 bg-white rounded-3xl border border-ui-border shadow-sm space-y-4">
+                                            <div className="flex items-center gap-4">
+                                                <Avatar className="w-10 h-10 border border-ui-border">
+                                                    <AvatarImage src={getMediaUrl(review.user_profile_picture)} />
+                                                    <AvatarFallback className="bg-brand-light text-brand font-bold">
+                                                        {review.user_username?.charAt(0).toUpperCase()}
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                                <div>
+                                                    <p className="text-sm font-bold">@{review.user_username}</p>
+                                                    <div className="flex gap-0.5 mt-0.5"><StarRating rating={review.rating} size="xs" /></div>
+                                                </div>
+                                            </div>
+                                            <p className="text-sm text-ui-text-secondary italic font-medium leading-relaxed">
+                                                "{review.comment}"
+                                            </p>
                                         </div>
-                                    </div>
-                                    <p className="text-sm text-ui-text-secondary italic font-medium leading-relaxed">
-                                        "Hassan is incredible! His hidden gems tour was the highlight of our trip. He knows all the spots that tourists usually miss. Truly an authentic experience."
-                                    </p>
-                                </div>
+                                    ))
+                                ) : (
+                                    <p className="text-center py-10 text-ui-muted italic">No reviews yet for this listing.</p>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -329,6 +354,13 @@ const ExperienceDetailPage = () => {
                     </div>
                 </DialogContent>
             </Dialog>
+
+            <ReviewModal
+                isOpen={isReviewModalOpen}
+                onClose={() => setIsReviewModalOpen(false)}
+                onSubmit={handleReviewSubmit}
+                title={`Reviewing "${exp?.title}"`}
+            />
         </div>
     );
 };

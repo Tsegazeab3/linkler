@@ -128,7 +128,6 @@ class UserSerializer(serializers.ModelSerializer):
     posts = serializers.SerializerMethodField()
     rating = serializers.SerializerMethodField()
     review_count = serializers.SerializerMethodField()
-    profile_picture = serializers.SerializerMethodField()
     unread_notifications_count = serializers.SerializerMethodField()
 
     class Meta:
@@ -179,14 +178,14 @@ class UserSerializer(serializers.ModelSerializer):
             return obj.provider_reviews.count()
         return 0
 
-    def get_profile_picture(self, obj):
-        if not obj.profile_picture:
-            return None
-        if str(obj.profile_picture).startswith('http'):
-            return str(obj.profile_picture)
-        if hasattr(obj.profile_picture, 'url'):
-            return obj.profile_picture.url
-        return str(obj.profile_picture)
+    def to_representation(self, instance):
+        """Custom representation to handle external URLs in profile_picture."""
+        ret = super().to_representation(instance)
+        if instance.profile_picture:
+            if str(instance.profile_picture).startswith('http'):
+                ret['profile_picture'] = str(instance.profile_picture)
+        return ret
+
 
 
 class CustomRegisterSerializer(RegisterSerializer):

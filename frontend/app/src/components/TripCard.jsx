@@ -169,12 +169,12 @@ const TripCard = ({ trip, isExpanded }) => {
             /* Normal View - High Stability */
             <div className="p-8 md:p-10 flex flex-col h-full animate-in fade-in duration-500 overflow-y-auto no-scrollbar">
               <div className="mb-4">
-                <Link to={`/app/profile/${username}`} onClick={(e) => e.stopPropagation()}>
-                  <h2 className="text-2xl md:text-3xl font-black text-ui-text-main mb-1 hover:text-brand transition-colors italic tracking-tighter uppercase leading-tight">{name}</h2>
+                <Link to={`/app/profile/${username}`} onClick={(e) => e.stopPropagation()} className="block min-w-0">
+                  <h2 className="text-2xl md:text-3xl font-black text-ui-text-main mb-1 hover:text-brand transition-colors italic tracking-tighter uppercase leading-tight truncate">{name}</h2>
                 </Link>
-                <div className="flex items-center justify-between">
-                    <Link to={`/app/profile/${username}`} onClick={(e) => e.stopPropagation()}>
-                        <p className="text-sm font-bold text-brand">@{username}</p>
+                <div className="flex items-center justify-between min-w-0">
+                    <Link to={`/app/profile/${username}`} onClick={(e) => e.stopPropagation()} className="min-w-0">
+                        <p className="text-sm font-bold text-brand truncate">@{username}</p>
                     </Link>
                     <div className="md:hidden text-[8px] font-black text-ui-muted uppercase tracking-[0.2em] animate-pulse">
                         {mobileFocus === 'text' ? 'Tap to collapse' : 'Tap for details'}
@@ -211,7 +211,7 @@ const TripCard = ({ trip, isExpanded }) => {
                   <p className="text-[9px] font-black uppercase tracking-widest text-ui-text-secondary ml-2">{dates}</p>
                 </div>
                 
-                <p className="text-xs text-ui-text-secondary font-medium bg-ui-white p-4 rounded-[1.5rem] border-2 border-dashed border-ui-border italic leading-relaxed text-center shadow-sm">
+                <p className="text-xs text-ui-text-secondary font-medium bg-ui-white p-4 rounded-[1.5rem] border-2 border-dashed border-ui-border italic leading-relaxed text-center shadow-sm line-clamp-3">
                 "{message}"
                 </p>
               </div>
