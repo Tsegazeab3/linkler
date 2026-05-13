@@ -2,12 +2,12 @@ from rest_framework import generics, status, viewsets
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.db.models import Q
-from .models import CustomUser, Follow, Experience, PasswordResetToken, ExperienceReview, ProviderReview, Booking, TravelerProfile, VerificationDocument, Notification, GuideAvailability, Report
+from .models import CustomUser, Follow, Experience, PasswordResetToken, ExperienceReview, ProviderReview, Booking, TravelerProfile, VerificationDocument, Notification, GuideAvailability, Report, BlockedUser
 from .serializers import (
     UserSerializer, ExperienceSerializer, 
     PasswordResetRequestSerializer, PasswordResetConfirmSerializer,
     ExperienceReviewSerializer, ProviderReviewSerializer,
-    BookingSerializer, TravelerProfileSerializer, VerificationDocumentSerializer, NotificationSerializer, GuideAvailabilitySerializer, ReportSerializer
+    BookingSerializer, TravelerProfileSerializer, VerificationDocumentSerializer, NotificationSerializer, GuideAvailabilitySerializer, ReportSerializer, BlockedUserSerializer
 )
 
 
@@ -539,3 +539,14 @@ class ReportViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(reporter=self.request.user)
+
+class BlockedUserViewSet(viewsets.ModelViewSet):
+    queryset = BlockedUser.objects.all()
+    serializer_class = BlockedUserSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return self.queryset.filter(blocker=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(blocker=self.request.user)

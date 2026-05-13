@@ -9,7 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Sun, Moon } from 'lucide-react';
+import { Sun, Moon, Shield, Lock, CreditCard, Sparkles, CheckCircle2 } from 'lucide-react';
+import { reportUser, blockUser, getBlockedUsers, unblockUser } from '../services/api';
 
 const SettingsPage = () => {
   const { user, setUser, logout } = useAuth();
@@ -25,7 +26,9 @@ const SettingsPage = () => {
     nationality: '',
     opt_out_discovery: false,
     show_followers_list: true,
+    subscription_tier: 'free',
   });
+  const [blockedUsers, setBlockedUsers] = useState([]);
   const [passwordData, setPasswordData] = useState({
     oldPassword: '',
     newPassword: '',
@@ -57,10 +60,44 @@ const SettingsPage = () => {
         nationality: user.nationality || '',
         opt_out_discovery: user.opt_out_discovery || false,
         show_followers_list: user.show_followers_list ?? true,
+        subscription_tier: user.subscription_tier || 'free',
       });
       setPreviewImage(user.profile_picture || null);
+      fetchBlockedUsers();
     }
   }, [user]);
+
+  const fetchBlockedUsers = async () => {
+    try {
+      const res = await getBlockedUsers();
+      setBlockedUsers(res.data);
+    } catch (err) {
+      console.error("Failed to fetch blocked users", err);
+    }
+  };
+
+  const handleUnblock = async (id) => {
+    try {
+      await unblockUser(id);
+      setBlockedUsers(blockedUsers.filter(u => u.id !== id));
+      setMessage({ type: 'success', text: 'User unblocked.' });
+    } catch (err) {
+      setMessage({ type: 'error', text: 'Failed to unblock user.' });
+    }
+  };
+
+  const upgradeTier = async (tier) => {
+    setLoading(true);
+    try {
+      const res = await updateProfile({ subscription_tier: tier });
+      setUser(res.data);
+      setMessage({ type: 'success', text: `Welcome to ${tier.toUpperCase()}! Your account has been upgraded.` });
+    } catch (err) {
+      setMessage({ type: 'error', text: 'Failed to upgrade subscription.' });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleProfileChange = (e) => {
     setProfileData({ ...profileData, [e.target.name]: e.target.value });
@@ -83,7 +120,7 @@ const SettingsPage = () => {
   };
 
   const submitProfileUpdate = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     setLoading(true);
     setMessage({ type: '', text: '' });
 
@@ -97,6 +134,7 @@ const SettingsPage = () => {
       dataToSend.append('nationality', profileData.nationality);
       dataToSend.append('opt_out_discovery', profileData.opt_out_discovery);
       dataToSend.append('show_followers_list', profileData.show_followers_list);
+      dataToSend.append('subscription_tier', profileData.subscription_tier);
       
       if (profileImage) {
         dataToSend.append('profile_picture', profileImage);
@@ -161,10 +199,14 @@ const SettingsPage = () => {
       )}
 
       <Tabs defaultValue="account" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 max-w-[600px] mb-8">
-          <TabsTrigger value="account">Profile Details</TabsTrigger>
-          <TabsTrigger value="preferences">Preferences</TabsTrigger>
-          <TabsTrigger value="security">Security</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 gap-2 mb-8 bg-transparent h-auto">
+          <TabsTrigger value="account" className="data-[state=active]:bg-brand data-[state=active]:text-white h-10">Profile</TabsTrigger>
+          <TabsTrigger value="preferences" className="data-[state=active]:bg-brand data-[state=active]:text-white h-10">Preferences</TabsTrigger>
+          <TabsTrigger value="privacy" className="data-[state=active]:bg-brand data-[state=active]:text-white h-10">Privacy</TabsTrigger>
+          <TabsTrigger value="pro" className="data-[state=active]:bg-brand data-[state=active]:text-white h-10 flex gap-2">
+            <Sparkles className="w-4 h-4" /> Pro
+          </TabsTrigger>
+          <TabsTrigger value="security" className="data-[state=active]:bg-brand data-[state=active]:text-white h-10">Security</TabsTrigger>
         </TabsList>
 
         <TabsContent value="account">
@@ -311,65 +353,6 @@ const SettingsPage = () => {
 
           <Card className="mt-8">
             <CardHeader>
-              <CardTitle>Discovery & Privacy</CardTitle>
-              <CardDescription>Control how you appear to other travelers.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-               <div className="flex items-center justify-between p-4 rounded-xl border-2 border-border bg-ui-white">
-                  <div>
-                    <p className="font-bold text-sm text-ui-text-main">Opt-out of Discovery</p>
-                    <p className="text-xs text-ui-muted">Hide your profile from search results and discovery algorithms.</p>
-                  </div>
-                  <button 
-                    onClick={() => setProfileData({ ...profileData, opt_out_discovery: !profileData.opt_out_discovery })}
-                    className={`w-12 h-6 rounded-full transition-all relative ${profileData.opt_out_discovery ? 'bg-brand' : 'bg-ui-muted/30'}`}
-                  >
-                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${profileData.opt_out_discovery ? 'left-7' : 'left-1'}`} />
-                  </button>
-               </div>
-
-               <div className="flex items-center justify-between p-4 rounded-xl border-2 border-border bg-ui-white">
-                  <div>
-                    <p className="font-bold text-sm text-ui-text-main">Show Followers List</p>
-                    <p className="text-xs text-ui-muted">Allow others to see who you follow and who follows you.</p>
-                  </div>
-                  <button 
-                    onClick={() => setProfileData({ ...profileData, show_followers_list: !profileData.show_followers_list })}
-                    className={`w-12 h-6 rounded-full transition-all relative ${profileData.show_followers_list ? 'bg-brand' : 'bg-ui-muted/30'}`}
-                  >
-                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${profileData.show_followers_list ? 'left-7' : 'left-1'}`} />
-                  </button>
-               </div>
-               
-               <div className="flex justify-end pt-2 border-t border-border mt-6">
-                  <Button onClick={submitProfileUpdate} disabled={loading}>
-                    {loading ? 'Saving...' : 'Save Preferences'}
-                  </Button>
-               </div>
-            </CardContent>
-          </Card>
-
-          <Card className="mt-8">
-            <CardHeader>
-              <CardTitle>App Walkthrough</CardTitle>
-              <CardDescription>Need a refresher? Restart the interactive tour of Linkler.</CardDescription>
-            </CardHeader>
-            <CardContent>
-               <Button 
-                variant="outline" 
-                className="w-full h-12 rounded-xl font-bold border-brand/20 text-brand hover:bg-brand/5"
-                onClick={() => {
-                   localStorage.removeItem('linkler_has_seen_walkthrough');
-                   navigate('/app');
-                }}
-              >
-                Restart Walkthrough
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="mt-8">
-            <CardHeader>
               <CardTitle>Chat Preferences</CardTitle>
               <CardDescription>Choose how chats open by default on larger screens.</CardDescription>
             </CardHeader>
@@ -405,6 +388,177 @@ const SettingsPage = () => {
                     </div>
                   </div>
                   {chatViewPreference === 'large' && <div className="w-5 h-5 rounded-full bg-brand flex items-center justify-center text-white"><svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg></div>}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="privacy">
+          <Card>
+            <CardHeader>
+              <CardTitle>Discovery & Visibility</CardTitle>
+              <CardDescription>Control how you appear to other travelers.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+               <div className="flex items-center justify-between p-4 rounded-xl border-2 border-border bg-ui-white">
+                  <div className="flex gap-4">
+                    <div className="w-10 h-10 rounded-lg bg-ui-bg-alt flex items-center justify-center text-ui-text-secondary">
+                      <Lock className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-sm text-ui-text-main">Opt-out of Discovery</p>
+                      <p className="text-xs text-ui-muted">Hide your profile from search results and discovery algorithms.</p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => setProfileData({ ...profileData, opt_out_discovery: !profileData.opt_out_discovery })}
+                    className={`w-12 h-6 rounded-full transition-all relative ${profileData.opt_out_discovery ? 'bg-brand' : 'bg-ui-muted/30'}`}
+                  >
+                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${profileData.opt_out_discovery ? 'left-7' : 'left-1'}`} />
+                  </button>
+               </div>
+
+               <div className="flex items-center justify-between p-4 rounded-xl border-2 border-border bg-ui-white">
+                  <div className="flex gap-4">
+                    <div className="w-10 h-10 rounded-lg bg-ui-bg-alt flex items-center justify-center text-ui-text-secondary">
+                      <Shield className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-sm text-ui-text-main">Show Followers List</p>
+                      <p className="text-xs text-ui-muted">Allow others to see who you follow and who follows you.</p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => setProfileData({ ...profileData, show_followers_list: !profileData.show_followers_list })}
+                    className={`w-12 h-6 rounded-full transition-all relative ${profileData.show_followers_list ? 'bg-brand' : 'bg-ui-muted/30'}`}
+                  >
+                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${profileData.show_followers_list ? 'left-7' : 'left-1'}`} />
+                  </button>
+               </div>
+               
+               <div className="flex justify-end pt-2 border-t border-border mt-6">
+                  <Button onClick={() => submitProfileUpdate()} disabled={loading}>
+                    {loading ? 'Saving...' : 'Save Privacy Settings'}
+                  </Button>
+               </div>
+            </CardContent>
+          </Card>
+
+          <Card className="mt-8">
+            <CardHeader>
+              <CardTitle>Blocked Users</CardTitle>
+              <CardDescription>Users you've blocked cannot message you or see your content.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {blockedUsers.length > 0 ? (
+                <div className="space-y-4">
+                  {blockedUsers.map((block) => (
+                    <div key={block.id} className="flex items-center justify-between p-3 rounded-lg border border-border">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="w-10 h-10">
+                          <AvatarImage src={block.blocked_details.profile_picture} />
+                          <AvatarFallback>{block.blocked_details.username[0]}</AvatarFallback>
+                        </Avatar>
+                        <p className="font-semibold text-sm">{block.blocked_details.username}</p>
+                      </div>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => handleUnblock(block.id)}
+                        className="text-xs"
+                      >
+                        Unblock
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 bg-ui-bg-alt rounded-xl border border-dashed border-border">
+                  <Shield className="w-8 h-8 mx-auto text-ui-muted mb-2" />
+                  <p className="text-sm text-ui-muted">You haven't blocked anyone yet.</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="pro">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card className={`border-2 ${profileData.subscription_tier === 'free' ? 'border-brand' : 'border-border'}`}>
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle className="text-xl">Free Tier</CardTitle>
+                    <CardDescription>Basic features for explorers.</CardDescription>
+                  </div>
+                  {profileData.subscription_tier === 'free' && <div className="bg-brand text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase">Current</div>}
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="text-3xl font-bold">0 AED <span className="text-sm text-ui-muted font-normal">/ month</span></div>
+                <ul className="space-y-2 text-sm text-ui-text-secondary">
+                  <li className="flex gap-2 items-center"><CheckCircle2 className="w-4 h-4 text-brand" /> Browse trips & guides</li>
+                  <li className="flex gap-2 items-center"><CheckCircle2 className="w-4 h-4 text-brand" /> Basic chat features</li>
+                  <li className="flex gap-2 items-center"><CheckCircle2 className="w-4 h-4 text-brand" /> Standard profile visibility</li>
+                </ul>
+                {profileData.subscription_tier !== 'free' && (
+                  <Button variant="outline" className="w-full mt-4" onClick={() => upgradeTier('free')}>Switch to Free</Button>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className={`relative overflow-hidden border-2 ${profileData.subscription_tier === 'pro' ? 'border-brand' : 'border-brand/30 shadow-lg shadow-brand/5'}`}>
+              <div className="absolute top-0 right-0 bg-brand text-white text-[10px] font-bold px-3 py-1 rounded-bl-lg uppercase flex items-center gap-1">
+                <Sparkles className="w-3 h-3" /> Popular
+              </div>
+              <CardHeader>
+                <div>
+                  <CardTitle className="text-xl flex items-center gap-2">
+                    Pro Business
+                  </CardTitle>
+                  <CardDescription>Supercharge your reach & business.</CardDescription>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="text-3xl font-bold">10 AED <span className="text-sm text-ui-muted font-normal">/ month</span></div>
+                <ul className="space-y-2 text-sm text-ui-text-secondary">
+                  <li className="flex gap-2 items-center font-semibold text-brand"><Sparkles className="w-4 h-4" /> 5x Discovery Boost</li>
+                  <li className="flex gap-2 items-center"><CheckCircle2 className="w-4 h-4 text-brand" /> Verified Business Badge</li>
+                  <li className="flex gap-2 items-center"><CheckCircle2 className="w-4 h-4 text-brand" /> Advanced Analytics</li>
+                  <li className="flex gap-2 items-center"><CheckCircle2 className="w-4 h-4 text-brand" /> Featured in "Top Guides"</li>
+                  <li className="flex gap-2 items-center"><CheckCircle2 className="w-4 h-4 text-brand" /> Custom Profile URL</li>
+                </ul>
+                <Button 
+                  className={`w-full mt-4 ${profileData.subscription_tier === 'pro' ? 'bg-success hover:bg-success/90' : 'bg-brand hover:bg-brand/90'}`}
+                  disabled={profileData.subscription_tier === 'pro'}
+                  onClick={() => upgradeTier('pro')}
+                >
+                  {profileData.subscription_tier === 'pro' ? 'Active' : 'Upgrade to Pro'}
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card className="mt-8 bg-gradient-to-br from-brand/5 to-ui-white border-brand/10">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="w-5 h-5 text-brand" /> Business Model
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="space-y-2">
+                  <h4 className="font-bold text-sm">Subscriptions</h4>
+                  <p className="text-xs text-ui-muted">Monthly fees for guides and service providers to get premium exposure and business tools.</p>
+                </div>
+                <div className="space-y-2">
+                  <h4 className="font-bold text-sm">Lead Generation</h4>
+                  <p className="text-xs text-ui-muted">Commission on successful bookings and direct connections made through the platform.</p>
+                </div>
+                <div className="space-y-2">
+                  <h4 className="font-bold text-sm">Promoted Content</h4>
+                  <p className="text-xs text-ui-muted">Pay-per-click or fixed-fee promotion for experiences and services in search results.</p>
                 </div>
               </div>
             </CardContent>

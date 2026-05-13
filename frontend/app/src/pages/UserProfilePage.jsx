@@ -10,8 +10,16 @@ import {
     updatePost,
     getFollowers,
     getFollowing,
-    deleteService
+    deleteService,
+    reportUser,
+    blockUser
 } from '../services/api';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+  } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -34,6 +42,7 @@ import {
     Users as UsersIcon,
     MoreVertical,
     CheckCircle2,
+    Sparkles,
     Save,
     Heart,
     MapPin,
@@ -61,6 +70,11 @@ const UserProfilePage = () => {
     const [followModalType, setFollowModalType] = useState('followers'); // 'followers' or 'following'
     const [followList, setFollowList] = useState([]);
     const [followListLoading, setFollowListLoading] = useState(false);
+
+    // Report State
+    const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+    const [reportReason, setReportReason] = useState('');
+    const [isReporting, setIsReporting] = useState(false);
 
     // Selection & Edit State
     const [isSelectMode, setIsSelectMode] = useState(false);
@@ -170,6 +184,32 @@ const UserProfilePage = () => {
             toast.error(`Failed to load ${type}`);
         } finally {
             setFollowListLoading(false);
+        }
+    };
+
+    const handleReport = async () => {
+        if (!reportReason.trim()) return;
+        setIsReporting(true);
+        try {
+            await reportUser(user.id, reportReason);
+            toast.success("User reported. Thank you for helping keep Linkler safe.");
+            setIsReportModalOpen(false);
+            setReportReason('');
+        } catch (err) {
+            toast.error("Failed to submit report.");
+        } finally {
+            setIsReporting(false);
+        }
+    };
+
+    const handleBlock = async () => {
+        if (!window.confirm(`Are you sure you want to block ${user.username}? They won't be able to message you or see your content.`)) return;
+        try {
+            await blockUser(user.id);
+            toast.success(`${user.username} has been blocked.`);
+            navigate('/app');
+        } catch (err) {
+            toast.error("Failed to block user.");
         }
     };
 
@@ -310,15 +350,38 @@ const UserProfilePage = () => {
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                             <div className="flex flex-col md:flex-row md:items-center gap-3">
                                 <h1 className="text-3xl md:text-4xl font-black text-ui-text-main tracking-tighter italic uppercase">{user.username}</h1>
+                                {user.is_pro && (
+                                    <span className="bg-brand/10 text-brand text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest border border-brand/20 flex items-center gap-1">
+                                        <Sparkles className="w-3 h-3" /> Pro Business
+                                    </span>
+                                )}
                                 {user.account_type && user.account_type !== 'traveller' && (
                                     <span className="bg-success/10 text-success text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest border border-success/20">Verified {user.account_type}</span>
                                 )}
                             </div>
-                            {isOwner && (
-                                <Button onClick={() => navigate('/app/settings')} variant="outline" size="sm" className="rounded-xl font-bold text-[10px] uppercase tracking-widest border-ui-border bg-white shadow-sm self-center md:self-auto">
-                                    <Settings className="w-3.5 h-3.5 mr-2" /> Edit Profile
-                                </Button>
-                            )}
+                            <div className="flex items-center gap-2 self-center md:self-auto">
+                                {isOwner ? (
+                                    <Button onClick={() => navigate('/app/settings')} variant="outline" size="sm" className="rounded-xl font-bold text-[10px] uppercase tracking-widest border-ui-border bg-white shadow-sm">
+                                        <Settings className="w-3.5 h-3.5 mr-2" /> Edit Profile
+                                    </Button>
+                                ) : (
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="outline" size="icon" className="rounded-xl border-ui-border bg-white shadow-sm h-9 w-9">
+                                                <MoreVertical className="w-4 h-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end" className="rounded-2xl border-ui-border shadow-xl">
+                                            <DropdownMenuItem onClick={() => setIsReportModalOpen(true)} className="text-warning font-bold flex items-center gap-2 cursor-pointer focus:bg-warning/5 rounded-xl">
+                                                <ShieldCheck className="w-4 h-4" /> Report User
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onClick={handleBlock} className="text-error font-bold flex items-center gap-2 cursor-pointer focus:bg-error/5 rounded-xl">
+                                                <X className="w-4 h-4" /> Block User
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                )}
+                            </div>
                         </div>
 
                         <div className="flex items-center justify-center md:justify-start gap-12 mb-8 bg-ui-white/50 backdrop-blur-md p-6 rounded-3xl border border-ui-border/30 shadow-inner">
@@ -719,6 +782,37 @@ const UserProfilePage = () => {
                                 <p className="text-sm font-medium text-ui-muted italic">No {followModalType} yet.</p>
                             </div>
                         )}
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Report User Modal */}
+            <Dialog open={isReportModalOpen} onOpenChange={setIsReportModalOpen}>
+                <DialogContent className="sm:max-w-md rounded-[2.5rem] p-0 border-none bg-ui-white shadow-2xl overflow-hidden">
+                    <DialogHeader className="p-8 pb-4 border-b border-ui-border/50">
+                        <DialogTitle className="text-2xl font-black italic uppercase tracking-tighter text-ui-text-main">
+                            Report {user?.username}
+                        </DialogTitle>
+                        <DialogDescription className="text-xs font-bold uppercase tracking-widest text-warning">Help us understand the issue</DialogDescription>
+                    </DialogHeader>
+                    
+                    <div className="p-8 space-y-6">
+                        <div className="space-y-3">
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-ui-muted">Reason for report</Label>
+                            <Textarea 
+                                value={reportReason}
+                                onChange={(e) => setReportReason(e.target.value)}
+                                placeholder="Spam, harassment, inappropriate content, etc."
+                                className="min-h-[120px] rounded-2xl bg-ui-bg-alt border-none focus:ring-2 focus:ring-warning/20 font-medium italic p-4"
+                            />
+                        </div>
+                        <Button 
+                            onClick={handleReport}
+                            disabled={isReporting || !reportReason.trim()}
+                            className="w-full h-14 rounded-2xl bg-warning hover:bg-warning/90 text-white font-black uppercase tracking-widest"
+                        >
+                            {isReporting ? 'Submitting...' : 'Submit Report'}
+                        </Button>
                     </div>
                 </DialogContent>
             </Dialog>

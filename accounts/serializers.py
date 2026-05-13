@@ -1,12 +1,27 @@
 from rest_framework import serializers
 from dj_rest_auth.registration.serializers import RegisterSerializer
-from .models import CustomUser, Experience, ExperienceImage, ExperienceReview, ProviderReview, Booking, TravelerProfile, VerificationDocument, Notification, GuideAvailability, Report
+from .models import CustomUser, Experience, ExperienceImage, ExperienceReview, ProviderReview, Booking, TravelerProfile, VerificationDocument, Notification, GuideAvailability, Report, BlockedUser
 
 class ReportSerializer(serializers.ModelSerializer):
     class Meta:
         model = Report
         fields = '__all__'
         read_only_fields = ('reporter', 'created_at')
+
+class BlockedUserSerializer(serializers.ModelSerializer):
+    blocked_details = serializers.SerializerMethodField()
+
+    class Meta:
+        model = BlockedUser
+        fields = ('id', 'blocker', 'blocked', 'blocked_details', 'created_at')
+        read_only_fields = ('blocker', 'created_at')
+
+    def get_blocked_details(self, obj):
+        return {
+            'id': obj.blocked.id,
+            'username': obj.blocked.username,
+            'profile_picture': str(obj.blocked.profile_picture) if obj.blocked.profile_picture else None
+        }
 
 class TravelerProfileSerializer(serializers.ModelSerializer):
     class Meta:
@@ -140,9 +155,10 @@ class UserSerializer(serializers.ModelSerializer):
             'following_count', 'posts_count', 'posts', 'rating', 'review_count',
             'opt_out_discovery', 'show_followers_list',
             'onboarding_completed', 'verification_status',
+            'subscription_tier', 'is_pro',
             'is_profile_complete', 'missing_fields', 'unread_notifications_count'
         )
-        read_only_fields = ('email', 'account_type', 'verification_status', 'is_profile_complete', 'missing_fields', 'unread_notifications_count')
+        read_only_fields = ('email', 'account_type', 'verification_status', 'is_pro', 'is_profile_complete', 'missing_fields', 'unread_notifications_count')
 
     def get_unread_notifications_count(self, obj):
         return obj.notifications.filter(is_read=False).count()

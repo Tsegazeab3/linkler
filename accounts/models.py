@@ -38,6 +38,22 @@ class CustomUser(AbstractUser):
         default='pending'
     )
 
+    # Subscription & User Tier
+    SUBSCRIPTION_TIER_CHOICES = (
+        ('free', 'Free'),
+        ('pro', 'Pro Business'),
+        ('enterprise', 'Enterprise'),
+    )
+    subscription_tier = models.CharField(
+        max_length=20,
+        choices=SUBSCRIPTION_TIER_CHOICES,
+        default='free'
+    )
+
+    @property
+    def is_pro(self):
+        return self.subscription_tier in ['pro', 'enterprise']
+
     @property
     def is_profile_complete(self):
         return len(self.missing_fields) == 0
@@ -392,4 +408,15 @@ class Report(models.Model):
 
     def __str__(self):
         return f"Report by {self.reporter.username} against {self.reported_user.username}"
+
+class BlockedUser(models.Model):
+    blocker = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='blocked_users')
+    blocked = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='blocked_by')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('blocker', 'blocked')
+
+    def __str__(self):
+        return f"{self.blocker.username} blocked {self.blocked.username}"
 

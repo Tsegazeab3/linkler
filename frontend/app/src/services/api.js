@@ -221,6 +221,9 @@ export const unfollowUser = (username) => api.delete(`accounts/${username}/unfol
 export const getFollowers = (username) => api.get(`accounts/${username}/followers/`);
 export const getFollowing = (username) => api.get(`accounts/${username}/following/`);
 export const reportUser = (reportedUserId, reason) => api.post('accounts/reports/', { reported_user: reportedUserId, reason });
+export const blockUser = (userId) => api.post('accounts/blocked-users/', { blocked: userId });
+export const getBlockedUsers = () => api.get('accounts/blocked-users/');
+export const unblockUser = (id) => api.delete(`accounts/blocked-users/${id}/`);
 
 // Post Interactions
 export const toggleLike = (postId) => api.post(`posts/${postId}/like/`);
