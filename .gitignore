@@ -3,16 +3,23 @@
 __pycache__/
 venv/
 db.sqlite3
-/media
 
-# Django
+# Media & Uploads
+/media/
+backend/media/
+
+# Environment Variables & Secrets
 .env
+.env.*
+!.env.example
+
 
 # Frontend
 frontend/node_modules/
 frontend/dist/
+dist_package/
 
-# Temp files
+# Temp files & Memory
 create_dummy_messages.py
 .mempalace
 entities.json

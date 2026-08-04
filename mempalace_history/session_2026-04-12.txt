@@ -1,4 +1,0 @@
-# Session 2026-04-12
-User and Agent set up MemPalace for long-term memory.
-Agent created GEMINI.md with bootstrap instructions.
-Files are being indexed in the .mempalace directory.

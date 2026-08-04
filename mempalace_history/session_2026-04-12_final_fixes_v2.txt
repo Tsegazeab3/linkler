@@ -1,2 +1,0 @@
-# Session 2026-04-12 - Refactoring Filters (Fixes v2)
-- Fixed NameError in discovery/views.py by adding missing imports for Response and status.

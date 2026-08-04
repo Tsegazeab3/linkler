@@ -1,0 +1,3 @@
+linkler.chickenkiller.com {
+    reverse_proxy localhost:5173/
+}

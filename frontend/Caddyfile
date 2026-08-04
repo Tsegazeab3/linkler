@@ -1,0 +1,10 @@
+ linkler.chickenkiller.com {
+        tls internal
+
+        # Forward API requests to Django (port 8000)
+        reverse_proxy /api/* 127.0.0.1:8000
+        reverse_proxy /ws/* 127.0.0.1:8000
+
+        # Forward all other requests to Vite frontend (port 5173)
+        reverse_proxy localhost:5173
+    }

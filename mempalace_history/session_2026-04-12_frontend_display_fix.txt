@@ -1,5 +1,0 @@
-# Session 2026-04-12 - Frontend Display and Filter Fix
-- Updated TripCard, PromotionCard, and ExperiencePreviewCard to display 'region' and 'country'.
-- Refactored FellowTravelersPage and PromotionsPage to correctly map backend regional data.
-- Enhanced FilterComponent to be context-aware (e.g., showing 'Select Region' vs 'Select Category').
-- Verified that regional 'fake' data is now fully visible and filterable.

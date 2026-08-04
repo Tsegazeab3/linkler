@@ -1,6 +1,0 @@
-# Session 2026-04-12 - Refactoring Filters
-- Set up MemPalace for long-term memory and created GEMINI.md bootstrap instructions.
-- Refactored hard-coded filters for Fellow Travelers, Deals, and Guides.
-- Added dynamic category choices to backend models: Trip, Experience, and Promotion.
-- Created new API endpoints for fetching categories and dynamic country lists.
-- Updated frontend pages and creation forms to use these dynamic categories and filters.

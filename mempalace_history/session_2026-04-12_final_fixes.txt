@@ -1,2 +1,0 @@
-# Session 2026-04-12 - Refactoring Filters (Fixes)
-- Fixed NameErrors in posts/urls.py and accounts/urls.py by adding missing imports (TripCategoryListView, GuideCountryListView, ExperienceCategoryListView).
