@@ -12,7 +12,7 @@ backend/media/
 .env
 .env.*
 !.env.example
-
+media*
 
 # Frontend
 frontend/node_modules/
