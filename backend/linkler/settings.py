@@ -121,7 +121,7 @@ DATABASES = {
         'NAME': os.environ.get("POSTGRES_DB") or os.environ.get("POSTGRES_DATABASE") or 'linklerdb',
         'USER': os.environ.get("POSTGRES_USER") or 'tsegazeab',
         'PASSWORD': os.environ.get("POSTGRES_PASSWORD") or 'Abebebesobela424*',
-        'HOST': os.environ.get("POSTGRES_HOST") or 'localhost',
+        'HOST': os.environ.get("POSTGRES_HOST") or 'db',
         'PORT': os.environ.get("POSTGRES_PORT") or '5432',
     }
 }
