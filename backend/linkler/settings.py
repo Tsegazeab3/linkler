@@ -35,7 +35,10 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'your-secret-key')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,0.0.0.0,linkler.chickenkiller.com').split(",")
+raw_allowed_hosts = os.environ.get('ALLOWED_HOSTS', '*')
+ALLOWED_HOSTS = [host.strip() for host in raw_allowed_hosts.split(',') if host.strip()]
+if not ALLOWED_HOSTS or '*' in ALLOWED_HOSTS:
+    ALLOWED_HOSTS = ['*']
 
 # Add Render and Fly.io hosts
 # RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')

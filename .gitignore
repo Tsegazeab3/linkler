@@ -16,7 +16,7 @@ media*
 
 # Frontend
 frontend/node_modules/
-frontend/dist/
+# frontend/dist/
 dist_package/
 
 # Temp files & Memory
