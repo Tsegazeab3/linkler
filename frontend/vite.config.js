@@ -11,7 +11,7 @@ const __dirname = path.dirname(__filename);
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   build: {
-    outDir: "../backend/frontend/app/dist", // Output directly into Django static path
+    outDir: "dist",
     emptyOutDir: true,
   },
   resolve: {

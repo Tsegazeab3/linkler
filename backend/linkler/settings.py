@@ -22,8 +22,8 @@ env_file = BASE_DIR.parent / '.env.development' if (BASE_DIR.parent / '.env.deve
 load_dotenv(env_file)
 
 # React integration
-FRONT_END_DIR = BASE_DIR / 'frontend'
-APP_BUILD_DIR = FRONT_END_DIR / 'app' / 'dist'
+FRONT_END_DIR = BASE_DIR.parent / 'frontend'
+APP_BUILD_DIR = FRONT_END_DIR / 'dist'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -118,11 +118,11 @@ ASGI_APPLICATION = 'linkler.asgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get("POSTGRES_DB") or os.environ.get("POSTGRES_DATABASE") or 'linklerdb',
-        'USER': os.environ.get("POSTGRES_USER") or 'tsegazeab',
-        'PASSWORD': os.environ.get("POSTGRES_PASSWORD") or 'Abebebesobela424*',
-        'HOST': os.environ.get("POSTGRES_HOST") or 'db',
-        'PORT': os.environ.get("POSTGRES_PORT") or '5432',
+        'NAME': os.environ.get("POSTGRES_DB"), 
+        'USER': os.environ.get("POSTGRES_USER"), 
+        'PASSWORD': os.environ.get("POSTGRES_PASSWORD"), 
+        'HOST': os.environ.get("POSTGRES_HOST"), 
+        'PORT': os.environ.get("POSTGRES_PORT"),
     }
 }
 
@@ -296,8 +296,8 @@ else:
             "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
         },
     }
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+# MEDIA_URL = '/media/'
+# MEDIA_ROOT = BASE_DIR / 'media'
 
 # Channels configuration
 CHANNEL_LAYERS = {

@@ -5,29 +5,28 @@ services:
     volumes:
       - ./backend:/app
       - ./backend/media:/app/media
+      - ./backend/staticfiles:/app/staticfiles
     ports:
       - "8000:8000"
     env_file:
       - .env.development
-    depends_on:
-      db:
-        condition: service_healthy
 
-  db:
-    image: postgres:17-alpine
+  nginx:
+    image: nginx:alpine
     restart: always
-    env_file:
-      - .env.development
     ports:
-      - "5432:5432"
+      - "80:80"
+      - "443:443"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./conf.d:/etc/nginx/conf.d:ro
+      - ./frontend/dist:/usr/share/nginx/html:ro
+      - ./backend/media:/app/media:ro
+      - ./backend/staticfiles:/app/staticfiles:ro
+    depends_on:
+      - web
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
-      interval: 5s
+      test: ["CMD", "nginx", "-t"]
+      interval: 10s
       timeout: 5s
-      retries: 5
-
-volumes:
-  postgres_data:
+      retries: 3

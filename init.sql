@@ -2,7 +2,6 @@
 -- PostgreSQL database dump
 --
 
-\restrict nvDU1G5lh2QeaN5Ol4Csyx1g8qb7hPcqlS3ajRRZGCW0fUbImV5MxohXD6pUf6L
 
 -- Dumped from database version 17.10
 -- Dumped by pg_dump version 17.10
@@ -11126,5 +11125,4 @@ ALTER TABLE ONLY public.socialaccount_socialaccount
 -- PostgreSQL database dump complete
 --
 
-\unrestrict nvDU1G5lh2QeaN5Ol4Csyx1g8qb7hPcqlS3ajRRZGCW0fUbImV5MxohXD6pUf6L
 
