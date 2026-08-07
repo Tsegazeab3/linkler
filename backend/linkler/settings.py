@@ -261,6 +261,10 @@ CSRF_TRUSTED_ORIGINS = [
     'http://0.0.0.0:5173',
     'http://0.0.0.0:8000',
     'https://linkler.chickenkiller.com',
+    'https://linkler.space',
+    'https://www.linkler.space',
+    'http://linkler.space',
+    'http://www.linkler.space',
 ]
 
 # Ensure Django detects HTTPS from reverse proxy / TLS termination

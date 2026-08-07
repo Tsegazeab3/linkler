@@ -23,6 +23,7 @@ services:
       - ./frontend/dist:/usr/share/nginx/html:ro
       - ./backend/media:/app/media:ro
       - ./backend/staticfiles:/app/staticfiles:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
       - web
     healthcheck:
