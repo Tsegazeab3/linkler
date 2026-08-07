@@ -126,6 +126,7 @@ DATABASES = {
         'PASSWORD': os.environ.get("POSTGRES_PASSWORD"), 
         'HOST': os.environ.get("POSTGRES_HOST"), 
         'PORT': os.environ.get("POSTGRES_PORT"),
+        'CONN_MAX_AGE': 600,
     }
 }
 
@@ -270,7 +271,7 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 R2_ACCESS_KEY_ID = os.environ.get('R2_ACCESS_KEY_ID')
 R2_SECRET_ACCESS_KEY = os.environ.get('R2_SECRET_ACCESS_KEY')
 R2_BUCKET_NAME = os.environ.get('R2_BUCKET_NAME')
-R2_ACCOUNT_ID = os.environ.get('R2_ACCOUNT_ID')
+R2_ACCOUNT_ID = os.environ.get('R2_ACCOUNT_ID', '').replace('https://', '').replace('http://', '').split('.r2.cloudflarestorage.com')[0].strip('/')
 
 if R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY and R2_BUCKET_NAME and R2_ACCOUNT_ID:
     STORAGES = {
