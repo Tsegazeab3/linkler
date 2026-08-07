@@ -30,7 +30,7 @@
   --radius-sm: calc(var(--radius) - 4px);
 
   /* Fonts */
-  --font-display: cursive;
+  --font-display: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
   /* Spacing (all in px or specific units like vw/vh) */
   --spacing-0: 0px; /* for p-0, m-0 */

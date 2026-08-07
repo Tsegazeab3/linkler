@@ -186,6 +186,20 @@ class UserSerializer(serializers.ModelSerializer):
 class CustomRegisterSerializer(RegisterSerializer):
     account_type = serializers.ChoiceField(choices=CustomUser.ACCOUNT_TYPE_CHOICES, default='traveller')
 
+    def validate_username(self, username):
+        username = super().validate_username(username)
+        if CustomUser.objects.filter(username__iexact=username).exists():
+            raise serializers.ValidationError("A user with that username already exists.")
+        return username
+
+    def validate_email(self, email):
+        email = super().validate_email(email)
+        if email:
+            email = email.lower().strip()
+            if CustomUser.objects.filter(email__iexact=email).exists():
+                raise serializers.ValidationError("A user with that email address already exists.")
+        return email
+
     def get_cleaned_data(self):
         data = super().get_cleaned_data()
         data['account_type'] = self.validated_data.get('account_type', 'traveller')
