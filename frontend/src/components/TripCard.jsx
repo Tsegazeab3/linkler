@@ -126,7 +126,7 @@ const TripCard = ({ trip, isExpanded }) => {
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-brand-light to-accent-indigo/10 flex items-center justify-center p-12">
                 <Avatar className="w-32 h-32 md:w-48 md:h-48 border-8 border-ui-white shadow-2xl shrink-0 ring-1 ring-ui-border/50">
-                    <AvatarFallback className="text-5xl md:text-7xl bg-white text-brand font-black">{username?.charAt(0).toUpperCase()}</AvatarFallback>
+                    <AvatarFallback className="text-5xl md:text-7xl bg-brand-light text-brand font-black">{username?.charAt(0).toUpperCase()}</AvatarFallback>
                 </Avatar>
             </div>
           )}

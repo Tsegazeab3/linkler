@@ -17,9 +17,18 @@ from dotenv import load_dotenv
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Load environment variables from .env or .env.development if present
-env_file = BASE_DIR.parent / '.env.development' if (BASE_DIR.parent / '.env.development').exists() else BASE_DIR.parent / '.env'
-load_dotenv(env_file)
+# Load environment variables based on DJANGO_ENV or ENVIRONMENT
+django_env = os.environ.get('DJANGO_ENV', os.environ.get('ENVIRONMENT', 'development')).lower()
+if django_env == 'production':
+    env_file = BASE_DIR.parent / '.env.production'
+else:
+    env_file = BASE_DIR.parent / '.env.development'
+
+if not env_file.exists():
+    env_file = BASE_DIR.parent / '.env'
+
+if env_file.exists():
+    load_dotenv(env_file, override=True)
 
 # React integration
 FRONT_END_DIR = BASE_DIR.parent / 'frontend'
@@ -122,17 +131,27 @@ ASGI_APPLICATION = 'linkler.asgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get("POSTGRES_DB"), 
-        'USER': os.environ.get("POSTGRES_USER"), 
-        'PASSWORD': os.environ.get("POSTGRES_PASSWORD"), 
-        'HOST': os.environ.get("POSTGRES_HOST"), 
-        'PORT': os.environ.get("POSTGRES_PORT"),
-        'CONN_MAX_AGE': 600,
+USE_SQLITE = os.environ.get('USE_SQLITE', 'False').lower() in ('true', '1', 't') or not os.environ.get('POSTGRES_HOST')
+
+if USE_SQLITE:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ.get("POSTGRES_DB"), 
+            'USER': os.environ.get("POSTGRES_USER"), 
+            'PASSWORD': os.environ.get("POSTGRES_PASSWORD"), 
+            'HOST': os.environ.get("POSTGRES_HOST"), 
+            'PORT': os.environ.get("POSTGRES_PORT", "5432"),
+            'CONN_MAX_AGE': 600,
+        }
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -276,12 +295,13 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 
 # Cloudflare R2 / S3 Storage Configuration
+USE_R2 = os.environ.get('USE_R2', 'True').lower() in ('true', '1', 't')
 R2_ACCESS_KEY_ID = os.environ.get('R2_ACCESS_KEY_ID')
 R2_SECRET_ACCESS_KEY = os.environ.get('R2_SECRET_ACCESS_KEY')
 R2_BUCKET_NAME = os.environ.get('R2_BUCKET_NAME')
 R2_ACCOUNT_ID = os.environ.get('R2_ACCOUNT_ID', '').replace('https://', '').replace('http://', '').split('.r2.cloudflarestorage.com')[0].strip('/')
 
-if R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY and R2_BUCKET_NAME and R2_ACCOUNT_ID:
+if USE_R2 and R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY and R2_BUCKET_NAME and R2_ACCOUNT_ID:
     STORAGES = {
         "default": {
             "BACKEND": "storages.backends.s3.S3Storage",
@@ -308,8 +328,8 @@ else:
             "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
         },
     }
-# MEDIA_URL = '/media/'
-# MEDIA_ROOT = BASE_DIR / 'media'
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = BASE_DIR / 'media'
 
 # Channels configuration
 CHANNEL_LAYERS = {
@@ -331,6 +351,7 @@ LOGGING = {
         'handlers': ['console'],
         'level': 'INFO',
     },
+
     'loggers': {
         'django.request': {
             'handlers': ['console'],
@@ -339,3 +360,19 @@ LOGGING = {
         },
     },
 }
+
+# Environment status notice
+db_engine = f"SQLite ({DATABASES['default'].get('NAME')})" if USE_SQLITE else f"PostgreSQL ({DATABASES['default'].get('HOST')}:{DATABASES['default'].get('PORT', '5432')}/{DATABASES['default'].get('NAME')})"
+storage_engine = "Cloudflare R2" if (USE_R2 and R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY and R2_BUCKET_NAME and R2_ACCOUNT_ID) else "Local Filesystem"
+
+print("=" * 60)
+print("🚀 LINKLER BACKEND INITIALIZED")
+print(f"   Environment : {django_env.upper()}")
+print(f"   Loaded Env  : {env_file}")
+print(f"   Database    : {db_engine}")
+print(f"   Storage     : {storage_engine}")
+print(f"   Debug Mode  : {DEBUG}")
+print("=" * 60)
+
+print("=" * 60)
+

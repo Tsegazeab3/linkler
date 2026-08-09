@@ -11,7 +11,9 @@ import {
     Mail, 
     Lock, 
     ChevronRight,
-    Compass
+    Compass,
+    Eye,
+    EyeOff
 } from "lucide-react";
 
 function SignUpPage() {
@@ -22,6 +24,9 @@ function SignUpPage() {
     password2: '',
     account_type: 'traveller', 
   });
+  
+  const [showPassword1, setShowPassword1] = useState(false);
+  const [showPassword2, setShowPassword2] = useState(false);
   
   const [errors, setErrors] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -174,19 +179,51 @@ function SignUpPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2 group">
                     <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-ui-muted ml-1">Password</Label>
                     <div className="relative">
                       <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-ui-muted group-focus-within:text-brand transition-colors" />
-                      <Input name="password1" type="password" value={formData.password1} onChange={handleChange} required placeholder="••••••••" className="h-12 pl-12 rounded-xl bg-ui-bg-alt border-ui-border text-ui-text-main" />
+                      <Input 
+                        name="password1" 
+                        type={showPassword1 ? "text" : "password"} 
+                        value={formData.password1} 
+                        onChange={handleChange} 
+                        required 
+                        placeholder="••••••••" 
+                        className="h-12 pl-12 pr-12 rounded-xl bg-ui-bg-alt border-ui-border text-ui-text-main" 
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword1(!showPassword1)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-ui-muted hover:text-brand transition-colors"
+                        tabIndex={-1}
+                      >
+                        {showPassword1 ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
                     </div>
                   </div>
                   <div className="space-y-2 group">
-                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-ui-muted ml-1">Confirm</Label>
+                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-ui-muted ml-1">Confirm Password</Label>
                     <div className="relative">
                       <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-ui-muted group-focus-within:text-brand transition-colors" />
-                      <Input name="password2" type="password" value={formData.password2} onChange={handleChange} required placeholder="••••••••" className="h-12 pl-12 rounded-xl bg-ui-bg-alt border-ui-border text-ui-text-main" />
+                      <Input 
+                        name="password2" 
+                        type={showPassword2 ? "text" : "password"} 
+                        value={formData.password2} 
+                        onChange={handleChange} 
+                        required 
+                        placeholder="••••••••" 
+                        className="h-12 pl-12 pr-12 rounded-xl bg-ui-bg-alt border-ui-border text-ui-text-main" 
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword2(!showPassword2)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-ui-muted hover:text-brand transition-colors"
+                        tabIndex={-1}
+                      >
+                        {showPassword2 ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
                     </div>
                   </div>
                 </div>

@@ -361,7 +361,7 @@ class UserSearchView(generics.ListAPIView):
     View to search users by username, email, or bio.
     """
     serializer_class = UserSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get_queryset(self):
         query = self.request.query_params.get('q', '')
@@ -402,8 +402,25 @@ class PasswordResetRequestView(generics.GenericAPIView):
                 expires_at=expires_at
             )
             
-            # In a real app, send email here
-            # reset_link = f"http://localhost:5173/reset-password?token={token}"
+            from django.core.mail import send_mail
+            from django.conf import settings
+
+            frontend_url = os.environ.get("FRONTEND_URL", "http://localhost:5173")
+            reset_link = f"{frontend_url}/reset-password?token={token}"
+
+            send_mail(
+                subject="Linkler Password Reset Request",
+                message=(
+                    f"Hello {user.username},\n\n"
+                    f"You requested to reset your password for your Linkler account. Click the link below to set a new password:\n\n"
+                    f"{reset_link}\n\n"
+                    f"This link will expire in 30 minutes.\n\n"
+                    f"If you did not request this, please ignore this message."
+                ),
+                from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@linkler.space'),
+                recipient_list=[user.email],
+                fail_silently=True,
+            )
             
         return Response(
             {"detail": "If an account exists with this email, you will receive a reset link shortly."},

@@ -313,7 +313,7 @@ const UserProfilePage = () => {
                                 )}
                             </div>
                             {isOwner && (
-                                <Button onClick={() => navigate('/app/settings')} variant="outline" size="sm" className="rounded-xl font-bold text-[10px] uppercase tracking-widest border-ui-border bg-white shadow-sm self-center md:self-auto">
+                                <Button onClick={() => navigate('/app/settings')} variant="outline" size="sm" className="rounded-xl font-bold text-[10px] uppercase tracking-widest border-ui-border bg-ui-white hover:bg-ui-bg-alt text-ui-text-main shadow-sm self-center md:self-auto">
                                     <Settings className="w-3.5 h-3.5 mr-2" /> Edit Profile
                                 </Button>
                             )}
@@ -357,10 +357,10 @@ const UserProfilePage = () => {
                     <Tabs defaultValue="moments" value={activeTab} onValueChange={setActiveTab} className="w-full">
                         <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-10">
                             <TabsList className="bg-ui-bg-alt rounded-2xl p-1 shadow-sm border border-ui-border/30">
-                                <TabsTrigger value="moments" className="rounded-xl px-8 font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-ui-white data-[state=active]:shadow-md">Moments</TabsTrigger>
-                                <TabsTrigger value="trips" className="rounded-xl px-8 font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-ui-white data-[state=active]:shadow-md">Trips</TabsTrigger>
+                                <TabsTrigger value="moments" className="rounded-xl px-8 font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-ui-white data-[state=active]:text-ui-text-main data-[state=active]:shadow-md">Moments</TabsTrigger>
+                                <TabsTrigger value="trips" className="rounded-xl px-8 font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-ui-white data-[state=active]:text-ui-text-main data-[state=active]:shadow-md">Trips</TabsTrigger>
                                 {user.account_type !== 'traveller' && (
-                                    <TabsTrigger value="services" className="rounded-xl px-8 font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-ui-white data-[state=active]:shadow-md">Services</TabsTrigger>
+                                    <TabsTrigger value="services" className="rounded-xl px-8 font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-ui-white data-[state=active]:text-ui-text-main data-[state=active]:shadow-md">Services</TabsTrigger>
                                 )}
                             </TabsList>
 
@@ -376,7 +376,7 @@ const UserProfilePage = () => {
                                             </Button>
                                         </>
                                     ) : (
-                                        <Button onClick={() => setIsSelectMode(true)} variant="outline" size="sm" className="rounded-xl font-black text-[9px] uppercase tracking-widest px-4 h-10 bg-white shadow-sm border-ui-border">
+                                        <Button onClick={() => setIsSelectMode(true)} variant="outline" size="sm" className="rounded-xl font-black text-[9px] uppercase tracking-widest px-4 h-10 bg-ui-white hover:bg-ui-bg-alt text-ui-text-main shadow-sm border-ui-border">
                                             Select Moments
                                         </Button>
                                     )}
@@ -414,7 +414,7 @@ const UserProfilePage = () => {
                                                     <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0 duration-300">
                                                         <button 
                                                             onClick={(e) => { e.stopPropagation(); openEditModal(post); }}
-                                                            className="p-2 bg-white/90 backdrop-blur-md rounded-xl text-ui-text-main shadow-lg hover:bg-brand hover:text-white transition-all"
+                                                            className="p-2 bg-ui-white/90 backdrop-blur-md rounded-xl text-ui-text-main shadow-lg hover:bg-brand hover:text-white transition-all"
                                                         >
                                                             <Edit3 className="w-3.5 h-3.5" />
                                                         </button>
@@ -427,7 +427,7 @@ const UserProfilePage = () => {
                                                                     toast.success("Moment deleted");
                                                                 }
                                                             }}
-                                                            className="p-2 bg-white/90 backdrop-blur-md rounded-xl text-error shadow-lg hover:bg-error hover:text-white transition-all"
+                                                            className="p-2 bg-ui-white/90 backdrop-blur-md rounded-xl text-error shadow-lg hover:bg-error hover:text-white transition-all"
                                                         >
                                                             <Trash2 className="w-3.5 h-3.5" />
                                                         </button>
@@ -487,7 +487,7 @@ const UserProfilePage = () => {
                              {experiences.length > 0 ? (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     {experiences.map(exp => (
-                                        <Card key={exp.id} className="rounded-3xl overflow-hidden border border-ui-border/50 shadow-xl bg-white group">
+                                        <Card key={exp.id} className="rounded-3xl overflow-hidden border border-ui-border/50 shadow-xl bg-ui-white group">
                                             <div className="h-48 overflow-hidden relative bg-ui-bg-alt">
                                                 {exp.images?.[0]?.image ? (
                                                     <img src={getMediaUrl(exp.images[0].image)} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={exp.title} />
@@ -505,7 +505,7 @@ const UserProfilePage = () => {
                                                     <div className="absolute bottom-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0 duration-300">
                                                         <button 
                                                             onClick={() => navigate('/app/dashboard')}
-                                                            className="p-2 bg-white/90 backdrop-blur-md rounded-xl text-ui-text-main shadow-lg hover:bg-brand hover:text-white transition-all"
+                                                            className="p-2 bg-ui-white/90 backdrop-blur-md rounded-xl text-ui-text-main shadow-lg hover:bg-brand hover:text-white transition-all"
                                                             title="Edit in Dashboard"
                                                         >
                                                             <Edit3 className="w-3.5 h-3.5" />
@@ -518,7 +518,7 @@ const UserProfilePage = () => {
                                                                     toast.success("Service deleted");
                                                                 }
                                                             }}
-                                                            className="p-2 bg-white/90 backdrop-blur-md rounded-xl text-error shadow-lg hover:bg-error hover:text-white transition-all"
+                                                            className="p-2 bg-ui-white/90 backdrop-blur-md rounded-xl text-error shadow-lg hover:bg-error hover:text-white transition-all"
                                                         >
                                                             <Trash2 className="w-3.5 h-3.5" />
                                                         </button>

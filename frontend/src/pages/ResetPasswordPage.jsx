@@ -4,6 +4,7 @@ import { confirmPasswordReset } from '../services/api';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { Lock, Eye, EyeOff } from "lucide-react";
 
 const ResetPasswordPage = () => {
     const [searchParams] = useSearchParams();
@@ -12,6 +13,8 @@ const ResetPasswordPage = () => {
     
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
 
@@ -80,28 +83,50 @@ const ResetPasswordPage = () => {
                                 <label className="text-xs font-bold uppercase tracking-widest text-ui-muted ml-1">
                                     New Password
                                 </label>
-                                <Input
-                                    type="password"
-                                    placeholder="••••••••"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    required
-                                    className="h-12 border-ui-border rounded-xl focus-visible:ring-brand"
-                                />
+                                <div className="relative">
+                                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-ui-muted transition-colors" />
+                                    <Input
+                                        type={showPassword ? "text" : "password"}
+                                        placeholder="••••••••"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        required
+                                        className="h-12 pl-12 pr-12 border-ui-border rounded-xl focus-visible:ring-brand"
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => setShowPassword(!showPassword)}
+                                      className="absolute right-4 top-1/2 -translate-y-1/2 text-ui-muted hover:text-brand transition-colors"
+                                      tabIndex={-1}
+                                    >
+                                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                    </button>
+                                </div>
                             </div>
 
                             <div className="space-y-2">
                                 <label className="text-xs font-bold uppercase tracking-widest text-ui-muted ml-1">
                                     Confirm Password
                                 </label>
-                                <Input
-                                    type="password"
-                                    placeholder="••••••••"
-                                    value={confirmPassword}
-                                    onChange={(e) => setConfirmPassword(e.target.value)}
-                                    required
-                                    className="h-12 border-ui-border rounded-xl focus-visible:ring-brand"
-                                />
+                                <div className="relative">
+                                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-ui-muted transition-colors" />
+                                    <Input
+                                        type={showConfirmPassword ? "text" : "password"}
+                                        placeholder="••••••••"
+                                        value={confirmPassword}
+                                        onChange={(e) => setConfirmPassword(e.target.value)}
+                                        required
+                                        className="h-12 pl-12 pr-12 border-ui-border rounded-xl focus-visible:ring-brand"
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                      className="absolute right-4 top-1/2 -translate-y-1/2 text-ui-muted hover:text-brand transition-colors"
+                                      tabIndex={-1}
+                                    >
+                                      {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                    </button>
+                                </div>
                             </div>
                         </div>
 

@@ -162,7 +162,11 @@ class PostBatchDeleteView(APIView):
 
 class TripListCreateView(generics.ListCreateAPIView):
     serializer_class = TripSerializer
-    permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsAuthenticated()]
 
     def get_queryset(self):
         qs = Trip.objects.all().select_related('user')
@@ -208,7 +212,11 @@ class TripRegionListView(generics.GenericAPIView):
 
 class CommentListCreateView(generics.ListCreateAPIView):
     serializer_class = CommentSerializer
-    permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsAuthenticated()]
 
     def get_queryset(self):
         post_id = self.kwargs.get('post_id')

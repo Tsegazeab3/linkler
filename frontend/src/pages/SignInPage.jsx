@@ -11,12 +11,15 @@ import {
     Mail, 
     Lock, 
     ChevronRight,
-    Compass
+    Compass,
+    Eye,
+    EyeOff
 } from "lucide-react";
 
 function SignInPage() {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
@@ -127,13 +130,21 @@ function SignInPage() {
                   <div className="relative">
                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-ui-muted group-focus-within:text-brand transition-colors" />
                     <Input 
-                        type="password"
+                        type={showPassword ? "text" : "password"}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
                         placeholder="••••••••" 
-                        className="h-14 pl-12 rounded-2xl bg-ui-bg-alt border-ui-border font-bold text-ui-text-main" 
+                        className="h-14 pl-12 pr-12 rounded-2xl bg-ui-bg-alt border-ui-border font-bold text-ui-text-main" 
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-ui-muted hover:text-brand transition-colors"
+                      tabIndex={-1}
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
                   </div>
                 </div>
               </div>
