@@ -13,6 +13,7 @@ backend/media/
 .env.*
 !.env.example
 media*
+.cost.json
 
 # Frontend
 frontend/node_modules/
